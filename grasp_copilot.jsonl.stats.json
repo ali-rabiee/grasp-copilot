@@ -1,0 +1,13 @@
+{
+  "ambiguity_rate": 0.0718954248366013,
+  "avg_episode_length": 15.3,
+  "fraction_just_guide_episodes": 0.4,
+  "grasp_success_rate": 0.7142857142857143,
+  "tool_distribution": {
+    "ALIGN_YAW": 30,
+    "APPROACH": 24,
+    "GRASP": 7,
+    "INTERACT": 80,
+    "SELECT_TARGET": 12
+  }
+}
