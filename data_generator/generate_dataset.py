@@ -7,8 +7,8 @@ import random
 from collections import Counter
 from typing import Dict, List, Optional, Tuple
 
-from episode import Episode, OBJECT_LABELS, write_jsonl
-from oracle import OracleState, oracle_decide_tool, validate_tool_call
+from .episode import Episode, OBJECT_LABELS, write_jsonl
+from .oracle import OracleState, oracle_decide_tool, validate_tool_call
 
 
 def _append_user_response_for_ambiguity(
@@ -141,12 +141,12 @@ def generate(episodes: int, seed: int) -> Tuple[List[Dict], Dict]:
     return records, stats
 
 
-def main() -> None:
+def main(argv: Optional[List[str]] = None) -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--episodes", type=int, required=True)
     ap.add_argument("--out", type=str, required=True)
     ap.add_argument("--seed", type=int, default=0)
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     records, stats = generate(episodes=args.episodes, seed=args.seed)
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
@@ -157,3 +157,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+

@@ -1,4 +1,4 @@
-import yaw
+from data_generator import yaw
 
 
 def test_yaw_wraparound_and_move_toward():

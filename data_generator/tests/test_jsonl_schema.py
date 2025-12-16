@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-import generate_dataset
-from oracle import validate_tool_call
+from data_generator import generate_dataset
+from data_generator.oracle import validate_tool_call
 
 
 def test_generated_jsonl_schema(tmp_path: Path):

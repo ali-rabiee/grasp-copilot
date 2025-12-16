@@ -1,4 +1,4 @@
-import grid
+from data_generator import grid
 
 
 def test_grid_neighbors_and_manhattan():

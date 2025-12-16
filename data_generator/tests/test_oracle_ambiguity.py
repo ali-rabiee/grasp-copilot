@@ -1,4 +1,4 @@
-from oracle import OracleState, oracle_decide_tool
+from data_generator.oracle import OracleState, oracle_decide_tool
 
 
 def test_oracle_ambiguity_triggers_interact_question():

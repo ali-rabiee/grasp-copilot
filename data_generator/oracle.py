@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence, Tuple
 
-import grid
-import yaw as yawlib
+from . import grid
+from . import yaw as yawlib
 
 
 def _normalize_label(text: str) -> str:
@@ -42,7 +42,7 @@ def _maybe_apply_takeover_reply(dialog: Sequence[Dict], state: OracleState) -> N
     """
     Detect a user reply to the most recent takeover offer and update state.
 
-    Generator uses fixed strings (\"yes please\" / \"no, just guide\"), but we accept
+    Generator uses fixed strings ("yes please" / "no, just guide"), but we accept
     simple substrings to keep it robust and deterministic.
     """
     if len(dialog) < 2:
@@ -267,3 +267,5 @@ def validate_tool_call(tool_call: Dict) -> None:
             raise ValueError("RETRY_OR_ABORT args must be {policy,obj_id}")
         if args["policy"] not in {"retry", "realign", "reapproach", "ask_user", "abort"}:
             raise ValueError("Invalid RETRY_OR_ABORT.policy")
+
+

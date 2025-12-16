@@ -1,4 +1,4 @@
-from oracle import OracleState, oracle_decide_tool
+from data_generator.oracle import OracleState, oracle_decide_tool
 
 
 def test_oracle_struggle_triggers_offer_takeover_on_oscillation():

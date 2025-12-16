@@ -4,8 +4,8 @@ import json
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple
 
-import grid
-import yaw as yawlib
+from . import grid
+from . import yaw as yawlib
 
 
 OBJECT_LABELS: Tuple[str, ...] = (
@@ -247,3 +247,5 @@ def write_jsonl(path: str, records: Sequence[Dict]) -> None:
     with open(path, "w", encoding="utf-8") as f:
         for r in records:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+

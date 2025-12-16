@@ -64,10 +64,9 @@ def step_toward(current: str, target: str) -> str:
     return Cell(nr, nc).to_label()
 
 
-def nearest_cells_by_distance(
-    origin: str, candidates: Iterable[str]
-) -> List[Tuple[str, int]]:
+def nearest_cells_by_distance(origin: str, candidates: Iterable[str]) -> List[Tuple[str, int]]:
     items = [(cell, manhattan(origin, cell)) for cell in candidates]
     items.sort(key=lambda x: (x[1], x[0]))
     return items
+
 
