@@ -61,7 +61,7 @@ def _load_model_and_tokenizer(args: TrainArgs):
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
-    tok = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True)
+    tok = AutoTokenizer.from_pretrained(args.model_name, trust_remote_code=True, fix_mistral_regex=True)
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
 
@@ -82,7 +82,7 @@ def _load_model_and_tokenizer(args: TrainArgs):
     model = AutoModelForCausalLM.from_pretrained(
         args.model_name,
         trust_remote_code=True,
-        torch_dtype="auto",
+        dtype="auto",
         quantization_config=quant_cfg,
         device_map="auto" if args.use_4bit else None,
     )
@@ -238,11 +238,11 @@ def merge_lora(base_model_name: str, adapter_dir: str, output_dir: str) -> None:
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from peft import PeftModel  # type: ignore[import]
 
-    tok = AutoTokenizer.from_pretrained(base_model_name, trust_remote_code=True)
+    tok = AutoTokenizer.from_pretrained(base_model_name, trust_remote_code=True, fix_mistral_regex=True)
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
 
-    model = AutoModelForCausalLM.from_pretrained(base_model_name, trust_remote_code=True, torch_dtype="auto")
+    model = AutoModelForCausalLM.from_pretrained(base_model_name, trust_remote_code=True, dtype="auto")
     model = PeftModel.from_pretrained(model, adapter_dir)
     merged = model.merge_and_unload()
     merged.save_pretrained(output_dir, safe_serialization=True)

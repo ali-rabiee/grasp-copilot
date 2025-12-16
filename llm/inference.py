@@ -34,11 +34,11 @@ def _load_model_and_tokenizer(cfg: InferenceConfig):
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     model_path = cfg.merged_model_path or cfg.model_name
-    tok = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    tok = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, fix_mistral_regex=True)
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
 
-    model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, torch_dtype="auto")
+    model = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True, dtype="auto")
 
     if cfg.adapter_path:
         from peft import PeftModel  # type: ignore[import]
