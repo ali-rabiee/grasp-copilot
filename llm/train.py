@@ -156,12 +156,12 @@ def train_sft_lora(args: TrainArgs) -> None:
         return [_chat_to_text(tok, m) for m in msgs]
 
     try:
-    try:
-            from trl import SFTTrainer  # type: ignore[attr-defined]
-        except Exception:
+        from trl import SFTTrainer  # type: ignore[attr-defined]
+    except Exception:
+        try:
             from trl.trainer.sft_trainer import SFTTrainer  # type: ignore
-    except Exception as e:
-        raise RuntimeError("trl is required for SFT training") from e
+        except Exception as e:
+            raise RuntimeError("trl is required for SFT training") from e
 
     # Transformers renamed `evaluation_strategy` -> `eval_strategy` in newer versions.
     # Keep compatibility across environments by trying the new kw first, then falling back.
