@@ -83,8 +83,12 @@ class Episode:
             yaw=rng.choice(list(yawlib.YAW_BINS)),
             z=rng.choice(Z_BINS),
         )
-        # Seed with the same pose to guarantee len == 6.
-        self.gripper_hist: List[Pose] = [init_pose] * 6
+        # Option B: seed with a short "teleop trajectory" toward the intended object,
+        # so the initial history contains motion evidence the model can reason over.
+        # We still keep exactly 6 poses.
+        self.gripper_hist: List[Pose] = [init_pose]
+        while len(self.gripper_hist) < 6:
+            self.apply_user_motion()
 
     def get_obj(self, obj_id: str) -> Obj:
         for o in self.objects:
