@@ -1,6 +1,44 @@
 # grasp-copilot
 a copilot llm for suggesting grasp assistives.
 
+## Dataset generation + inspection
+
+All commands must activate the `talm` environment first:
+
+```bash
+conda activate talm
+```
+
+### Generate a dataset (raw generator JSONL)
+
+```bash
+conda activate talm
+python -m data_generator.generate_dataset --episodes 1000 --seed 0 --out /tmp/grasp_gen.jsonl
+# also writes: /tmp/grasp_gen.jsonl.stats.json
+```
+
+### Inspect the raw generator dataset (recommended for `/tmp/grasp_gen.jsonl`)
+
+The generator records contain keys like `episode_id`, `t`, `objects`, `gripper_hist`, `memory`, `target_tool_call`.
+
+```bash
+conda activate talm
+python -m data_generator.inspect_data --path /tmp/grasp_gen.jsonl --summary
+python -m data_generator.inspect_data --path /tmp/grasp_gen.jsonl --episode 0 --max-t 20 --show-objects --show-gripper --show-memory
+```
+
+### Convert generator JSONL → LLM contract/chat JSONL, then inspect
+
+```bash
+conda activate talm
+python scripts/prepare_llm_data.py --generator_jsonl /tmp/grasp_gen.jsonl --out_contract /tmp/grasp_contract.jsonl --out_chat /tmp/grasp_chat.jsonl
+
+python scripts/inspect_data.py --file /tmp/grasp_contract.jsonl --mode contract --n 3
+python scripts/inspect_data.py --file /tmp/grasp_chat.jsonl --mode chat --n 1
+```
+
+Note: `python scripts/inspect_data.py --mode generator` expects different fields (`obs`, `dialog`) than the raw generator output; for raw generator inspection use `python -m data_generator.inspect_data`.
+
 ## LLM fine-tuning + inference
 
 All commands must activate the `talm` environment first:
