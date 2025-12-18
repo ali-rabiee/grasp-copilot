@@ -24,6 +24,7 @@ import argparse
 import json
 import random
 from dataclasses import dataclass
+from collections import defaultdict
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import _bootstrap  # noqa: F401
@@ -243,9 +244,25 @@ def main() -> None:
 
     root = tk.Tk()
     root.title("grasp-copilot GUI demo")
+    # Maximize by default (cross-platform best-effort).
+    # - Windows often supports: root.state("zoomed")
+    # - Some Linux window managers support: root.attributes("-zoomed", True)
+    # If neither works, fall back to setting geometry to the screen size.
+    try:
+        root.state("zoomed")
+    except Exception:
+        try:
+            root.attributes("-zoomed", True)
+        except Exception:
+            try:
+                w = root.winfo_screenwidth()
+                h = root.winfo_screenheight()
+                root.geometry(f"{w}x{h}+0+0")
+            except Exception:
+                pass
 
     # Layout: left canvas, right controls.
-    canvas = tk.Canvas(root, width=520, height=520, bg="white", highlightthickness=1, highlightbackground="#ddd")
+    canvas = tk.Canvas(root, width=900, height=700, bg="white", highlightthickness=1, highlightbackground="#ddd")
     canvas.grid(row=0, column=0, rowspan=2, padx=10, pady=10, sticky="nsew")
 
     right = ttk.Frame(root)
@@ -256,9 +273,24 @@ def main() -> None:
     root.rowconfigure(0, weight=1)
 
     status = tk.StringVar(value="Ready.")
-    ttk.Label(right, textvariable=status, wraplength=360).grid(row=0, column=0, sticky="ew", pady=(0, 8))
+    SIDEBAR_FONT = ("Arial", 14)
+    SIDEBAR_FONT_BOLD = ("Arial", 14, "bold")
+    SIDEBAR_MONO = ("Courier", 12)
 
-    log = tk.Text(right, width=52, height=22)
+    # Make ttk buttons bigger/readable.
+    style = ttk.Style(root)
+    style.configure("Big.TButton", font=("Arial", 13, "bold"), padding=(14, 10))
+    style.configure("Choice.TButton", font=("Arial", 13), padding=(12, 9))
+
+    ttk.Label(
+        right,
+        textvariable=status,
+        wraplength=420,
+        font=SIDEBAR_FONT_BOLD,
+        justify="left",
+    ).grid(row=0, column=0, sticky="ew", pady=(0, 8))
+
+    log = tk.Text(right, width=52, height=22, font=SIDEBAR_MONO)
     log.grid(row=1, column=0, sticky="nsew")
     right.rowconfigure(1, weight=1)
 
@@ -271,9 +303,14 @@ def main() -> None:
 
     def cell_center(cell: str) -> Tuple[int, int]:
         c = gridlib.Cell.from_label(cell)
-        margin = 30
-        w = int(canvas["width"])
-        h = int(canvas["height"])
+        w = canvas.winfo_width()
+        h = canvas.winfo_height()
+        # During early init, winfo_* can be 1.
+        if w <= 2:
+            w = int(canvas["width"])
+        if h <= 2:
+            h = int(canvas["height"])
+        margin = max(18, int(min(w, h) * 0.06))
         cell_w = (w - 2 * margin) / 3.0
         cell_h = (h - 2 * margin) / 3.0
         cx = int(margin + (c.c + 0.5) * cell_w)
@@ -282,9 +319,13 @@ def main() -> None:
 
     def redraw() -> None:
         canvas.delete("all")
-        w = int(canvas["width"])
-        h = int(canvas["height"])
-        margin = 30
+        w = canvas.winfo_width()
+        h = canvas.winfo_height()
+        if w <= 2:
+            w = int(canvas["width"])
+        if h <= 2:
+            h = int(canvas["height"])
+        margin = max(18, int(min(w, h) * 0.06))
         # grid lines
         for i in range(4):
             x = margin + i * (w - 2 * margin) / 3.0
@@ -298,20 +339,98 @@ def main() -> None:
             canvas.create_text(cx - 55, cy - 55, text=cell, fill="#999", font=("Arial", 9))
 
         # objects
+        cell_w = (w - 2 * margin) / 3.0
+        cell_h = (h - 2 * margin) / 3.0
+
+        def cell_rect(cell: str) -> Tuple[float, float, float, float]:
+            c = gridlib.Cell.from_label(cell)
+            x0 = margin + c.c * cell_w
+            y0 = margin + c.r * cell_h
+            return x0, y0, x0 + cell_w, y0 + cell_h
+
+        objs_by_cell: Dict[str, List[Obj]] = defaultdict(list)
         for o in world.objects:
-            cx, cy = cell_center(o.cell)
-            r = 18
-            canvas.create_oval(cx - r, cy - r, cx + r, cy + r, outline="#333", width=2)
-            canvas.create_text(cx, cy + 30, text=o.label, fill="#111", font=("Arial", 10))
+            objs_by_cell[o.cell].append(o)
+
+        # Predefined layout points within a cell (normalized 0..1).
+        layout_pts: List[Tuple[float, float]] = [
+            (0.33, 0.33),
+            (0.66, 0.33),
+            (0.33, 0.66),
+            (0.66, 0.66),
+            (0.50, 0.33),
+            (0.50, 0.66),
+            (0.33, 0.50),
+            (0.66, 0.50),
+            (0.50, 0.50),
+        ]
+
+        for cell, objs in objs_by_cell.items():
+            x0, y0, x1, y1 = cell_rect(cell)
+            # Keep drawing stable but deterministic.
+            objs = sorted(objs, key=lambda oo: oo.id)
+
+            n = len(objs)
+            base_r = max(10, int(min(w, h) * 0.018))
+            r = max(7, int(base_r * (0.85 if n > 1 else 1.0)))
+
+            pts = layout_pts[: min(n, len(layout_pts))]
+            for i, o in enumerate(objs):
+                px, py = pts[i] if i < len(pts) else (0.5, 0.5)
+                cx = x0 + px * (x1 - x0)
+                cy = y0 + py * (y1 - y0)
+                canvas.create_oval(cx - r, cy - r, cx + r, cy + r, outline="#333", width=2)
+
+            # Render labels as a stacked list inside the cell so they don't overlap each other.
+            # Show at most 4, then summarize.
+            labels = [o.label for o in objs]
+            shown = labels[:4]
+            lines = [f"{i+1}) {lab}" for i, lab in enumerate(shown)]
+            if len(labels) > len(shown):
+                lines.append(f"+{len(labels) - len(shown)} more")
+            label_text = "\n".join(lines)
+            canvas.create_text(
+                x0 + 6,
+                y1 - 6,
+                text=label_text,
+                fill="#111",
+                anchor="sw",
+                font=("Arial", max(9, int(base_r * 0.55))),
+            )
 
         # gripper
         g = world.gripper_hist[-1]
         gx, gy = cell_center(g.cell)
-        r = 10
+        r = max(8, int(min(w, h) * 0.014))
         canvas.create_oval(gx - r, gy - r, gx + r, gy + r, fill="#1f77b4", outline="#1f77b4")
         dx, dy = _yaw_dir(g.yaw)
-        canvas.create_line(gx, gy, gx + int(dx * 24), gy + int(dy * 24), fill="#1f77b4", width=3)
-        canvas.create_text(gx, gy - 22, text=f"{g.yaw}/{g.z}", fill="#1f77b4", font=("Arial", 10, "bold"))
+        canvas.create_line(
+            gx,
+            gy,
+            gx + int(dx * (r * 2.4)),
+            gy + int(dy * (r * 2.4)),
+            fill="#1f77b4",
+            width=max(2, int(r * 0.35)),
+        )
+        canvas.create_text(
+            gx,
+            gy - int(r * 2.0),
+            text=f"{g.yaw}/{g.z}",
+            fill="#1f77b4",
+            font=("Arial", max(9, int(r * 0.9)), "bold"),
+        )
+
+    _redraw_after_id: Optional[str] = None
+
+    def schedule_redraw(_event: Any = None) -> None:
+        # Debounce rapid resize events.
+        nonlocal _redraw_after_id
+        if _redraw_after_id is not None:
+            try:
+                root.after_cancel(_redraw_after_id)
+            except Exception:
+                pass
+        _redraw_after_id = root.after(50, redraw)
 
     def clear_choices() -> None:
         for child in list(choices_frame.winfo_children()):
@@ -368,7 +487,12 @@ def main() -> None:
             push_assistant_dialog(text)
             # Render choices as buttons.
             for c in choices:
-                ttk.Button(choices_frame, text=c, command=lambda cc=c: on_choice_clicked(cc)).pack(fill="x", pady=2)
+                ttk.Button(
+                    choices_frame,
+                    text=c,
+                    command=lambda cc=c: on_choice_clicked(cc),
+                    style="Choice.TButton",
+                ).pack(fill="x", pady=3)
             return
 
         # Motion tools apply immediately.
@@ -436,10 +560,11 @@ def main() -> None:
 
     btns = ttk.Frame(root)
     btns.grid(row=1, column=1, padx=10, pady=(0, 10), sticky="ew")
-    ttk.Button(btns, text="Ask assistance", command=ask_assistance).pack(side="left", padx=(0, 8))
-    ttk.Button(btns, text="Reset", command=reset_env).pack(side="left")
+    ttk.Button(btns, text="Ask assistance", command=ask_assistance, style="Big.TButton").pack(side="left", padx=(0, 8))
+    ttk.Button(btns, text="Reset", command=reset_env, style="Big.TButton").pack(side="left")
 
     root.bind("<Key>", on_key)
+    canvas.bind("<Configure>", schedule_redraw)
     redraw()
     log_line(f"[info] backend={args.backend}")
     log_line("[info] Controls: arrows=move, q/e=yaw, w/s=z")
