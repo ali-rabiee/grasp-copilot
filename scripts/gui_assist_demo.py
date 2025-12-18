@@ -450,19 +450,135 @@ def main() -> None:
         memory["last_tool_calls"].append(tool)
         memory["last_tool_calls"] = memory["last_tool_calls"][-3:]
 
+    def _choice_to_user_content(choice_str: str) -> str:
+        """
+        Convert a clicked choice button label into a user content string consistent with the dataset:
+        - YES/NO prompts -> "YES"/"NO"
+        - numbered prompts -> "1", "2", ...
+        """
+        s = choice_str.strip()
+        # If the semantic label is YES/NO, always return YES/NO (even if it's "1) YES").
+        semantic = _strip_choice_label(s).strip().upper()
+        if semantic in {"YES", "NO"}:
+            return semantic
+        # Otherwise, if it's a numbered option like "3) mug", return the number.
+        if ")" in s:
+            prefix = s.split(")", 1)[0].strip()
+            if prefix.isdigit():
+                return prefix
+        # Fallback: return the label itself.
+        return _strip_choice_label(s)
+
+    def _apply_oracle_user_reply(user_content: str) -> None:
+        """
+        Advance the oracle state machine based on the last prompt context and a user reply.
+        This mirrors the transitions used by the dataset simulator so the oracle backend
+        behaves interactively in the GUI.
+        """
+        ctx = state.last_prompt_context or {}
+        t = ctx.get("type")
+
+        def set_selected_by_label(label: str) -> None:
+            for o in world.objects:
+                if o.label == label:
+                    state.selected_obj_id = o.id
+                    # Treat selection as the new goal, matching generator behavior.
+                    state.intended_obj_id = o.id
+                    return
+
+        if t == "intent_gate_candidates":
+            if user_content.upper() == "YES":
+                state.awaiting_choice = True
+                state.awaiting_intent_gate = False
+                state.pending_mode = "APPROACH"
+            else:
+                state.awaiting_intent_gate = False
+                state.awaiting_choice = False
+                state.awaiting_anything_else = True
+                state.pending_mode = None
+                state.selected_obj_id = None
+        elif t == "intent_gate_yaw":
+            if user_content.upper() == "YES":
+                state.awaiting_help = True
+                state.awaiting_intent_gate = False
+                state.pending_mode = "ALIGN_YAW"
+                obj_id = ctx.get("obj_id")
+                if isinstance(obj_id, str):
+                    state.selected_obj_id = obj_id
+            else:
+                state.awaiting_intent_gate = False
+                state.awaiting_help = False
+                state.awaiting_anything_else = True
+                state.pending_mode = None
+                state.selected_obj_id = None
+        elif t == "candidate_choice":
+            # user_content is expected to be a number string.
+            labels: List[str] = list(ctx.get("labels") or [])
+            if user_content.isdigit():
+                idx = int(user_content) - 1
+                if 0 <= idx < len(labels):
+                    set_selected_by_label(labels[idx])
+            state.awaiting_choice = False
+            state.awaiting_confirmation = False
+        elif t == "confirm":
+            obj_id = ctx.get("obj_id")
+            action = str(ctx.get("action") or "").upper()
+            if user_content.upper() == "YES" and isinstance(obj_id, str):
+                state.pending_action_obj_id = obj_id
+                state.selected_obj_id = obj_id
+                if action in {"APPROACH", "ALIGN_YAW"}:
+                    state.pending_mode = action
+            else:
+                # Reject: go to recovery.
+                state.pending_action_obj_id = None
+                state.pending_mode = None
+                state.selected_obj_id = None
+                state.awaiting_anything_else = True
+            state.awaiting_confirmation = False
+        elif t == "help":
+            obj_id = ctx.get("obj_id")
+            if user_content.upper() == "YES" and isinstance(obj_id, str):
+                state.pending_action_obj_id = obj_id
+                state.selected_obj_id = obj_id
+                state.pending_mode = "ALIGN_YAW"
+            else:
+                state.pending_action_obj_id = None
+                state.pending_mode = None
+                state.selected_obj_id = None
+                state.awaiting_anything_else = True
+            state.awaiting_help = False
+        elif t == "anything_else":
+            if user_content.upper() == "YES":
+                state.awaiting_mode_select = True
+                state.awaiting_anything_else = False
+            else:
+                state.terminate_episode = True
+                state.awaiting_anything_else = False
+        elif t == "mode_select":
+            # user_content is "1" or "2"
+            if user_content == "1":
+                state.pending_mode = "APPROACH"
+            elif user_content == "2":
+                state.pending_mode = "ALIGN_YAW"
+            state.awaiting_mode_select = False
+            state.awaiting_choice = True
+
+        # Consume the prompt context once applied.
+        state.last_prompt_context = None
+
     def on_choice_clicked(choice_str: str) -> None:
-        # Feed the chosen response back into memory in the same style as the dataset:
-        # - YES/NO prompts -> "YES"/"NO"
-        # - numbered prompts -> "1", "2", ...
-        if choice_str.strip().upper() in {"YES", "NO"}:
-            push_user_dialog(choice_str.strip().upper())
-        else:
-            # If it's "1) foo" style, store the index as a string (e.g. "1").
-            prefix = choice_str.split(")", 1)[0].strip()
-            push_user_dialog(prefix if prefix.isdigit() else _strip_choice_label(choice_str))
+        user_content = _choice_to_user_content(choice_str)
+        push_user_dialog(user_content)
+
+        if args.backend == "oracle":
+            _apply_oracle_user_reply(user_content)
+
         clear_choices()
         update_candidates()
         redraw()
+
+        # Auto-continue one step so the user immediately sees the next question/action.
+        ask_assistance()
 
     def ask_assistance() -> None:
         clear_choices()
