@@ -39,6 +39,25 @@ python scripts/inspect_data.py --file /tmp/grasp_chat.jsonl --mode chat --n 1
 
 Note: `python scripts/inspect_data.py --mode generator` expects different fields (`obs`, `dialog`) than the raw generator output; for raw generator inspection use `python -m data_generator.inspect_data`.
 
+### GUI playground (visual validation + interactive assistance)
+
+This opens a small white-canvas GUI where you can:
+- Move the gripper with the keyboard (arrows + yaw/z keys)
+- Click **Ask assistance** to query either the oracle backend or your HF model
+- Click a choice button to send the user response back into memory
+
+```bash
+conda activate talm
+python scripts/gui_assist_demo.py --backend oracle
+```
+
+HF backend (example):
+
+```bash
+conda activate talm
+python scripts/gui_assist_demo.py --backend hf --model_name Qwen/Qwen2.5-7B-Instruct --adapter_path outputs/qwen_lora
+```
+
 ## LLM fine-tuning + inference
 
 All commands must activate the `talm` environment first:
