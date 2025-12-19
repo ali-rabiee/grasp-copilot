@@ -220,6 +220,19 @@ class HFBackend(AssistantBackend):
             repair_messages = _build_messages("Return ONLY valid JSON for the previous answer.\n\nPrevious answer:\n" + raw1)
             raw2 = _generate_once(self._model, self._tok, repair_messages, self.cfg)
             out = json_loads_strict(raw2)
+
+        # Be tolerant of extra keys inside args (models sometimes emit additional metadata).
+        # For GUI usage, we strip to the minimal schema before validating.
+        if isinstance(out, dict):
+            tool = out.get("tool")
+            args = out.get("args")
+            if tool == "INTERACT" and isinstance(args, dict):
+                out = {
+                    "tool": "INTERACT",
+                    "args": {k: args.get(k) for k in ("kind", "text", "choices") if k in args},
+                }
+            elif tool in {"APPROACH", "ALIGN_YAW"} and isinstance(args, dict):
+                out = {"tool": tool, "args": {"obj": args.get("obj")}}
         validate_tool_call(out)
         return out
 
@@ -498,7 +511,11 @@ def main() -> None:
             child.destroy()
 
     def update_candidates() -> None:
-        memory["candidates"] = world.candidates(args.candidate_max_dist)
+        cands = world.candidates(args.candidate_max_dist)
+        ex = set(memory.get("excluded_obj_ids") or [])
+        if ex:
+            cands = [c for c in cands if c not in ex]
+        memory["candidates"] = cands
 
     def push_user_dialog(text: str) -> None:
         memory["past_dialogs"].append({"role": "user", "content": text})
@@ -529,6 +546,40 @@ def main() -> None:
                 return prefix
         # Fallback: return the label itself.
         return _strip_choice_label(s)
+
+    def _choice_to_user_content_hf(choice_str: str) -> str:
+        """
+        For HF backend, prefer semantic labels over numeric indices so the model can
+        condition on the user's choice without needing the GUI-only button mapping.
+        """
+        semantic = _strip_choice_label(choice_str).strip()
+        up = semantic.upper()
+        if up in {"YES", "NO"}:
+            return up
+        return semantic
+
+    def _apply_none_of_them_exclusion_from_last_prompt() -> None:
+        """
+        If the user clicked 'None of them', exclude the previously presented object options
+        (when we can resolve them to object ids).
+        """
+        last = memory.get("last_prompt") or {}
+        choices = list((last.get("choices") or [])) if isinstance(last, dict) else []
+        labels: List[str] = []
+        for c in choices:
+            lab = _strip_choice_label(str(c)).strip()
+            if lab.upper() in {"YES", "NO"} or lab.lower() == "none of them":
+                continue
+            labels.append(lab)
+        if not labels:
+            return
+        ex = set(memory.get("excluded_obj_ids") or [])
+        for lab in labels:
+            for o in world.objects:
+                if o.label == lab:
+                    ex.add(o.id)
+        memory["excluded_obj_ids"] = sorted(ex)
+        update_candidates()
 
     def _apply_oracle_user_reply(user_content: str) -> bool:
         """
@@ -677,13 +728,22 @@ def main() -> None:
         return auto_continue
 
     def on_choice_clicked(choice_str: str) -> None:
-        user_content = _choice_to_user_content(choice_str)
+        # Oracle backend expects number strings for option picks (matches generator),
+        # HF backend works better with semantic labels.
+        if args.backend == "hf":
+            user_content = _choice_to_user_content_hf(choice_str)
+        else:
+            user_content = _choice_to_user_content(choice_str)
+        log_line(f"[user] {user_content}")
         push_user_dialog(user_content)
 
         if args.backend == "oracle":
             auto_continue = _apply_oracle_user_reply(user_content)
         else:
             auto_continue = True
+            # For HF backend, maintain exclusions when user clicks "None of them".
+            if user_content.strip().lower() == "none of them":
+                _apply_none_of_them_exclusion_from_last_prompt()
 
         clear_choices()
         update_candidates()
@@ -716,6 +776,8 @@ def main() -> None:
             choices: Sequence[str] = tool_call["args"]["choices"]
             status.set(text)
             push_assistant_dialog(text)
+            # Store the last prompt + choices in memory for better interactive behavior.
+            memory["last_prompt"] = {"kind": tool_call["args"]["kind"], "text": text, "choices": list(choices)}
             # Render choices as buttons.
             for c in choices:
                 ttk.Button(
