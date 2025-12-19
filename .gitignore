@@ -3,3 +3,11 @@ __pycache__/
 .pytest_cache/
 .venv/
 outputs/
+data/
+logs/
+wandb/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
