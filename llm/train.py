@@ -27,6 +27,7 @@ class TrainArgs:
     output_dir: str = "outputs/lora"
     max_seq_length: int = 2048
     per_device_train_batch_size: int = 1
+    per_device_eval_batch_size: int = 1
     gradient_accumulation_steps: int = 8
     lr: float = 2e-4
     num_train_epochs: float = 1.0
@@ -36,6 +37,9 @@ class TrainArgs:
     use_4bit: bool = False
     seed: int = 0
     eval_steps: int = 200
+    eval_accumulation_steps: int = 1
+    prediction_loss_only: bool = True
+    disable_eval: bool = False
     save_steps: int = 200
     logging_steps: int = 20
     warmup_ratio: float = 0.03
@@ -125,7 +129,7 @@ def train_sft_lora(args: TrainArgs) -> None:
 
     train_ds = load_dataset("json", data_files=args.train_path, split="train")
     eval_ds = None
-    if args.valid_path:
+    if args.valid_path and not args.disable_eval:
         eval_ds = load_dataset("json", data_files=args.valid_path, split="train")
 
     def to_messages(batch):
@@ -171,11 +175,13 @@ def train_sft_lora(args: TrainArgs) -> None:
             raise RuntimeError("trl is required for SFT training") from e
 
     # Transformers renamed `evaluation_strategy` -> `eval_strategy` in newer versions.
-    # Keep compatibility across environments by trying the new kw first, then falling back.
+    # Also, different versions accept different TrainingArguments kwargs. We'll filter by
+    # the installed signature to keep compatibility.
     eval_strategy = "steps" if eval_ds is not None else "no"
-    targs_kwargs = dict(
+    targs_kwargs: Dict[str, Any] = dict(
         output_dir=args.output_dir,
         per_device_train_batch_size=args.per_device_train_batch_size,
+        per_device_eval_batch_size=args.per_device_eval_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         learning_rate=args.lr,
         num_train_epochs=args.num_train_epochs,
@@ -187,14 +193,30 @@ def train_sft_lora(args: TrainArgs) -> None:
         fp16=bool(torch.cuda.is_available() and not use_bf16),
         bf16=bool(torch.cuda.is_available() and use_bf16),
         remove_unused_columns=False,
+        # Reduce eval memory pressure: don't gather/store full logits unless needed.
+        prediction_loss_only=args.prediction_loss_only,
+        # Reduce eval host/GPU memory when eval sets are large.
+        eval_accumulation_steps=args.eval_accumulation_steps,
     )
     if eval_ds is not None:
         targs_kwargs["eval_steps"] = args.eval_steps
+
+    import inspect
+
+    ta_sig = inspect.signature(TrainingArguments.__init__)
+    filtered_targs_kwargs = {k: v for k, v in targs_kwargs.items() if k in ta_sig.parameters}
     try:
-        targs = TrainingArguments(eval_strategy=eval_strategy, **targs_kwargs)  # type: ignore[arg-type]
-    except TypeError:
-        # Older transformers
-        targs = TrainingArguments(evaluation_strategy=eval_strategy, **targs_kwargs)  # type: ignore[arg-type]
+        if "eval_strategy" in ta_sig.parameters:
+            targs = TrainingArguments(eval_strategy=eval_strategy, **filtered_targs_kwargs)  # type: ignore[arg-type]
+        else:
+            targs = TrainingArguments(evaluation_strategy=eval_strategy, **filtered_targs_kwargs)  # type: ignore[arg-type]
+    except TypeError as e:
+        # Fallback: in case of unexpected signature differences.
+        targs = TrainingArguments(output_dir=args.output_dir)  # type: ignore[arg-type]
+        raise RuntimeError(
+            "Could not construct TrainingArguments with the current transformers version. "
+            "Please report your transformers version and the CLI args you used."
+        ) from e
 
     # TRL's SFTTrainer API has changed across versions (tokenizer -> processing_class,
     # max_seq_length -> max_length, packing added/removed, etc). Build kwargs based on
@@ -295,6 +317,7 @@ def main() -> None:
     ap.add_argument("--output_dir", type=str, required=True)
     ap.add_argument("--max_seq_length", type=int, default=2048)
     ap.add_argument("--per_device_train_batch_size", type=int, default=1)
+    ap.add_argument("--per_device_eval_batch_size", type=int, default=1)
     ap.add_argument("--gradient_accumulation_steps", type=int, default=8)
     ap.add_argument("--lr", type=float, default=2e-4)
     ap.add_argument("--num_train_epochs", type=float, default=1.0)
@@ -304,6 +327,9 @@ def main() -> None:
     ap.add_argument("--use_4bit", action="store_true")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--eval_steps", type=int, default=200)
+    ap.add_argument("--eval_accumulation_steps", type=int, default=1)
+    ap.add_argument("--prediction_loss_only", action=argparse.BooleanOptionalAction, default=True)
+    ap.add_argument("--disable_eval", action="store_true", help="If set, ignore --valid_path and do not run evaluation during training.")
     ap.add_argument("--save_steps", type=int, default=200)
     ap.add_argument("--logging_steps", type=int, default=20)
     ap.add_argument("--warmup_ratio", type=float, default=0.03)
@@ -318,6 +344,7 @@ def main() -> None:
             output_dir=args.output_dir,
             max_seq_length=args.max_seq_length,
             per_device_train_batch_size=args.per_device_train_batch_size,
+            per_device_eval_batch_size=args.per_device_eval_batch_size,
             gradient_accumulation_steps=args.gradient_accumulation_steps,
             lr=args.lr,
             num_train_epochs=args.num_train_epochs,
@@ -327,6 +354,9 @@ def main() -> None:
             use_4bit=args.use_4bit,
             seed=args.seed,
             eval_steps=args.eval_steps,
+            eval_accumulation_steps=args.eval_accumulation_steps,
+            prediction_loss_only=args.prediction_loss_only,
+            disable_eval=args.disable_eval,
             save_steps=args.save_steps,
             logging_steps=args.logging_steps,
             warmup_ratio=args.warmup_ratio,
