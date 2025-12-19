@@ -20,6 +20,23 @@ def _deepcopy_memory(mem: Dict) -> Dict:
     }
 
 
+def _infer_user_mode_from_gripper_hist(gripper_hist: List[Dict]) -> str:
+    """
+    Infer an input mode from the last delta in gripper history.
+    Returns one of: translation | rotation | gripper
+    """
+    if len(gripper_hist) < 2:
+        return "translation"
+    a, b = gripper_hist[-2], gripper_hist[-1]
+    if a.get("cell") != b.get("cell"):
+        return "translation"
+    if a.get("yaw") != b.get("yaw"):
+        return "rotation"
+    if a.get("z") != b.get("z"):
+        return "gripper"
+    return "translation"
+
+
 def _strip_choice_label(choice: str) -> str:
     parts = choice.split(")", 1)
     return parts[1].strip() if len(parts) == 2 else choice.strip()
@@ -242,12 +259,15 @@ def _simulate_user_response(
 
 
 def _schema_validate_record(rec: Dict) -> None:
-    for k in ("episode_id", "t", "objects", "gripper_hist", "memory", "target_tool_call"):
+    for k in ("episode_id", "objects", "gripper_hist", "memory", "user_state", "target_tool_call"):
         if k not in rec:
             raise ValueError(f"Missing key: {k}")
     if len(rec["gripper_hist"]) != 6:
         raise ValueError("gripper_hist must have length 6")
     validate_tool_call(rec["target_tool_call"])
+    us = rec.get("user_state") or {}
+    if not isinstance(us, dict) or us.get("mode") not in {"translation", "rotation", "gripper"}:
+        raise ValueError("user_state.mode must be one of {translation, rotation, gripper}")
 
 
 def generate(
@@ -282,12 +302,13 @@ def generate(
                 break
             # Snapshot before choosing the tool call.
             memory["candidates"] = ep.gripper_candidates(max_dist=candidate_max_dist)
+            gripper_hist = [p.to_record() for p in ep.gripper_hist]
             record = {
                 "episode_id": episode_id,
-                "t": t,
                 "objects": [o.to_record() for o in ep.objects],
-                "gripper_hist": [p.to_record() for p in ep.gripper_hist],
+                "gripper_hist": gripper_hist,
                 "memory": _deepcopy_memory(memory),
+                "user_state": {"mode": _infer_user_mode_from_gripper_hist(gripper_hist)},
             }
 
             tool_call = oracle_decide_tool(record["objects"], record["gripper_hist"], memory, state)

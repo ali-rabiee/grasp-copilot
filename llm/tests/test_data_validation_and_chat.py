@@ -43,7 +43,6 @@ def test_convert_generator_jsonl_to_contract(tmp_path: Path):
         json.dumps(
             {
                 "episode_id": 1,
-                "t": 2,
                 "objects": [{"id": "o0", "label": "mug", "cell": "A1", "yaw": "N", "is_held": False}],
                 "gripper_hist": [
                     {"cell": "A1", "yaw": "N", "z": "MID"},
@@ -59,6 +58,7 @@ def test_convert_generator_jsonl_to_contract(tmp_path: Path):
                     "n_interactions": 1,
                     "last_tool_calls": ["INTERACT"],
                 },
+                "user_state": {"mode": "translation"},
                 "target_tool_call": {"tool": "APPROACH", "args": {"obj": "o0"}},
             }
         )

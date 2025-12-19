@@ -48,10 +48,13 @@ def _fmt_tool_call(tc: Dict[str, Any], max_text: int) -> str:
 
 def _episode_groups(rows: Sequence[Dict[str, Any]]) -> Dict[int, List[Dict[str, Any]]]:
     eps: DefaultDict[int, List[Dict[str, Any]]] = defaultdict(list)
-    for r in rows:
+    for i, r in enumerate(rows):
+        # Preserve file order as a fallback turn index when `t` is not present.
+        if isinstance(r, dict) and "_idx" not in r:
+            r["_idx"] = i
         eps[int(r["episode_id"])].append(r)
     for ep_id in list(eps.keys()):
-        eps[ep_id].sort(key=lambda x: int(x["t"]))
+        eps[ep_id].sort(key=lambda x: int(x.get("t", x.get("_idx", 0))))
     return dict(eps)
 
 
@@ -157,12 +160,12 @@ def _print_episode(
     print("tool_counts:", dict(tool_counts))
 
     for r in ep_rows:
-        t = int(r["t"])
+        t = int(r.get("t", r.get("_idx", 0)))
         if max_t is not None and t > max_t:
             break
 
         tc = r.get("target_tool_call", {})
-        line = f"t={t:02d}  {_fmt_tool_call(tc, max_text=max_text)}"
+        line = f"turn={t:02d}  {_fmt_tool_call(tc, max_text=max_text)}"
         print(line)
 
         if show_gripper:

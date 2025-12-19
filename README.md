@@ -19,7 +19,7 @@ python -m data_generator.generate_dataset --episodes 1000 --seed 0 --out /tmp/gr
 
 ### Inspect the raw generator dataset (recommended for `/tmp/grasp_gen.jsonl`)
 
-The generator records contain keys like `episode_id`, `t`, `objects`, `gripper_hist`, `memory`, `target_tool_call`.
+The generator records contain keys like `episode_id`, `objects`, `gripper_hist`, `memory`, `user_state`, `target_tool_call`.
 
 ```bash
 conda activate talm

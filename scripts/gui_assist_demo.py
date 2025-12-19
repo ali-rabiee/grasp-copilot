@@ -196,6 +196,7 @@ def _build_input(world: GridWorld, memory: Dict[str, Any]) -> Dict[str, Any]:
         "objects": [o.to_record() for o in world.objects],
         "gripper_hist": [p.to_record() for p in world.gripper_hist],
         "memory": memory,
+        "user_state": memory.get("user_state", {"mode": "translation"}),
     }
 
 
@@ -228,6 +229,7 @@ def main() -> None:
             "candidates": [],
             "last_tool_calls": [],
             "excluded_obj_ids": [],
+            "user_state": {"mode": "translation"},
         }
         mem["candidates"] = w.candidates(args.candidate_max_dist)
         return w, st, mem
@@ -708,23 +710,31 @@ def main() -> None:
         c = gridlib.Cell.from_label(g.cell)
         if key == "Left":
             nc = gridlib.Cell(c.r, max(0, c.c - 1)).to_label()
+            memory["user_state"] = {"mode": "translation"}
             move_gripper_to(nc)
         elif key == "Right":
             nc = gridlib.Cell(c.r, min(2, c.c + 1)).to_label()
+            memory["user_state"] = {"mode": "translation"}
             move_gripper_to(nc)
         elif key == "Up":
             nc = gridlib.Cell(max(0, c.r - 1), c.c).to_label()
+            memory["user_state"] = {"mode": "translation"}
             move_gripper_to(nc)
         elif key == "Down":
             nc = gridlib.Cell(min(2, c.r + 1), c.c).to_label()
+            memory["user_state"] = {"mode": "translation"}
             move_gripper_to(nc)
         elif key in {"q", "Q"}:
+            memory["user_state"] = {"mode": "rotation"}
             rotate_yaw(-1)
         elif key in {"e", "E"}:
+            memory["user_state"] = {"mode": "rotation"}
             rotate_yaw(+1)
         elif key in {"w", "W"}:
+            memory["user_state"] = {"mode": "gripper"}
             change_z(-1)
         elif key in {"s", "S"}:
+            memory["user_state"] = {"mode": "gripper"}
             change_z(+1)
 
     btns = ttk.Frame(root)

@@ -16,9 +16,10 @@ def test_generated_jsonl_schema(tmp_path: Path):
     with out.open("r", encoding="utf-8") as f:
         for line in f:
             rec = json.loads(line)
-            assert set(rec.keys()) == {"episode_id", "t", "objects", "gripper_hist", "memory", "target_tool_call"}
+            assert set(rec.keys()) == {"episode_id", "objects", "gripper_hist", "memory", "user_state", "target_tool_call"}
             assert len(rec["gripper_hist"]) == 6
             validate_tool_call(rec["target_tool_call"])
+            assert rec["user_state"]["mode"] in {"translation", "rotation", "gripper"}
 
             grip_cell = rec["gripper_hist"][-1]["cell"]
             for cid in rec["memory"]["candidates"]:
