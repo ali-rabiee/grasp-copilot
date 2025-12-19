@@ -65,6 +65,9 @@ def _load_model_and_tokenizer(args: TrainArgs):
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
 
+    # Prefer bf16 when supported; otherwise fall back to fp16 on CUDA.
+    use_bf16 = bool(torch.cuda.is_available() and getattr(torch.cuda, "is_bf16_supported", lambda: False)())
+
     quant_cfg = None
     if args.use_4bit:
         try:
@@ -74,7 +77,8 @@ def _load_model_and_tokenizer(args: TrainArgs):
                 load_in_4bit=True,
                 bnb_4bit_quant_type="nf4",
                 bnb_4bit_use_double_quant=True,
-                bnb_4bit_compute_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float16,
+                # IMPORTANT: If we use bf16 compute, we must NOT enable fp16 GradScaler in Trainer.
+                bnb_4bit_compute_dtype=torch.bfloat16 if use_bf16 else (torch.float16 if torch.cuda.is_available() else torch.float16),
             )
         except Exception as e:
             raise RuntimeError("use_4bit requires bitsandbytes + BitsAndBytesConfig") from e
@@ -105,6 +109,9 @@ def train_sft_lora(args: TrainArgs) -> None:
     from datasets import load_dataset
     from peft import get_peft_model, prepare_model_for_kbit_training  # type: ignore[import]
     from transformers import TrainingArguments
+
+    import torch
+    use_bf16 = bool(torch.cuda.is_available() and getattr(torch.cuda, "is_bf16_supported", lambda: False)())
 
     model, tok = _load_model_and_tokenizer(args)
 
@@ -176,8 +183,9 @@ def train_sft_lora(args: TrainArgs) -> None:
         logging_steps=args.logging_steps,
         warmup_ratio=args.warmup_ratio,
         report_to=args.report_to,
-        fp16=True,
-        bf16=False,
+        # IMPORTANT: don't run fp16 GradScaler on bf16 tensors (can crash during unscale/clip).
+        fp16=bool(torch.cuda.is_available() and not use_bf16),
+        bf16=bool(torch.cuda.is_available() and use_bf16),
         remove_unused_columns=False,
     )
     if eval_ds is not None:
