@@ -17,6 +17,7 @@ def _deepcopy_memory(mem: Dict) -> Dict:
         "candidates": list(mem["candidates"]),
         "last_tool_calls": list(mem["last_tool_calls"]),
         "excluded_obj_ids": list(mem.get("excluded_obj_ids") or []),
+        "last_action": dict(mem.get("last_action") or {}),
     }
 
 
@@ -150,8 +151,9 @@ def _simulate_user_response(
             if ctx.get("type") == "intent_gate_candidates":
                 state.awaiting_choice = True
                 state.awaiting_intent_gate = False
-                # Default mode here is APPROACH (clarifying grasp candidates).
-                state.pending_mode = "APPROACH"
+                # Set pending mode based on the prompt's implied action (translation vs rotation).
+                action = str(ctx.get("action") or "APPROACH").upper()
+                state.pending_mode = action if action in {"APPROACH", "ALIGN_YAW"} else "APPROACH"
             else:
                 # Yaw struggle intent accepted: ask if user wants help.
                 state.awaiting_help = True
@@ -295,6 +297,7 @@ def generate(
             "candidates": ep.gripper_candidates(max_dist=candidate_max_dist),
             "last_tool_calls": [],
             "excluded_obj_ids": [],
+            "last_action": {},
         }
 
         for t in range(ep.T):
@@ -311,7 +314,13 @@ def generate(
                 "user_state": {"mode": _infer_user_mode_from_gripper_hist(gripper_hist)},
             }
 
-            tool_call = oracle_decide_tool(record["objects"], record["gripper_hist"], memory, state)
+            tool_call = oracle_decide_tool(
+                record["objects"],
+                record["gripper_hist"],
+                memory,
+                state,
+                user_state=record["user_state"],
+            )
             validate_tool_call(tool_call)
             record["target_tool_call"] = tool_call
             _schema_validate_record(record)
@@ -332,6 +341,8 @@ def generate(
 
             # Apply tool effects then simulate teleop toward intent.
             ep.apply_tool(tool_call)
+            if tool_call["tool"] in {"APPROACH", "ALIGN_YAW"}:
+                memory["last_action"] = {"tool": tool_call["tool"], "obj": tool_call["args"]["obj"]}
             if t < ep.T - 1:
                 # If the assistant executed a non-interactive tool, the human is less likely
                 # to keep fighting the motion on the very next step. This reduces unrealistic

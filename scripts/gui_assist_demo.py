@@ -176,7 +176,13 @@ class AssistantBackend:
 
 class OracleBackend(AssistantBackend):
     def predict(self, input_blob: Dict[str, Any], *, world: GridWorld, state: OracleState) -> Dict[str, Any]:
-        return oracle_decide_tool(input_blob["objects"], input_blob["gripper_hist"], input_blob["memory"], state)
+        return oracle_decide_tool(
+            input_blob["objects"],
+            input_blob["gripper_hist"],
+            input_blob["memory"],
+            state,
+            user_state=input_blob.get("user_state"),
+        )
 
 
 class HFBackend(AssistantBackend):
@@ -229,6 +235,7 @@ def main() -> None:
             "candidates": [],
             "last_tool_calls": [],
             "excluded_obj_ids": [],
+            "last_action": {},
             "user_state": {"mode": "translation"},
         }
         mem["candidates"] = w.candidates(args.candidate_max_dist)
@@ -289,6 +296,7 @@ def main() -> None:
     style = ttk.Style(root)
     style.configure("Big.TButton", font=("Arial", 13, "bold"), padding=(14, 10))
     style.configure("Choice.TButton", font=("Arial", 13), padding=(12, 9))
+    style.configure("Mode.TRadiobutton", font=("Arial", 12), padding=(6, 4))
 
     ttk.Label(
         right,
@@ -296,14 +304,30 @@ def main() -> None:
         wraplength=420,
         font=SIDEBAR_FONT_BOLD,
         justify="left",
-    ).grid(row=0, column=0, sticky="ew", pady=(0, 8))
+    ).grid(row=0, column=0, sticky="ew", pady=(0, 10))
+
+    # Explicit user input mode selector (matches user_state.mode).
+    mode_var = tk.StringVar(value=str((memory.get("user_state") or {}).get("mode") or "translation"))
+
+    def set_mode(mode: str) -> None:
+        if mode not in {"translation", "rotation", "gripper"}:
+            mode = "translation"
+        mode_var.set(mode)
+        memory["user_state"] = {"mode": mode}
+        status.set(f"Mode: {mode}")
+
+    mode_box = ttk.LabelFrame(right, text="Input mode")
+    mode_box.grid(row=1, column=0, sticky="ew", pady=(0, 10))
+    ttk.Radiobutton(mode_box, text="Translation (move)", value="translation", variable=mode_var, style="Mode.TRadiobutton", command=lambda: set_mode("translation")).pack(anchor="w")
+    ttk.Radiobutton(mode_box, text="Rotation (yaw)", value="rotation", variable=mode_var, style="Mode.TRadiobutton", command=lambda: set_mode("rotation")).pack(anchor="w")
+    ttk.Radiobutton(mode_box, text="Gripper (open/close)", value="gripper", variable=mode_var, style="Mode.TRadiobutton", command=lambda: set_mode("gripper")).pack(anchor="w")
 
     log = tk.Text(right, width=52, height=22, font=SIDEBAR_MONO)
-    log.grid(row=1, column=0, sticky="nsew")
-    right.rowconfigure(1, weight=1)
+    log.grid(row=2, column=0, sticky="nsew")
+    right.rowconfigure(2, weight=1)
 
     choices_frame = ttk.Frame(right)
-    choices_frame.grid(row=2, column=0, sticky="ew", pady=(8, 0))
+    choices_frame.grid(row=3, column=0, sticky="ew", pady=(10, 0))
 
     def log_line(s: str) -> None:
         log.insert("end", s + "\n")
@@ -493,6 +517,7 @@ def main() -> None:
             memory["past_dialogs"] = []
             memory["last_tool_calls"] = []
             memory["excluded_obj_ids"] = []
+            memory["last_action"] = {}
             update_candidates()
             state.intended_obj_id = world.intended_obj_id
             state.selected_obj_id = None
@@ -521,7 +546,8 @@ def main() -> None:
             if user_content.upper() == "YES":
                 state.awaiting_choice = True
                 state.awaiting_intent_gate = False
-                state.pending_mode = "APPROACH"
+                action = str(ctx.get("action") or "APPROACH").upper()
+                state.pending_mode = action if action in {"APPROACH", "ALIGN_YAW"} else "APPROACH"
             else:
                 state.awaiting_intent_gate = False
                 state.awaiting_choice = False
@@ -638,6 +664,8 @@ def main() -> None:
     def ask_assistance() -> None:
         clear_choices()
         update_candidates()
+        # Ensure the sent user_state matches the selected mode.
+        memory["user_state"] = {"mode": mode_var.get()}
         input_blob = _build_input(world, memory)
         try:
             tool_call = backend.predict(input_blob, world=world, state=state)
@@ -669,6 +697,8 @@ def main() -> None:
         # Motion tools apply immediately.
         status.set(f"Executing: {tool_call['tool']}({tool_call['args']})")
         world.apply_tool(tool_call)
+        if tool_call["tool"] in {"APPROACH", "ALIGN_YAW"}:
+            memory["last_action"] = {"tool": tool_call["tool"], "obj": tool_call["args"]["obj"]}
         update_candidates()
         redraw()
 
@@ -708,33 +738,49 @@ def main() -> None:
         key = getattr(event, "keysym", "")
         g = world.gripper_hist[-1]
         c = gridlib.Cell.from_label(g.cell)
-        if key == "Left":
-            nc = gridlib.Cell(c.r, max(0, c.c - 1)).to_label()
-            memory["user_state"] = {"mode": "translation"}
-            move_gripper_to(nc)
-        elif key == "Right":
-            nc = gridlib.Cell(c.r, min(2, c.c + 1)).to_label()
-            memory["user_state"] = {"mode": "translation"}
-            move_gripper_to(nc)
-        elif key == "Up":
-            nc = gridlib.Cell(max(0, c.r - 1), c.c).to_label()
-            memory["user_state"] = {"mode": "translation"}
-            move_gripper_to(nc)
-        elif key == "Down":
-            nc = gridlib.Cell(min(2, c.r + 1), c.c).to_label()
-            memory["user_state"] = {"mode": "translation"}
-            move_gripper_to(nc)
-        elif key in {"q", "Q"}:
-            memory["user_state"] = {"mode": "rotation"}
+        if key in {"1", "2", "3"}:
+            set_mode({"1": "translation", "2": "rotation", "3": "gripper"}[key])
+            return
+
+        mode = mode_var.get()
+        if key in {"Left", "Right", "Up", "Down"}:
+            if mode == "translation":
+                if key == "Left":
+                    nc = gridlib.Cell(c.r, max(0, c.c - 1)).to_label()
+                elif key == "Right":
+                    nc = gridlib.Cell(c.r, min(2, c.c + 1)).to_label()
+                elif key == "Up":
+                    nc = gridlib.Cell(max(0, c.r - 1), c.c).to_label()
+                else:  # Down
+                    nc = gridlib.Cell(min(2, c.r + 1), c.c).to_label()
+                move_gripper_to(nc)
+            elif mode == "rotation":
+                # Rotate yaw with arrows (left=CCW, right=CW). Up/Down also rotate for convenience.
+                if key in {"Left", "Down"}:
+                    rotate_yaw(-1)
+                else:
+                    rotate_yaw(+1)
+            else:  # gripper
+                # Open/close gripper with arrows (up=open -> HIGH, down=close -> LOW).
+                if key == "Up":
+                    change_z(-1)
+                elif key == "Down":
+                    change_z(+1)
+                # Left/Right no-op in gripper mode.
+            return
+
+        # Keep the legacy hotkeys as shortcuts (also set mode accordingly).
+        if key in {"q", "Q"}:
+            set_mode("rotation")
             rotate_yaw(-1)
         elif key in {"e", "E"}:
-            memory["user_state"] = {"mode": "rotation"}
+            set_mode("rotation")
             rotate_yaw(+1)
         elif key in {"w", "W"}:
-            memory["user_state"] = {"mode": "gripper"}
+            set_mode("gripper")
             change_z(-1)
         elif key in {"s", "S"}:
-            memory["user_state"] = {"mode": "gripper"}
+            set_mode("gripper")
             change_z(+1)
 
     btns = ttk.Frame(root)
@@ -746,7 +792,8 @@ def main() -> None:
     canvas.bind("<Configure>", schedule_redraw)
     redraw()
     log_line(f"[info] backend={args.backend}")
-    log_line("[info] Controls: arrows=move, q/e=yaw, w/s=z")
+    log_line("[info] Modes: 1=translation, 2=rotation, 3=gripper")
+    log_line("[info] Controls: arrows act in current mode; q/e rotate; w/s open/close")
     root.mainloop()
 
 
