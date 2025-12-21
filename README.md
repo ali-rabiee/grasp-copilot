@@ -17,6 +17,20 @@ python -m data_generator.generate_dataset --episodes 1000 --seed 0 --out /tmp/gr
 # also writes: /tmp/grasp_gen.jsonl.stats.json
 ```
 
+### One-shot: collect (scripted) + prepare LLM training data
+
+This runs the scripted generator and immediately produces both the dataset-contract JSONL and
+Qwen chat JSONL for training.
+
+```bash
+conda activate talm
+python -m data_generator.collect_and_prepare --episodes 1000 --seed 0 --out_dir /tmp/grasp_run
+# writes:
+#   /tmp/grasp_run/grasp_gen.jsonl (+ .stats.json)
+#   /tmp/grasp_run/llm_contract.jsonl
+#   /tmp/grasp_run/llm_chat.jsonl
+```
+
 ### Inspect the raw generator dataset (recommended for `/tmp/grasp_gen.jsonl`)
 
 The generator records contain keys like `episode_id`, `objects`, `gripper_hist`, `memory`, `user_state`, `target_tool_call`.
