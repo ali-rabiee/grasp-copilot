@@ -38,7 +38,8 @@ from llm.inference import InferenceConfig, generate_json_only
 
 INSTRUCTION = (
     "Given the robot observation and dialog context, infer the user's intent and "
-    "emit exactly one tool call. Output ONLY the tool call JSON with keys tool and args."
+    "emit exactly one tool call. Output ONLY the tool call JSON with keys tool and args. "
+    "If the tool is INTERACT, you must output at most 5 choices total."
 )
 
 

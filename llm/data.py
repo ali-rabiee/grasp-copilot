@@ -114,7 +114,8 @@ def convert_generator_jsonl_to_contract(
     if instruction is None:
         instruction = (
             "Given the robot observation and dialog context, infer the user's intent and "
-            "emit exactly one tool call. Output ONLY the tool call JSON with keys tool and args."
+            "emit exactly one tool call. Output ONLY the tool call JSON with keys tool and args. "
+            "If the tool is INTERACT, you must output at most 5 choices total."
         )
 
     rows: List[Dict] = []

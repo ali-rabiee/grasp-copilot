@@ -9,6 +9,9 @@ from . import yaw as yawlib
 
 UserState = Dict[str, str]  # expects {"mode": "translation"|"rotation"|"gripper"}
 
+# Hard constraint used for both dataset generation and inference-time validation.
+MAX_INTERACT_CHOICES = 5
+
 @dataclass
 class OracleState:
     intended_obj_id: str
@@ -498,6 +501,8 @@ def validate_tool_call(tool_call: Dict) -> None:
         choices = args["choices"]
         if not isinstance(choices, list) or not choices or not all(isinstance(c, str) for c in choices):
             raise ValueError("INTERACT.choices must be a non-empty list of strings")
+        if len(choices) > MAX_INTERACT_CHOICES:
+            raise ValueError(f"INTERACT.choices must have <= {MAX_INTERACT_CHOICES} items")
         for c in choices:
             prefix = c.split(")", 1)[0]
             if not prefix.isdigit():

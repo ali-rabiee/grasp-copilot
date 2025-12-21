@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from peft import get_peft_model, prepare_model_for_kbit_training  # type: ignore[import]
 
 
-DEFAULT_MODEL = "Qwen/Qwen2.5-7B-Instruct"
+DEFAULT_MODEL = "Qwen/Qwen3-0.6B"
 
 
 @dataclass(frozen=True, slots=True)
@@ -24,7 +24,7 @@ class TrainArgs:
     model_name: str = DEFAULT_MODEL
     train_path: str = ""
     valid_path: Optional[str] = None
-    output_dir: str = "outputs/lora"
+    output_dir: str = "models/lora"
     # NOTE: 2048 can OOM on ~16GB GPUs depending on model + eval settings.
     # 1024 is a safer default; you can still pass --max_seq_length 2048 explicitly.
     max_seq_length: int = 1024
@@ -350,7 +350,7 @@ def main() -> None:
     ap.add_argument("--prediction_loss_only", action=argparse.BooleanOptionalAction, default=True)
     ap.add_argument("--disable_eval", action="store_true", help="If set, ignore --valid_path and do not run evaluation during training.")
     ap.add_argument("--save_strategy", type=str, default="no", choices=["no", "steps", "epoch"])
-    ap.add_argument("--save_steps", type=int, default=200)
+    ap.add_argument("--save_steps", type=int, default=500)
     ap.add_argument("--save_only_model", action=argparse.BooleanOptionalAction, default=True)
     ap.add_argument("--save_total_limit", type=int, default=2)
     ap.add_argument("--logging_steps", type=int, default=20)
