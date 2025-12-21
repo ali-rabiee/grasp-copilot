@@ -143,7 +143,10 @@ def _load_model_and_tokenizer(args: TrainArgs):
                 bnb_4bit_compute_dtype=torch.bfloat16 if use_bf16 else (torch.float16 if torch.cuda.is_available() else torch.float16),
             )
         except Exception as e:
-            raise RuntimeError("use_4bit requires bitsandbytes + BitsAndBytesConfig") from e
+            raise RuntimeError(
+                "use_4bit (QLoRA) requires bitsandbytes. Install it (e.g. `pip install bitsandbytes`) "
+                "or disable 4-bit with `--no-use_4bit`."
+            ) from e
 
     model = AutoModelForCausalLM.from_pretrained(
         args.model_name,
