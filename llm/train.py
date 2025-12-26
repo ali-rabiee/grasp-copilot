@@ -59,6 +59,7 @@ class TrainArgs:
     logging_steps: int = 20
     warmup_ratio: float = 0.03
     report_to: str = "none"
+    resume_from_checkpoint: Optional[str] = None
 
 
 def _model_slug(model_name: str) -> str:
@@ -324,7 +325,17 @@ def train_sft_lora(args: TrainArgs) -> None:
     sft_kwargs = {k: v for k, v in candidate_kwargs.items() if k in sig.parameters}
 
     trainer = SFTTrainer(**sft_kwargs)  # type: ignore[call-arg]
-    trainer.train()
+    if args.resume_from_checkpoint:
+        # TRL/Transformers APIs vary a bit; be defensive.
+        import inspect
+
+        train_sig = inspect.signature(trainer.train)
+        if "resume_from_checkpoint" in train_sig.parameters:
+            trainer.train(resume_from_checkpoint=args.resume_from_checkpoint)
+        else:
+            trainer.train()
+    else:
+        trainer.train()
 
     model.save_pretrained(args.output_dir)
     tok.save_pretrained(args.output_dir)
@@ -415,6 +426,15 @@ def main() -> None:
     ap.add_argument("--warmup_ratio", type=float, default=0.03)
     ap.add_argument("--report_to", type=str, default="none")
     ap.add_argument(
+        "--resume_from_checkpoint",
+        type=str,
+        default=None,
+        help=(
+            "Path to a checkpoint directory to resume training. "
+            "To create checkpoints, set --save_strategy steps|epoch (and --save_steps for steps)."
+        ),
+    )
+    ap.add_argument(
         "--merge_at_end",
         action=argparse.BooleanOptionalAction,
         default=True,
@@ -464,6 +484,7 @@ def main() -> None:
             logging_steps=args.logging_steps,
             warmup_ratio=args.warmup_ratio,
             report_to=args.report_to,
+            resume_from_checkpoint=args.resume_from_checkpoint,
         )
     )
 
