@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     # Optional dependency; imported at runtime only when adapter_path is provided.
@@ -41,7 +41,7 @@ def _load_model_and_tokenizer(cfg: InferenceConfig):
         tok.pad_token = tok.eos_token
 
     quant_cfg = None
-    device_map = None
+    device_map = "auto" if torch.cuda.is_available() else None
     if cfg.use_4bit:
         # Optional dependency; only required for 4-bit inference.
         try:
@@ -53,17 +53,30 @@ def _load_model_and_tokenizer(cfg: InferenceConfig):
                 bnb_4bit_use_double_quant=True,
                 bnb_4bit_compute_dtype=torch.bfloat16 if (torch.cuda.is_available() and getattr(torch.cuda, "is_bf16_supported", lambda: False)()) else torch.float16,
             )
-            device_map = "auto"
         except Exception as e:
             raise RuntimeError("use_4bit inference requires bitsandbytes + transformers BitsAndBytesConfig") from e
 
-    model = AutoModelForCausalLM.from_pretrained(
-        model_path,
-        trust_remote_code=True,
-        dtype="auto",
-        quantization_config=quant_cfg,
-        device_map=device_map,
-    )
+    # Prefer loading directly onto CUDA when available (fast inference in GUI).
+    # Some environments may not have `accelerate`, which is needed for device_map="auto".
+    try:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            trust_remote_code=True,
+            dtype="auto",
+            quantization_config=quant_cfg,
+            device_map=device_map,
+        )
+    except Exception:
+        # Fallback: load without device_map and move to CUDA if possible.
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            trust_remote_code=True,
+            dtype="auto",
+            quantization_config=quant_cfg,
+        )
+        if torch.cuda.is_available():
+            # Some transformer stubs confuse type checkers on `.to("cuda")`; cast to Any.
+            model = cast(Any, model).to("cuda")
 
     if cfg.adapter_path:
         from peft import PeftModel  # type: ignore[import]
