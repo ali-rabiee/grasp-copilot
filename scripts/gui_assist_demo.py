@@ -304,9 +304,32 @@ class HFBackend(AssistantBackend):
             tool = out.get("tool")
             args = out.get("args")
             if tool == "INTERACT" and isinstance(args, dict):
+                def _cap_and_renumber_choices(raw_choices: Any, max_total: int = 5) -> List[str]:
+                    if not isinstance(raw_choices, list):
+                        return []
+                    # Keep ordering, but ensure "None of them" (if present) is kept as the last choice.
+                    labels: List[str] = []
+                    none_label: Optional[str] = None
+                    for c in raw_choices:
+                        lab = _strip_choice_label(str(c)).strip()
+                        if lab.lower() == "none of them":
+                            none_label = "None of them"
+                        else:
+                            labels.append(lab)
+                    if none_label is not None:
+                        labels = labels[: max_total - 1] + [none_label]
+                    else:
+                        labels = labels[:max_total]
+                    return [f"{i+1}) {lab}" for i, lab in enumerate(labels)]
+
+                capped_choices = _cap_and_renumber_choices(args.get("choices"))
                 out = {
                     "tool": "INTERACT",
-                    "args": {k: args.get(k) for k in ("kind", "text", "choices") if k in args},
+                    "args": {
+                        "kind": args.get("kind"),
+                        "text": args.get("text"),
+                        "choices": capped_choices,
+                    },
                 }
             elif tool in {"APPROACH", "ALIGN_YAW"} and isinstance(args, dict):
                 out = {"tool": tool, "args": {"obj": args.get("obj")}}
@@ -788,6 +811,9 @@ def main() -> None:
             state.awaiting_help = False
         elif t == "anything_else":
             if user_content.upper() == "YES":
+                # Recovery: if the user repeatedly chose "None of them", they may have excluded
+                # all nearby candidates. Clear exclusions when restarting help flow.
+                memory["excluded_obj_ids"] = []
                 state.awaiting_mode_select = True
                 state.awaiting_anything_else = False
             else:

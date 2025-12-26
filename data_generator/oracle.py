@@ -314,23 +314,11 @@ def oracle_decide_tool(
         return _interact("QUESTION", text, choices, context, state)
 
     if state.awaiting_mode_select:
-        # If the user's current input mode strongly implies the kind of assistance they want,
-        # skip the mode-selection prompt and go straight to object selection.
-        if mode == "translation":
-            state.pending_mode = "APPROACH"
-            state.awaiting_mode_select = False
-            state.awaiting_choice = True
-        elif mode == "rotation":
-            state.pending_mode = "ALIGN_YAW"
-            state.awaiting_mode_select = False
-            state.awaiting_choice = True
-        else:
-            text = (
-                "Do you want help with approaching an object or aligning the gripper yaw to an object?"
-            )
-            choices = ["1) APPROACH", "2) ALIGN_YAW"]
-            context = {"type": "mode_select"}
-            return _interact("SUGGESTION", text, choices, context, state)
+        # Always ask explicitly. This improves consistency and avoids hidden branching based on mode.
+        text = "Do you want help with approaching an object or aligning the gripper yaw to an object?"
+        choices = ["1) APPROACH", "2) ALIGN_YAW"]
+        context = {"type": "mode_select"}
+        return _interact("SUGGESTION", text, choices, context, state)
 
     if state.awaiting_choice:
         ranked = _rank_candidates(objects, candidates, current_cell)
@@ -350,7 +338,15 @@ def oracle_decide_tool(
             else:
                 prompt = "Uh, which one do you want?"
             return _interact("QUESTION", prompt, choices, context, state)
+        # If we have no candidates to present (often due to exclusions from "None of them"),
+        # do NOT fall through to a motion tool. Instead, ask whether the user wants any
+        # other help. This avoids "surprising" autonomous actions.
         state.awaiting_choice = False
+        state.awaiting_anything_else = True
+        text = "Okay — none of those. Is there anything else I can help with?"
+        choices = ["1) YES", "2) NO"]
+        context = {"type": "anything_else"}
+        return _interact("QUESTION", text, choices, context, state)
 
     if state.awaiting_help:
         # Re-ask the help prompt if we are still in a yaw-struggle state.

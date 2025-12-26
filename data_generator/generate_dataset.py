@@ -173,6 +173,9 @@ def _simulate_user_response(
         resp = "YES" if rng.random() < 0.75 else "NO"
         append_user(resp)
         if resp == "YES":
+            # If the user said "None of them" repeatedly, they may have excluded all nearby objects.
+            # Clear exclusions to let the assistant restart the help flow cleanly.
+            memory["excluded_obj_ids"] = []
             state.awaiting_mode_select = True
             state.awaiting_anything_else = False
         else:
