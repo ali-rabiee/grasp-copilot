@@ -76,6 +76,9 @@ def _simulate_user_response(
     memory: Dict,
     state: OracleState,
     stats: Optional[Dict] = None,
+    *,
+    yes_p: float = 0.5,
+    none_of_them_p: float = 0.2,
 ) -> None:
     """
     Apply the user-simulation rules to update memory and oracle state.
@@ -123,9 +126,7 @@ def _simulate_user_response(
 
     if ctx.get("type") in {"confirm", "help"}:
         obj_id = ctx.get("obj_id")
-        aligns = obj_id == episode.intended_obj_id
-        yes_prob = 0.75 if aligns else 0.25
-        resp = "YES" if rng.random() < yes_prob else "NO"
+        resp = "YES" if rng.random() < float(yes_p) else "NO"
         append_user(resp)
         if resp == "YES" and obj_id:
             state.pending_action_obj_id = obj_id
@@ -159,13 +160,7 @@ def _simulate_user_response(
         inferred_obj_id = ctx.get("obj_id")
         intended = episode.intended_obj()
 
-        if inferred_obj_id:
-            aligns = inferred_obj_id == intended.id
-        else:
-            aligns = bool(inferred_labels) and intended.label in inferred_labels
-
-        yes_prob = 0.8 if aligns else 0.35
-        resp = "YES" if rng.random() < yes_prob else "NO"
+        resp = "YES" if rng.random() < float(yes_p) else "NO"
         append_user(resp)
         if resp == "YES":
             # Move to the next prompt: either object choice (candidates) or help confirm (yaw).
@@ -191,7 +186,7 @@ def _simulate_user_response(
             state.awaiting_anything_else = True
     elif ctx.get("type") == "anything_else":
         # If user says NO, end the episode early (no "NOOP" tool exists).
-        resp = "YES" if rng.random() < 0.75 else "NO"
+        resp = "YES" if rng.random() < float(yes_p) else "NO"
         append_user(resp)
         if resp == "YES":
             # If the user said "None of them" repeatedly, they may have excluded all nearby objects.
@@ -208,7 +203,8 @@ def _simulate_user_response(
         intended = episode.intended_obj()
         cur = episode.gripper_hist[-1]
         prefer = "APPROACH" if cur.cell != intended.cell else "ALIGN_YAW"
-        # Allow occasional mismatch to diversify data.
+        # If you want 50/50 here too, pass yes_p=0.5 and set prefer randomly.
+        # Keep intent-aligned preference by default but allow variety.
         if rng.random() < 0.15:
             prefer = "ALIGN_YAW" if prefer == "APPROACH" else "APPROACH"
         # Reply with semantic label (preferred for training).
@@ -229,9 +225,10 @@ def _simulate_user_response(
                     declined_label = o.label
                     break
 
-        # If the intended label is not in the current options (or we want to diversify),
-        # select "None of them" sometimes, and exclude these ids going forward.
-        if (labels and intended_label not in labels and rng.random() < 0.75) or (labels and rng.random() < 0.12):
+        # Balance object selection vs "None of them":
+        # - With probability none_of_them_p -> choose "None of them"
+        # - Otherwise choose an object label.
+        if labels and rng.random() < float(none_of_them_p):
             append_user("None of them")
             ex = set(memory.get("excluded_obj_ids") or [])
             for oid in obj_ids:
@@ -245,6 +242,7 @@ def _simulate_user_response(
 
         pick_label: Optional[str] = None
         if labels and intended_label in labels and rng.random() < 0.8:
+            # Still often pick the intended object to keep episodes coherent.
             if declined_label is not None and intended_label == declined_label and len(labels) >= 2 and rng.random() < 0.85:
                 others = [l for l in labels if l != declined_label]
                 pick_label = rng.choice(others) if others else intended_label
@@ -301,6 +299,8 @@ def generate(
     n_obj_max: int = 10,
     collision_p: float = 0.15,
     candidate_max_dist: int = 1,
+    user_yes_p: float = 0.5,
+    user_none_of_them_p: float = 0.2,
 ) -> Tuple[List[Dict], Dict]:
     rng = random.Random(seed)
     records: List[Dict] = []
@@ -364,7 +364,16 @@ def generate(
                 memory["n_interactions"] += 1
                 memory["past_dialogs"].append({"role": "assistant", "content": tool_call["args"]["text"]})
 
-            _simulate_user_response(rng, tool_call, ep, memory, state, stats=reply_stats)
+            _simulate_user_response(
+                rng,
+                tool_call,
+                ep,
+                memory,
+                state,
+                stats=reply_stats,
+                yes_p=float(user_yes_p),
+                none_of_them_p=float(user_none_of_them_p),
+            )
 
             # Maintain a short history of tool calls for memory logging.
             memory["last_tool_calls"].append(tool_call["tool"])
@@ -406,6 +415,18 @@ def main(argv: Optional[List[str]] = None) -> None:
     ap.add_argument("--n_obj_max", type=int, default=10)
     ap.add_argument("--collision_p", type=float, default=0.15)
     ap.add_argument("--candidate_max_dist", type=int, default=1)
+    ap.add_argument(
+        "--user_yes_p",
+        type=float,
+        default=0.5,
+        help="Simulated user YES probability for YES/NO prompts (target ~0.5 for balanced YES/NO).",
+    )
+    ap.add_argument(
+        "--user_none_of_them_p",
+        type=float,
+        default=0.2,
+        help="Simulated user probability of choosing 'None of them' on candidate-choice prompts (target ~0.2 for 80/20 object vs none).",
+    )
     args = ap.parse_args(argv)
 
     records, stats = generate(
@@ -415,6 +436,8 @@ def main(argv: Optional[List[str]] = None) -> None:
         n_obj_max=args.n_obj_max,
         collision_p=args.collision_p,
         candidate_max_dist=args.candidate_max_dist,
+        user_yes_p=float(args.user_yes_p),
+        user_none_of_them_p=float(args.user_none_of_them_p),
     )
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     write_jsonl(args.out, records)
