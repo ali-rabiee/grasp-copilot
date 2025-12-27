@@ -60,8 +60,14 @@ class TrainArgs:
     save_total_limit: int = 2
     logging_steps: int = 20
     warmup_ratio: float = 0.03
+    weight_decay: float = 0.0
+    max_grad_norm: float = 1.0
+    lr_scheduler_type: str = "cosine"
+    optim: str = "adamw_torch"
     report_to: str = "none"
     resume_from_checkpoint: Optional[str] = None
+    # Packing can hurt structured-output tasks by concatenating multiple dialogues into a single sample.
+    packing: bool = False
 
 
 def _model_slug(model_name: str) -> str:
@@ -275,6 +281,10 @@ def train_sft_lora(args: TrainArgs) -> None:
     # Also, different versions accept different TrainingArguments kwargs. We'll filter by
     # the installed signature to keep compatibility.
     eval_strategy = "steps" if eval_ds is not None else "no"
+    # Prefer a stable optimizer default for QLoRA.
+    optim = str(args.optim)
+    if bool(args.use_4bit) and args.optim == "adamw_torch":
+        optim = "paged_adamw_32bit"
     targs_kwargs: Dict[str, Any] = dict(
         output_dir=args.output_dir,
         per_device_train_batch_size=args.per_device_train_batch_size,
@@ -285,6 +295,10 @@ def train_sft_lora(args: TrainArgs) -> None:
         max_steps=args.max_steps,
         logging_steps=args.logging_steps,
         warmup_ratio=args.warmup_ratio,
+        weight_decay=args.weight_decay,
+        max_grad_norm=args.max_grad_norm,
+        lr_scheduler_type=args.lr_scheduler_type,
+        optim=optim,
         report_to=args.report_to,
         # IMPORTANT: don't run fp16 GradScaler on bf16 tensors (can crash during unscale/clip).
         fp16=bool(torch.cuda.is_available() and not use_bf16),
@@ -354,7 +368,7 @@ def train_sft_lora(args: TrainArgs) -> None:
 
     # Packing is optional and not supported in all versions.
     if "packing" in sig.parameters:
-        candidate_kwargs["packing"] = True
+        candidate_kwargs["packing"] = bool(args.packing)
 
     # Filter only kwargs supported by the installed TRL signature.
     sft_kwargs = {k: v for k, v in candidate_kwargs.items() if k in sig.parameters}
@@ -464,6 +478,15 @@ def main() -> None:
     ap.add_argument("--save_total_limit", type=int, default=2)
     ap.add_argument("--logging_steps", type=int, default=20)
     ap.add_argument("--warmup_ratio", type=float, default=0.03)
+    ap.add_argument("--weight_decay", type=float, default=0.0)
+    ap.add_argument("--max_grad_norm", type=float, default=1.0)
+    ap.add_argument("--lr_scheduler_type", type=str, default="cosine")
+    ap.add_argument(
+        "--optim",
+        type=str,
+        default="adamw_torch",
+        help="Optimizer name for transformers.TrainingArguments (e.g. paged_adamw_32bit for QLoRA).",
+    )
     ap.add_argument("--report_to", type=str, default="none")
     ap.add_argument(
         "--resume_from_checkpoint",
@@ -473,6 +496,12 @@ def main() -> None:
             "Path to a checkpoint directory to resume training. "
             "To create checkpoints, set --save_strategy steps|epoch (and --save_steps for steps)."
         ),
+    )
+    ap.add_argument(
+        "--packing",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Whether to enable TRL sample packing (usually worse for JSON tool-call outputs).",
     )
     ap.add_argument(
         "--merge_at_end",
@@ -533,8 +562,13 @@ def main() -> None:
             save_total_limit=args.save_total_limit,
             logging_steps=args.logging_steps,
             warmup_ratio=args.warmup_ratio,
+            weight_decay=args.weight_decay,
+            max_grad_norm=args.max_grad_norm,
+            lr_scheduler_type=args.lr_scheduler_type,
+            optim=args.optim,
             report_to=args.report_to,
             resume_from_checkpoint=args.resume_from_checkpoint,
+            packing=bool(args.packing),
         )
     )
 

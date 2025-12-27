@@ -11,7 +11,7 @@ from .oracle import OracleState, oracle_decide_tool, validate_tool_call
 
 
 def _deepcopy_memory(mem: Dict) -> Dict:
-    return {
+    out = {
         "n_interactions": int(mem["n_interactions"]),
         "past_dialogs": list(mem["past_dialogs"]),
         "candidates": list(mem["candidates"]),
@@ -19,6 +19,12 @@ def _deepcopy_memory(mem: Dict) -> Dict:
         "excluded_obj_ids": list(mem.get("excluded_obj_ids") or []),
         "last_action": dict(mem.get("last_action") or {}),
     }
+    # Optional-but-important training context: the last assistant prompt shown to the user
+    # (including the choice list). The GUI runtime also maintains this field.
+    last_prompt = mem.get("last_prompt")
+    if isinstance(last_prompt, dict):
+        out["last_prompt"] = dict(last_prompt)
+    return out
 
 
 def _infer_user_mode_from_gripper_hist(gripper_hist: List[Dict]) -> str:
@@ -329,6 +335,9 @@ def generate(
             "last_tool_calls": [],
             "excluded_obj_ids": [],
             "last_action": {},
+            # Store the last prompt (kind/text/choices + optional context) so the next-step
+            # decision is learnable without relying on hidden oracle state.
+            "last_prompt": {},
         }
 
         for t in range(ep.T):
@@ -363,6 +372,16 @@ def generate(
             if tool_call["tool"] == "INTERACT":
                 memory["n_interactions"] += 1
                 memory["past_dialogs"].append({"role": "assistant", "content": tool_call["args"]["text"]})
+                # Persist the full prompt + options (and oracle-provided context when available).
+                # This matches what the interactive GUI keeps in memory.
+                memory["last_prompt"] = {
+                    "kind": tool_call["args"].get("kind"),
+                    "text": tool_call["args"].get("text"),
+                    "choices": list(tool_call["args"].get("choices") or []),
+                    # Context is optional metadata that helps interpret user replies like "1"/"2"
+                    # and disambiguate prompt types (confirm vs help vs candidate_choice).
+                    "context": dict(state.last_prompt_context or {}),
+                }
 
             _simulate_user_response(
                 rng,

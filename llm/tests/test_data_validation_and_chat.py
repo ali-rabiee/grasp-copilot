@@ -57,6 +57,7 @@ def test_convert_generator_jsonl_to_contract(tmp_path: Path):
                     "candidates": ["o0"],
                     "n_interactions": 1,
                     "last_tool_calls": ["INTERACT"],
+                    "last_prompt": {"kind": "QUESTION", "text": "Which one?", "choices": ["1) mug"]},
                 },
                 "user_state": {"mode": "translation"},
                 "target_tool_call": {"tool": "APPROACH", "args": {"obj": "o0"}},

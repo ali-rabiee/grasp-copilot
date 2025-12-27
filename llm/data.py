@@ -103,6 +103,8 @@ def convert_generator_jsonl_to_contract(
     generator_path: str,
     out_path: str,
     instruction: Optional[str] = None,
+    *,
+    max_past_dialogs: int = 12,
 ) -> None:
     """
     Thin adapter to reuse the existing generator output.
@@ -124,12 +126,14 @@ def convert_generator_jsonl_to_contract(
             if k not in obj:
                 _fail(generator_path, line_no, f"Missing key: {k}")
         ex_id = f"{obj['episode_id']}_{line_no}"
-        input_blob = {
-            "objects": obj["objects"],
-            "gripper_hist": obj["gripper_hist"],
-            "memory": obj["memory"],
-            "user_state": obj["user_state"],
-        }
+        mem = obj["memory"]
+        # Reduce truncation noise: keep a short dialog window (most recent messages).
+        # This makes the supervised mapping more consistent at fixed max_seq_length.
+        if isinstance(mem, dict) and isinstance(mem.get("past_dialogs"), list) and int(max_past_dialogs) > 0:
+            mem = dict(mem)
+            mem["past_dialogs"] = list(mem.get("past_dialogs") or [])[-int(max_past_dialogs) :]
+
+        input_blob = {"objects": obj["objects"], "gripper_hist": obj["gripper_hist"], "memory": mem, "user_state": obj["user_state"]}
         output_obj = obj["target_tool_call"]
         if not isinstance(output_obj, dict):
             _fail(generator_path, line_no, "target_tool_call must be an object")
@@ -139,7 +143,8 @@ def convert_generator_jsonl_to_contract(
             {
                 "id": ex_id,
                 "instruction": instruction,
-                "input": json.dumps(input_blob, ensure_ascii=False),
+                # Compact JSON to reduce token count and avoid max_seq_length truncation.
+                "input": json.dumps(input_blob, ensure_ascii=False, separators=(",", ":")),
                 "output": output_str,
             }
         )

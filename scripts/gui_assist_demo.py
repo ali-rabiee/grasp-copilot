@@ -213,8 +213,8 @@ class HFBackend(AssistantBackend):
         def _filter_memory_for_model(mem: Any) -> Any:
             """
             Keep GUI inference input aligned with training schema.
-            Training uses memory keys: n_interactions, past_dialogs, candidates, last_tool_calls, excluded_obj_ids, last_action.
-            The GUI runtime may add extra keys (e.g., last_prompt/user_state) that the model never saw during training.
+            Training uses memory keys: n_interactions, past_dialogs, candidates, last_tool_calls, excluded_obj_ids, last_action, last_prompt.
+            The GUI runtime may add extra keys (e.g., user_state) that the model never saw during training.
             """
             if not isinstance(mem, dict):
                 return mem
@@ -225,6 +225,7 @@ class HFBackend(AssistantBackend):
                 "last_tool_calls",
                 "excluded_obj_ids",
                 "last_action",
+                "last_prompt",
             }
             return {k: mem.get(k) for k in keep if k in mem}
 

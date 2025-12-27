@@ -122,6 +122,7 @@ def main(argv: Optional[list[str]] = None) -> None:
         generator_path=generator_path,
         out_path=out_contract,
         instruction=args.instruction,
+        max_past_dialogs=12,
     )
     convert_contract_to_qwen_chat_jsonl(out_contract, out_chat)
 
