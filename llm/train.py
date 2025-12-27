@@ -30,6 +30,7 @@ class TrainArgs:
     train_path: str = ""
     valid_path: Optional[str] = None
     output_dir: str = "models/lora"
+    full_finetune: bool = False
     # NOTE: 2048 can OOM on ~16GB GPUs depending on model + eval settings.
     # 1024 is a safer default; you can still pass --max_seq_length 2048 explicitly.
     max_seq_length: int = 1024
@@ -96,6 +97,14 @@ def _default_output_dir(*, model_name: str, train_path: str, root: str = "models
     if run_id is not None:
         return os.path.join(root, f"{slug}_lora_{run_id}")
     return os.path.join(root, f"{slug}_lora")
+
+
+def _default_output_dir_ft(*, model_name: str, train_path: str, root: str = "models") -> str:
+    slug = _model_slug(model_name)
+    run_id = _extract_run_id_from_train_path(train_path)
+    if run_id is not None:
+        return os.path.join(root, f"{slug}_ft_{run_id}")
+    return os.path.join(root, f"{slug}_ft")
 
 
 def _default_merged_output_dir(*, model_name: str, train_path: str, root: str = "models") -> str:
@@ -174,7 +183,6 @@ def train_sft_lora(args: TrainArgs) -> None:
         data_lib.validate_dataset_contract_jsonl(args.valid_path)
 
     from datasets import load_dataset  # type: ignore[import]
-    from peft import get_peft_model, prepare_model_for_kbit_training  # type: ignore[import]
     from transformers import TrainingArguments
 
     import torch
@@ -182,13 +190,22 @@ def train_sft_lora(args: TrainArgs) -> None:
 
     model, tok = _load_model_and_tokenizer(args)
 
-    if args.use_4bit:
-        model = prepare_model_for_kbit_training(model)
-
     model.gradient_checkpointing_enable()
 
-    peft_cfg = _make_peft_config(args)
-    model = get_peft_model(model, peft_cfg)
+    if args.full_finetune:
+        if args.use_4bit:
+            raise RuntimeError("Full fine-tuning does not support --use_4bit. Use --no-use_4bit.")
+        # Train all parameters.
+        for p in model.parameters():
+            p.requires_grad = True
+    else:
+        from peft import get_peft_model, prepare_model_for_kbit_training  # type: ignore[import]
+
+        if args.use_4bit:
+            model = prepare_model_for_kbit_training(model)
+
+        peft_cfg = _make_peft_config(args)
+        model = get_peft_model(model, peft_cfg)
 
     train_ds = load_dataset("json", data_files=args.train_path, split="train")
     eval_ds = None
@@ -416,9 +433,14 @@ def main() -> None:
         type=str,
         default=None,
         help=(
-            "Where to write the LoRA adapter. If omitted, it is auto-derived from --train_path "
-            "as models/<model>_lora_<run_id> when training on data/runs/<run_id>/..."
+            "Where to write outputs. If omitted, it is auto-derived from --train_path as either "
+            "models/<model>_lora_<run_id> (default LoRA) or models/<model>_ft_<run_id> (--full_finetune)."
         ),
+    )
+    ap.add_argument(
+        "--full_finetune",
+        action="store_true",
+        help="Fine-tune the full network (no LoRA). Requires --no-use_4bit and much more VRAM.",
     )
     ap.add_argument("--max_seq_length", type=int, default=1024)
     ap.add_argument("--per_device_train_batch_size", type=int, default=1)
@@ -469,8 +491,17 @@ def main() -> None:
     )
     args = ap.parse_args()
 
-    output_dir = str(args.output_dir) if args.output_dir else _default_output_dir(model_name=args.model_name, train_path=args.train_path)
-    if args.output_dir is None:
+    if bool(args.full_finetune) and bool(args.use_4bit):
+        raise SystemExit("--full_finetune requires --no-use_4bit (4-bit quantized weights are not trainable).")
+
+    if args.output_dir:
+        output_dir = str(args.output_dir)
+    else:
+        output_dir = (
+            _default_output_dir_ft(model_name=args.model_name, train_path=args.train_path)
+            if bool(args.full_finetune)
+            else _default_output_dir(model_name=args.model_name, train_path=args.train_path)
+        )
         print(f"[train] output_dir: {output_dir}")
 
     train_sft_lora(
@@ -479,6 +510,7 @@ def main() -> None:
             train_path=args.train_path,
             valid_path=args.valid_path,
             output_dir=output_dir,
+            full_finetune=bool(args.full_finetune),
             max_seq_length=args.max_seq_length,
             per_device_train_batch_size=args.per_device_train_batch_size,
             per_device_eval_batch_size=args.per_device_eval_batch_size,
@@ -506,7 +538,7 @@ def main() -> None:
         )
     )
 
-    if bool(args.merge_at_end):
+    if bool(args.merge_at_end) and (not bool(args.full_finetune)):
         merged_dir = str(args.merged_output_dir) if args.merged_output_dir else _default_merged_output_dir(model_name=args.model_name, train_path=args.train_path)
         if args.merged_output_dir is None:
             print(f"[train] merged_output_dir: {merged_dir}")
@@ -515,6 +547,8 @@ def main() -> None:
         except Exception as e:
             # Fail-soft: training artifacts (adapter) are still usable even if merge fails.
             print(f"[train] WARNING: merge_lora failed: {e}")
+    elif bool(args.merge_at_end) and bool(args.full_finetune):
+        print("[train] merge_at_end ignored for --full_finetune (no adapter to merge).")
 
 
 if __name__ == "__main__":
