@@ -75,6 +75,7 @@ def _simulate_user_response(
     episode: Episode,
     memory: Dict,
     state: OracleState,
+    stats: Optional[Dict] = None,
 ) -> None:
     """
     Apply the user-simulation rules to update memory and oracle state.
@@ -95,10 +96,30 @@ def _simulate_user_response(
         or state.awaiting_mode_select
     )
     if (not must_respond) and rng.random() >= 0.6:
+        if isinstance(stats, dict):
+            stats["user_silent_steps"] = int(stats.get("user_silent_steps", 0)) + 1
         return
 
     def append_user(content: str) -> None:
         memory["past_dialogs"].append({"role": "user", "content": content})
+        if isinstance(stats, dict):
+            stats["user_replies_total"] = int(stats.get("user_replies_total", 0)) + 1
+            key = str(content).strip().upper()
+            if key == "YES":
+                stats["user_replies_yes"] = int(stats.get("user_replies_yes", 0)) + 1
+            elif key == "NO":
+                stats["user_replies_no"] = int(stats.get("user_replies_no", 0)) + 1
+            elif str(content).strip().lower() == "none of them":
+                stats["user_replies_none_of_them"] = int(stats.get("user_replies_none_of_them", 0)) + 1
+            elif key in {"APPROACH", "ALIGN_YAW"}:
+                stats[f"user_replies_mode_{key.lower()}"] = int(stats.get(f"user_replies_mode_{key.lower()}", 0)) + 1
+
+            ctx_type = str((state.last_prompt_context or {}).get("type") or "unknown")
+            ctx_counts = stats.setdefault("user_replies_by_context", {})
+            if isinstance(ctx_counts, dict):
+                bucket = ctx_counts.setdefault(ctx_type, {})
+                if isinstance(bucket, dict):
+                    bucket[key] = int(bucket.get(key, 0)) + 1
 
     if ctx.get("type") in {"confirm", "help"}:
         obj_id = ctx.get("obj_id")
@@ -284,6 +305,16 @@ def generate(
     rng = random.Random(seed)
     records: List[Dict] = []
     tool_counts: Dict[str, int] = {"INTERACT": 0, "APPROACH": 0, "ALIGN_YAW": 0}
+    reply_stats: Dict = {
+        "user_replies_total": 0,
+        "user_replies_yes": 0,
+        "user_replies_no": 0,
+        "user_replies_none_of_them": 0,
+        "user_replies_mode_approach": 0,
+        "user_replies_mode_align_yaw": 0,
+        "user_silent_steps": 0,
+        "user_replies_by_context": {},
+    }
 
     for episode_id in range(episodes):
         max_n = min(int(n_obj_max), len(OBJECT_LABELS))
@@ -333,7 +364,7 @@ def generate(
                 memory["n_interactions"] += 1
                 memory["past_dialogs"].append({"role": "assistant", "content": tool_call["args"]["text"]})
 
-            _simulate_user_response(rng, tool_call, ep, memory, state)
+            _simulate_user_response(rng, tool_call, ep, memory, state, stats=reply_stats)
 
             # Maintain a short history of tool calls for memory logging.
             memory["last_tool_calls"].append(tool_call["tool"])
@@ -362,7 +393,7 @@ def generate(
         # Reset per-episode flags that should not leak; none currently.
         state.last_tool_calls.clear()
 
-    stats = {"tool_distribution": tool_counts}
+    stats = {"tool_distribution": tool_counts, "user_reply_distribution": reply_stats}
     return records, stats
 
 
