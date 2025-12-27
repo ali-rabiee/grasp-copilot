@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import time
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -138,6 +139,7 @@ def main(argv: Optional[list[str]] = None) -> None:
     ap.add_argument("--merged_model_path", type=str, default=None)
     ap.add_argument("--use_4bit", action=argparse.BooleanOptionalAction, default=False)
     ap.add_argument("--max_examples", type=int, default=200, help="Max examples to evaluate (sampled).")
+    ap.add_argument("--progress_every", type=int, default=25, help="Print progress every N examples.")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--temperature", type=float, default=0.0)
     ap.add_argument("--top_p", type=float, default=1.0)
@@ -168,11 +170,14 @@ def main(argv: Optional[list[str]] = None) -> None:
         seed=int(args.seed),
         deterministic=True,
     )
+    t0_load = time.time()
     model, tok = _load_model_and_tokenizer(cfg)
+    print(f"[eval] model loaded in {time.time() - t0_load:.1f}s | evaluating {len(sample)} examples")
 
     m = EvalMetrics()
+    t0 = time.time()
 
-    for r in sample:
+    for idx, r in enumerate(sample, start=1):
         m.n += 1
         instruction = str(r.get("instruction", "")).strip()
         input_str = str(r.get("input", "")).strip()
@@ -227,6 +232,13 @@ def main(argv: Optional[list[str]] = None) -> None:
             pred_obj_id = ((pred.get("args") or {}) if isinstance(pred.get("args"), dict) else {}).get("obj")
             if gt_obj == pred_obj_id:
                 m.motion_obj_exact += 1
+
+        if int(args.progress_every) > 0 and (idx % int(args.progress_every) == 0 or idx == len(sample)):
+            dt = max(1e-9, time.time() - t0)
+            ex_per_s = idx / dt
+            remaining = len(sample) - idx
+            eta_s = remaining / max(1e-9, ex_per_s)
+            print(f"[eval] {idx}/{len(sample)} examples | {ex_per_s:.2f} ex/s | ETA {eta_s/60:.1f} min")
 
     # Print a compact summary + JSON for programmatic use.
     def rate(a: int, b: int) -> float:
