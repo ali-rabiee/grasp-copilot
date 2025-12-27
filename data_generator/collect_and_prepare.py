@@ -20,6 +20,13 @@ def _default_paths(out_dir: str) -> tuple[str, str, str]:
     )
 
 
+def _with_suffix(path: str, suffix: str) -> str:
+    p = Path(path)
+    if p.suffix == ".jsonl":
+        return str(p.with_name(p.stem + suffix + p.suffix))
+    return str(p) + suffix
+
+
 def main(argv: Optional[list[str]] = None) -> None:
     ap = argparse.ArgumentParser(
         description="One-shot scripted data collection + LLM training data preparation."
@@ -142,7 +149,9 @@ def main(argv: Optional[list[str]] = None) -> None:
     )
 
     if int(args.motion_repeat) != 1 or float(args.interact_keep_prob) != 1.0:
-        tmp_out = str(out_contract) + ".tmp_rebalanced"
+        # Keep the original contract for evaluation/debugging, and write a separate rebalanced contract for training.
+        out_contract_reb = _with_suffix(out_contract, "_rebalanced")
+        tmp_out = str(out_contract_reb) + ".tmp_rebalanced"
         stats = rebalance_contract(
             in_path=str(out_contract),
             out_path=tmp_out,
@@ -150,8 +159,12 @@ def main(argv: Optional[list[str]] = None) -> None:
             motion_repeat=int(args.motion_repeat),
             interact_keep_prob=float(args.interact_keep_prob),
         )
-        os.replace(tmp_out, str(out_contract))
-        print(f"[collect] rebalanced contract written to {out_contract} | stats={stats}")
+        os.replace(tmp_out, str(out_contract_reb))
+        print(f"[collect] rebalanced contract written to {out_contract_reb} | stats={stats}")
+
+        out_chat_reb = _with_suffix(out_chat, "_rebalanced")
+        convert_contract_to_qwen_chat_jsonl(out_contract_reb, out_chat_reb)
+        print(f"[collect] rebalanced chat written to {out_chat_reb}")
 
     convert_contract_to_qwen_chat_jsonl(out_contract, out_chat)
 

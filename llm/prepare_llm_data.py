@@ -38,7 +38,9 @@ def main(argv: Optional[list[str]] = None) -> None:
 
     # Step 2 (optional): rebalance tool-call frequencies *as a preprocessing step*
     if int(args.motion_repeat) != 1 or float(args.interact_keep_prob) != 1.0:
-        tmp_out = str(args.out_contract) + ".tmp_rebalanced"
+        # Keep original contract and also write a separate rebalanced one.
+        out_contract_reb = str(args.out_contract) + ".rebalanced"
+        tmp_out = out_contract_reb + ".tmp"
         stats = rebalance_contract(
             in_path=str(args.out_contract),
             out_path=tmp_out,
@@ -46,11 +48,15 @@ def main(argv: Optional[list[str]] = None) -> None:
             motion_repeat=int(args.motion_repeat),
             interact_keep_prob=float(args.interact_keep_prob),
         )
-        # Replace out_contract with the rebalanced version.
         import os
 
-        os.replace(tmp_out, str(args.out_contract))
-        print(f"[prepare] rebalanced contract written to {args.out_contract} | stats={stats}")
+        os.replace(tmp_out, out_contract_reb)
+        print(f"[prepare] rebalanced contract written to {out_contract_reb} | stats={stats}")
+
+        # Write matching rebalanced chat file too.
+        out_chat_reb = str(args.out_chat) + ".rebalanced"
+        convert_contract_to_qwen_chat_jsonl(out_contract_reb, out_chat_reb)
+        print(f"[prepare] rebalanced chat written to {out_chat_reb}")
 
     # Step 3: contract -> chat
     convert_contract_to_qwen_chat_jsonl(args.out_contract, args.out_chat)
