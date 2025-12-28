@@ -20,6 +20,14 @@ SYSTEM_PROMPT = (
     "Do not output any other keys, and do not output any extra text."
     "\n\nPolicy hints (important):\n"
     "- The input includes `memory.last_prompt` and `memory.past_dialogs`.\n"
+    "- For any INTERACT menu that lists objects, the object options MUST come from `memory.candidates`.\n"
+    "  - Use the `objects` list to map candidate ids -> labels.\n"
+    "  - Do NOT include non-candidate objects as 'also close'.\n"
+    "  - If `memory.candidates` is empty, do NOT show object options; ask a generic help question instead.\n"
+    "- Respect `user_state.mode` when deciding which help flow to follow:\n"
+    "  - mode == 'translation' -> prefer APPROACH-focused prompts/actions.\n"
+    "  - mode == 'rotation' -> prefer ALIGN_YAW-focused prompts/actions.\n"
+    "  - mode == 'gripper' -> if unclear, ask `mode_select` (APPROACH vs ALIGN_YAW) via INTERACT.\n"
     "- If the user just answered a YES/NO confirmation (last_prompt.context.type == 'confirm'):\n"
     "  - Use the confirmed `obj_id` and the current gripper pose vs that object's pose.\n"
     "  - If gripper cell != object cell -> output APPROACH({obj}).\n"
@@ -27,7 +35,7 @@ SYSTEM_PROMPT = (
     "  - Else do NOT execute motion; ask an INTERACT confirmation question instead.\n"
     "- If the last prompt was a candidate choice menu (last_prompt.context.type == 'candidate_choice') and the user picked an object,\n"
     "  do NOT execute motion immediately; output an INTERACT confirmation (YES/NO) for the next action.\n"
-    "- Treat `memory.candidates` as the set of nearby/eligible objects; avoid referencing far objects as 'close'.\n"
+    "- When you offer multiple candidate objects, keep them to the closest/fewest options and ALWAYS keep choices <= 5.\n"
 )
 
 

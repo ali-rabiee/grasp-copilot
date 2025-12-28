@@ -3,16 +3,16 @@ a copilot llm for suggesting grasp assistives.
 
 ## Dataset generation + inspection
 
-All commands must activate the `talm` environment first:
+All commands must activate the `llm` environment first:
 
 ```bash
-conda activate talm
+conda activate llm
 ```
 
 ### Generate a dataset (raw generator JSONL)
 
 ```bash
-conda activate talm
+conda activate llm
 python -m data_generator.generate_dataset --episodes 1000 --seed 0 --out /tmp/grasp_gen.jsonl
 # also writes: /tmp/grasp_gen.jsonl.stats.json
 ```
@@ -23,7 +23,7 @@ This runs the scripted generator and immediately produces both the dataset-contr
 Qwen chat JSONL for training.
 
 ```bash
-conda activate talm
+conda activate llm
 python -m data_generator.collect_and_prepare --episodes 1000 --seed 0 --out_dir /tmp/grasp_run
 # writes:
 #   /tmp/grasp_run/grasp_gen.jsonl (+ .stats.json)
@@ -36,7 +36,7 @@ python -m data_generator.collect_and_prepare --episodes 1000 --seed 0 --out_dir 
 The generator records contain keys like `episode_id`, `objects`, `gripper_hist`, `memory`, `user_state`, `target_tool_call`.
 
 ```bash
-conda activate talm
+conda activate llm
 python -m data_generator.inspect_data --path /tmp/grasp_gen.jsonl --summary
 python -m data_generator.inspect_data --path /tmp/grasp_gen.jsonl --episode 0 --max-t 20 --show-objects --show-gripper --show-memory
 ```
@@ -44,7 +44,7 @@ python -m data_generator.inspect_data --path /tmp/grasp_gen.jsonl --episode 0 --
 ### Convert generator JSONL → LLM contract/chat JSONL, then inspect
 
 ```bash
-conda activate talm
+conda activate llm
 python scripts/prepare_llm_data.py --generator_jsonl /tmp/grasp_gen.jsonl --out_contract /tmp/grasp_contract.jsonl --out_chat /tmp/grasp_chat.jsonl
 
 python scripts/inspect_data.py --file /tmp/grasp_contract.jsonl --mode contract --n 3
@@ -61,38 +61,38 @@ This opens a small white-canvas GUI where you can:
 - Click a choice button to send the user response back into memory
 
 ```bash
-conda activate talm
+conda activate llm
 python scripts/gui_assist_demo.py --backend oracle
 ```
 
 HF backend (example):
 
 ```bash
-conda activate talm
+conda activate llm
 python scripts/gui_assist_demo.py --backend hf --model_path outputs/qwen_merged_005
 ```
 
 ## LLM fine-tuning + inference
 
-All commands must activate the `talm` environment first:
+All commands must activate the `llm` environment first:
 
 ```bash
-conda activate talm
+conda activate llm
 ```
 
 ### Prepare LLM data (for training a merged model)
 
 ```bash
-conda activate talm
+conda activate llm
 python scripts/prepare_llm_data.py --generator_jsonl data.jsonl --out_contract llm_contract.jsonl --out_chat llm_chat.jsonl
 ```
 
 ### Train SFT + LoRA / QLoRA
 
-All commands must activate the `talm` environment first:
+All commands must activate the `llm` environment first:
 
 ```bash
-conda activate talm
+conda activate llm
 python scripts/train_sft_lora.py --help
 ```
 
@@ -101,7 +101,7 @@ python scripts/train_sft_lora.py --help
 - **Smoke run (a few steps, no eval, no checkpoints)**
 
 ```bash
-conda activate talm
+conda activate llm
 python scripts/train_sft_lora.py \
   --train_path data/runs/005/llm_contract.jsonl \
   --output_dir outputs/qwen_merged_smoke_005 \
@@ -116,7 +116,7 @@ python scripts/train_sft_lora.py \
 - **Typical training run (with eval, still memory-safe defaults)**
 
 ```bash
-conda activate talm
+conda activate llm
 python scripts/train_sft_lora.py \
   --train_path data/runs/005/llm_contract.jsonl \
   --valid_path data/runs/005/llm_contract.jsonl \
@@ -178,6 +178,6 @@ Note: newer training runs already write a merged model directly (no manual merge
 ### Inference demo (JSON-only)
 
 ```bash
-conda activate talm
+conda activate llm
 python scripts/inference_demo.py --model_path outputs/qwen_merged_005 --prompt 'Return {"tool_name":"INTERACT","arguments":{"type":"notify","text":"ok"}}'
 ```
