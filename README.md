@@ -1,6 +1,42 @@
 # grasp-copilot
 a copilot llm for suggesting grasp assistives.
 
+## Installation
+
+This project uses a Conda environment named **`llm`**.
+
+### One-command install (recommended)
+
+From the repo root:
+
+```bash
+bash grasp-copilot/install_conda.sh
+conda activate llm
+```
+
+- **CPU-only PyTorch (default)**: `bash grasp-copilot/install_conda.sh --cpu`
+- **CUDA PyTorch (NVIDIA)**: `bash grasp-copilot/install_conda.sh --cuda 12.1`
+- **Different env name**: `bash grasp-copilot/install_conda.sh -n grasp-copilot-llm`
+- **Recreate env**: `bash grasp-copilot/install_conda.sh --force`
+
+Quick sanity check:
+
+```bash
+conda activate llm
+python -m pytest -q grasp-copilot/llm/tests
+```
+
+### Manual install (if you prefer)
+
+```bash
+conda env create -f grasp-copilot/environment.yml
+conda activate llm
+
+# Install torch in the way that matches your machine (CPU vs CUDA),
+# then install the rest:
+python -m pip install -r grasp-copilot/requirements.txt
+```
+
 ## Dataset generation + inspection
 
 All commands must activate the `llm` environment first:
