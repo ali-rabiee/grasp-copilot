@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING, cast
 
@@ -25,6 +26,40 @@ class InferenceConfig:
     deterministic: bool = False
 
 
+def _resolve_model_path(model_path: str) -> str:
+    """
+    Resolve a local model directory robustly.
+
+    Why: transformers/huggingface_hub will treat strings like "foo/bar" as a Hub repo id
+    if the path doesn't exist on disk. Users often run the GUI from different CWDs.
+    """
+    p_raw = str(model_path).strip()
+    if not p_raw:
+        return p_raw
+
+    # 1) As-is (relative to CWD) + user expansion.
+    p1 = Path(p_raw).expanduser()
+    if p1.exists():
+        return str(p1)
+
+    # 2) If the user passed "grasp-copilot/..." while already inside grasp-copilot/,
+    # strip the prefix and try again.
+    for prefix in ("./grasp-copilot/", "grasp-copilot/"):
+        if p_raw.startswith(prefix):
+            p2 = Path(p_raw[len(prefix) :]).expanduser()
+            if p2.exists():
+                return str(p2)
+
+    # 3) Relative to the grasp-copilot package root (repo layout).
+    base = Path(__file__).resolve().parents[1]  # .../grasp-copilot
+    p3 = (base / p_raw).expanduser()
+    if p3.exists():
+        return str(p3)
+
+    # 4) If still not found, return the raw string (may be a real HF id).
+    return p_raw
+
+
 def _build_messages(prompt: str) -> List[Dict[str, str]]:
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -36,7 +71,8 @@ def _load_model_and_tokenizer(cfg: InferenceConfig):
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
-    tok = AutoTokenizer.from_pretrained(cfg.model_path, trust_remote_code=True, fix_mistral_regex=True)
+    model_path = _resolve_model_path(cfg.model_path)
+    tok = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True, fix_mistral_regex=True)
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
 
@@ -60,7 +96,7 @@ def _load_model_and_tokenizer(cfg: InferenceConfig):
     # Some environments may not have `accelerate`, which is needed for device_map="auto".
     try:
         model = AutoModelForCausalLM.from_pretrained(
-            cfg.model_path,
+            model_path,
             trust_remote_code=True,
             dtype="auto",
             quantization_config=quant_cfg,
@@ -69,7 +105,7 @@ def _load_model_and_tokenizer(cfg: InferenceConfig):
     except Exception:
         # Fallback: load without device_map and move to CUDA if possible.
         model = AutoModelForCausalLM.from_pretrained(
-            cfg.model_path,
+            model_path,
             trust_remote_code=True,
             dtype="auto",
             quantization_config=quant_cfg,

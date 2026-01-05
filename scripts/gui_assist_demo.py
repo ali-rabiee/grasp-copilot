@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+from pathlib import Path
 from dataclasses import dataclass
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -405,6 +406,17 @@ def main() -> None:
             # Force greedy decoding for stable debugging.
             args.temperature = 0.0
             args.top_p = 1.0
+
+        # If the provided path doesn't exist, HF will treat it as a Hub repo id.
+        # Be robust to running from different working directories.
+        mp = str(model_path)
+        if ("/" in mp or mp.startswith(".")) and not Path(mp).expanduser().exists():
+            for prefix in ("./grasp-copilot/", "grasp-copilot/"):
+                if mp.startswith(prefix):
+                    mp2 = mp[len(prefix) :]
+                    if Path(mp2).expanduser().exists():
+                        model_path = mp2
+                        break
         cfg = InferenceConfig(
             model_path=str(model_path),
             use_4bit=args.use_4bit,
