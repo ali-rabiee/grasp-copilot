@@ -1,0 +1,7 @@
+[console_scripts]
+grasp-benchmark = evaluation.run_full_benchmark:main
+grasp-collect = data_generator.collect_and_prepare:main
+grasp-eval = llm.eval:main
+grasp-infer = llm.inference:main
+grasp-offline-bench = evaluation.offline_exec_benchmark:main
+grasp-train = llm.train:main

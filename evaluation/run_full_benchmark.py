@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime
@@ -68,6 +69,69 @@ def get_grasp_copilot_root() -> Path:
     if (Path.cwd().parent / "pyproject.toml").exists():
         return Path.cwd().parent
     raise RuntimeError("Cannot find grasp-copilot root directory")
+
+
+def discover_models_in_directory(models_dir: Path) -> Dict[str, str]:
+    """
+    Auto-discover fine-tuned models in the models/ directory.
+    
+    A valid model directory must contain:
+    - config.json (transformers model config)
+    OR
+    - adapter_config.json (LoRA adapter)
+    
+    Returns a dict mapping display_name -> model_path (relative to root).
+    """
+    discovered: Dict[str, str] = {}
+    
+    if not models_dir.exists() or not models_dir.is_dir():
+        return discovered
+    
+    for subdir in sorted(models_dir.iterdir()):
+        if not subdir.is_dir():
+            continue
+        
+        # Check if it's a valid model directory
+        has_config = (subdir / "config.json").exists()
+        has_adapter = (subdir / "adapter_config.json").exists()
+        
+        if not (has_config or has_adapter):
+            continue
+        
+        # Generate a display name from directory name
+        # e.g., "qwen2_5_1_5b_instruct_ft" -> "Qwen2.5-1.5B-FT"
+        dir_name = subdir.name
+        
+        # Try to infer a nice name
+        # Common patterns: qwen2_5_3b_instruct_ft, qwen2_5_7b_instruct_ft, etc.
+        display_name = dir_name.replace("_", " ").title().replace(" ", "")
+        
+        # Try to format it better (e.g., "Qwen25_3B_Instruct_Ft" -> "Qwen2.5-3B-FT")
+        # This is a heuristic; users can override via FINETUNED_MODELS if needed
+        if "qwen" in dir_name.lower():
+            # Extract size (1.5b, 3b, 7b, etc.)
+            size_match = re.search(r'(\d+)[._]?(\d*)[bB]', dir_name)
+            if size_match:
+                major = size_match.group(1)
+                minor = size_match.group(2) if size_match.group(2) else ""
+                size_str = f"{major}.{minor}B" if minor else f"{major}B"
+                display_name = f"Qwen2.5-{size_str}-FT"
+            else:
+                display_name = f"Qwen-{dir_name}-FT"
+        else:
+            # Generic fallback
+            display_name = f"{dir_name}-FT"
+        
+        # Use relative path from root
+        root = get_grasp_copilot_root()
+        try:
+            rel_path = subdir.relative_to(root)
+            discovered[display_name] = str(rel_path)
+        except ValueError:
+            # If subdir is not under root, use absolute path
+            discovered[display_name] = str(subdir)
+    
+    return discovered
 
 
 def run_benchmark(
@@ -249,13 +313,25 @@ def main() -> None:
     models: Dict[str, str] = {}
     
     if not args.skip_finetuned:
+        # First, add hardcoded models (these take precedence)
         for name, rel_path in FINETUNED_MODELS.items():
             full_path = root / rel_path
             if full_path.exists():
                 models[name] = str(full_path)
-                print(f"[benchmark] Found fine-tuned model: {name} -> {full_path}")
+                print(f"[benchmark] Found fine-tuned model (hardcoded): {name} -> {full_path}")
             else:
                 print(f"[benchmark] WARNING: Fine-tuned model not found: {full_path}")
+        
+        # Then, auto-discover additional models in models/ directory
+        models_dir = root / "models"
+        discovered = discover_models_in_directory(models_dir)
+        for name, rel_path in discovered.items():
+            # Skip if already in models (hardcoded takes precedence)
+            if name not in models:
+                full_path = root / rel_path
+                if full_path.exists():
+                    models[name] = str(full_path)
+                    print(f"[benchmark] Found fine-tuned model (auto-discovered): {name} -> {full_path}")
     
     if args.include_zero_shot:
         for name, hf_id in ZERO_SHOT_MODELS.items():

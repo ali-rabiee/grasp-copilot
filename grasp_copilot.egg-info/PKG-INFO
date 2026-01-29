@@ -1,0 +1,247 @@
+Metadata-Version: 2.4
+Name: grasp-copilot
+Version: 0.1.0
+Summary: A copilot LLM for suggesting grasp assistives.
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy>=1.23
+Requires-Dist: transformers>=4.40
+Requires-Dist: tokenizers>=0.15
+Requires-Dist: protobuf>=4.21
+Requires-Dist: datasets>=2.16
+Requires-Dist: accelerate>=0.28
+Requires-Dist: peft>=0.10
+Requires-Dist: trl>=0.9
+Provides-Extra: test
+Requires-Dist: pytest>=7.4; extra == "test"
+Provides-Extra: qlora
+Requires-Dist: bitsandbytes>=0.43; platform_system == "Linux" and extra == "qlora"
+Provides-Extra: plot
+Requires-Dist: matplotlib>=3.7; extra == "plot"
+Dynamic: license-file
+
+# grasp-copilot
+a copilot llm for suggesting grasp assistives.
+
+## Installation
+
+This project assumes a Conda environment named **`llm`** (no venv).
+
+### Create the Conda env
+
+```bash
+conda create -n llm python=3.11 -y
+conda activate llm
+```
+
+### Install PyTorch (pick ONE)
+
+CPU-only:
+
+```bash
+conda install -y -c pytorch pytorch cpuonly
+```
+
+NVIDIA CUDA (example for H100; pick the CUDA version that matches your stack):
+
+```bash
+conda install -y -c pytorch -c nvidia pytorch pytorch-cuda=12.1
+```
+
+### Install grasp-copilot + Python deps
+
+Recommended (editable install, enables `python -m data_generator...` and `grasp-*` CLIs):
+
+```bash
+python -m pip install -e grasp-copilot
+```
+
+Optional extras:
+
+```bash
+python -m pip install -e "grasp-copilot[test]"   # pytest
+python -m pip install -e "grasp-copilot[qlora]"  # bitsandbytes for --use_4bit
+```
+
+Alternate (pip requirements file):
+
+```bash
+python -m pip install -r grasp-copilot/requirements.txt
+```
+
+### One-command installer (optional)
+
+If you want an end-to-end installer that creates the env, installs PyTorch, and installs the package:
+
+```bash
+bash grasp-copilot/install_conda.sh --cuda 12.1
+conda activate llm
+```
+
+## Dataset generation (collect + prepare)
+
+Use the one-shot command below. It will:
+- Generate the raw generator JSONL
+- Convert it into **contract JSONL** (for training/eval)
+- Convert contract → **chat JSONL** (for some trainers)
+
+```bash
+conda activate llm
+```
+
+### Collect + prepare (default output dir is auto-numbered)
+
+```bash
+conda activate llm
+grasp-collect --episodes 1000 --seed 0
+```
+
+If you prefer Python module form:
+
+```bash
+conda activate llm
+python -m data_generator.collect_and_prepare --episodes 1000 --seed 0
+```
+
+By default, this allocates a new run directory under:
+
+- `grasp-copilot/data/runs/001`
+- `grasp-copilot/data/runs/002`
+- ...
+
+Each run directory contains:
+- `grasp_gen.jsonl` (+ `grasp_gen.jsonl.stats.json`)
+- `llm_contract.jsonl`
+- `llm_chat.jsonl`
+
+### Balancing / rebalancing (recommended for training)
+
+The dataset is naturally **INTERACT-heavy**. Rebalancing helps the model learn to emit motion tools when appropriate.
+
+```bash
+conda activate llm
+grasp-collect --episodes 10000 --rebalance
+```
+
+This writes additional files:
+- `llm_contract_rebalanced.jsonl`
+- `llm_chat_rebalanced.jsonl`
+
+Custom knobs:
+
+```bash
+grasp-collect --episodes 10000 \
+  --motion_repeat 10 \
+  --interact_keep_prob 0.7 \
+  --rebalance_seed 0
+```
+
+### Data generation flags (most useful)
+
+- **`--episodes`**: number of scripted episodes to generate
+- **`--seed`**: RNG seed
+- **`--n_obj_min` / `--n_obj_max`**: number of objects in the scene
+- **`--collision_p`**: collision probability used in scene sampling
+- **`--candidate_max_dist`**: candidate generation radius
+- **`--skip_prepare`**: only write `grasp_gen.jsonl` (no contract/chat)
+- **`--generator_jsonl`**: skip collection and re-prepare from an existing `grasp_gen.jsonl`
+- **Balancing**: `--rebalance` or (`--motion_repeat`, `--interact_keep_prob`, `--rebalance_seed`)
+
+## Training
+
+Training consumes **contract JSONL** (typically `llm_contract_rebalanced.jsonl`).
+
+### Full fine-tune (big VRAM GPUs; e.g. H100)
+
+```bash
+conda activate llm
+python grasp-copilot/scripts/train_sft_lora.py \
+  --model_name Qwen/Qwen2.5-3B-Instruct \
+  --train_path grasp-copilot/data/runs/001/llm_contract_rebalanced.jsonl \
+  --valid_path grasp-copilot/data/runs/001/llm_contract.jsonl \
+  --full_finetune \
+  --no-use_4bit \
+  --max_seq_length 2048 \
+  --per_device_train_batch_size 2 \
+  --gradient_accumulation_steps 8 \
+  --lr 2e-5 \
+  --num_train_epochs 1 \
+  --logging_steps 10 \
+  --save_strategy steps \
+  --save_steps 500 \
+  --eval_steps 500
+```
+
+Notes:
+- Checkpoints are written under `"<output_dir>_adapter/checkpoint-*/"` (unless `--save_strategy no`).
+- `--save_steps` controls checkpoint cadence; `--eval_steps` controls eval cadence.
+
+### LoRA / QLoRA (smaller VRAM GPUs)
+
+QLoRA is the default (`--use_4bit` defaults to true). Install bitsandbytes if needed:
+
+```bash
+python -m pip install -e "grasp-copilot[qlora]"
+```
+
+Example:
+
+```bash
+conda activate llm
+python grasp-copilot/scripts/train_sft_lora.py \
+  --model_name Qwen/Qwen2.5-3B-Instruct \
+  --train_path grasp-copilot/data/runs/001/llm_contract_rebalanced.jsonl \
+  --valid_path grasp-copilot/data/runs/001/llm_contract.jsonl \
+  --max_seq_length 1024 \
+  --per_device_train_batch_size 1 \
+  --gradient_accumulation_steps 16 \
+  --lr 2e-4 \
+  --optim paged_adamw_32bit \
+  --logging_steps 20 \
+  --save_strategy no
+```
+
+If you hit CUDA OOM:
+- Reduce `--max_seq_length` (e.g. 512)
+- Disable eval: `--disable_eval`
+
+## Evaluation
+
+Evaluate a merged model against a contract JSONL and dump mistakes:
+
+```bash
+conda activate llm
+grasp-eval \
+  --contract_jsonl grasp-copilot/data/runs/001/llm_contract.jsonl \
+  --model_path grasp-copilot/models/qwen2_5_3b_instruct_ft_001 \
+  --max_examples 500 \
+  --dump_mistakes_jsonl grasp-copilot/eval_outputs/eval_001_mistakes.jsonl
+```
+
+## Demos
+
+### JSON-only inference (CLI)
+
+```bash
+conda activate llm
+grasp-infer --model_path grasp-copilot/models/qwen2_5_3b_instruct_ft_001 --prompt 'Return {"tool":"INTERACT","args":{"kind":"QUESTION","text":"ok?","choices":["yes","no"]}}'
+```
+
+### GUI demo (oracle or HF model)
+
+Oracle backend:
+
+```bash
+conda activate llm
+python grasp-copilot/scripts/gui_assist_demo.py --backend oracle
+```
+
+HF backend:
+
+```bash
+conda activate llm
+python grasp-copilot/scripts/gui_assist_demo.py --backend hf --model_path grasp-copilot/models/qwen2_5_3b_instruct_ft_001
+```
+
+```bash

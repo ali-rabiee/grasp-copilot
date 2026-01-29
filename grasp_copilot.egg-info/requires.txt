@@ -1,0 +1,19 @@
+numpy>=1.23
+transformers>=4.40
+tokenizers>=0.15
+protobuf>=4.21
+datasets>=2.16
+accelerate>=0.28
+peft>=0.10
+trl>=0.9
+
+[plot]
+matplotlib>=3.7
+
+[qlora]
+
+[qlora:platform_system == "Linux"]
+bitsandbytes>=0.43
+
+[test]
+pytest>=7.4

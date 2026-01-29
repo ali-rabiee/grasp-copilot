@@ -28,6 +28,10 @@ qlora = [
   # Only required for --use_4bit (QLoRA / 4-bit inference).
   "bitsandbytes>=0.43; platform_system=='Linux'",
 ]
+plot = [
+  # Only required for generating evaluation figures.
+  "matplotlib>=3.7",
+]
 
 [project.scripts]
 grasp-collect = "data_generator.collect_and_prepare:main"
