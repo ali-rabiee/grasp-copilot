@@ -42,12 +42,6 @@ except Exception:
 # Paths relative to grasp-copilot root
 DEFAULT_CONTRACT_JSONL = "data/runs/010/llm_contract.jsonl"
 
-# Fine-tuned models
-FINETUNED_MODELS = {
-    "Qwen2.5-7B-FT": "models/qwen2_5_7b_instruct_ft",
-    "Qwen2.5-3B-FT": "models/qwen2_5_3b_instruct_ft",
-}
-
 # Zero-shot models (HuggingFace IDs)
 ZERO_SHOT_MODELS = {
     "Qwen2.5-7B-ZS": "Qwen/Qwen2.5-7B-Instruct",
@@ -313,25 +307,14 @@ def main() -> None:
     models: Dict[str, str] = {}
     
     if not args.skip_finetuned:
-        # First, add hardcoded models (these take precedence)
-        for name, rel_path in FINETUNED_MODELS.items():
-            full_path = root / rel_path
-            if full_path.exists():
-                models[name] = str(full_path)
-                print(f"[benchmark] Found fine-tuned model (hardcoded): {name} -> {full_path}")
-            else:
-                print(f"[benchmark] WARNING: Fine-tuned model not found: {full_path}")
-        
-        # Then, auto-discover additional models in models/ directory
+        # Auto-discover all models in models/ directory
         models_dir = root / "models"
         discovered = discover_models_in_directory(models_dir)
         for name, rel_path in discovered.items():
-            # Skip if already in models (hardcoded takes precedence)
-            if name not in models:
-                full_path = root / rel_path
-                if full_path.exists():
-                    models[name] = str(full_path)
-                    print(f"[benchmark] Found fine-tuned model (auto-discovered): {name} -> {full_path}")
+            full_path = root / rel_path
+            if full_path.exists():
+                models[name] = str(full_path)
+                print(f"[benchmark] Found fine-tuned model (auto-discovered): {name} -> {full_path}")
     
     if args.include_zero_shot:
         for name, hf_id in ZERO_SHOT_MODELS.items():
