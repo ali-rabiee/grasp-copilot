@@ -1,0 +1,1164 @@
+{
+  "contract_jsonl": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/data/runs/001/llm_contract.jsonl",
+  "summaries": [
+    {
+      "by_context": {
+        "anything_else": {
+          "interact_choices_valid": 86,
+          "interact_kind_correct": 86,
+          "interact_n": 86,
+          "json_valid": 86,
+          "n": 86,
+          "schema_valid": 86,
+          "strict_exact": 86,
+          "tool_correct": 86
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 177,
+          "interact_kind_correct": 175,
+          "interact_n": 177,
+          "json_valid": 177,
+          "n": 177,
+          "schema_valid": 177,
+          "strict_exact": 168,
+          "tool_correct": 177
+        },
+        "confirm": {
+          "interact_choices_valid": 102,
+          "interact_kind_correct": 99,
+          "interact_n": 102,
+          "json_valid": 179,
+          "motion_n": 77,
+          "motion_obj_correct": 77,
+          "motion_tool_correct": 68,
+          "n": 179,
+          "schema_valid": 179,
+          "strict_exact": 167,
+          "tool_correct": 170,
+          "tool_wrong": 9
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 446,
+          "interact_kind_correct": 446,
+          "interact_n": 446,
+          "json_valid": 446,
+          "n": 446,
+          "schema_valid": 446,
+          "strict_exact": 427,
+          "tool_correct": 446
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 7,
+          "interact_kind_correct": 6,
+          "interact_n": 7,
+          "json_valid": 7,
+          "n": 7,
+          "schema_valid": 7,
+          "strict_exact": 6,
+          "tool_correct": 7
+        },
+        "mode_select": {
+          "interact_choices_valid": 49,
+          "interact_kind_correct": 49,
+          "interact_n": 49,
+          "json_valid": 49,
+          "n": 49,
+          "schema_valid": 49,
+          "strict_exact": 43,
+          "tool_correct": 49
+        },
+        "no_context": {
+          "interact_choices_valid": 978,
+          "interact_kind_correct": 976,
+          "interact_n": 978,
+          "json_valid": 1003,
+          "motion_n": 25,
+          "motion_obj_correct": 19,
+          "motion_tool_correct": 24,
+          "n": 1003,
+          "schema_valid": 1003,
+          "strict_exact": 995,
+          "tool_correct": 1001,
+          "tool_wrong": 2
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 98,
+          "motion_n": 2,
+          "motion_obj_correct": 2,
+          "n": 98,
+          "schema_valid": 98,
+          "strict_exact": 97,
+          "tool_correct": 98
+        },
+        "rotation": {
+          "json_valid": 556,
+          "motion_n": 39,
+          "motion_obj_correct": 38,
+          "n": 556,
+          "schema_valid": 556,
+          "strict_exact": 543,
+          "tool_correct": 550,
+          "tool_wrong": 6
+        },
+        "translation": {
+          "json_valid": 1293,
+          "motion_n": 61,
+          "motion_obj_correct": 56,
+          "n": 1293,
+          "schema_valid": 1293,
+          "strict_exact": 1252,
+          "tool_correct": 1288,
+          "tool_wrong": 5
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 10,
+          "tool_correct": 10
+        },
+        "cands_1": {
+          "n": 82,
+          "tool_correct": 80,
+          "tool_wrong": 2
+        },
+        "cands_2": {
+          "n": 172,
+          "tool_correct": 170,
+          "tool_wrong": 2
+        },
+        "cands_3": {
+          "n": 287,
+          "tool_correct": 285,
+          "tool_wrong": 2
+        },
+        "cands_4": {
+          "n": 287,
+          "tool_correct": 286,
+          "tool_wrong": 1
+        },
+        "cands_5": {
+          "n": 325,
+          "tool_correct": 323,
+          "tool_wrong": 2
+        },
+        "cands_6+": {
+          "n": 784,
+          "tool_correct": 782,
+          "tool_wrong": 2
+        }
+      },
+      "interact_choices_valid_rate": 1.0,
+      "interact_kind_accuracy": 0.9956639566395664,
+      "interact_n": 1845,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "mistakes_n": 11,
+      "mistakes_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/evaluation/eval_outputs/paper_benchmark_run001/mistakes_Qwen2.5-7B-FT.jsonl",
+      "model": {
+        "kind": "llm",
+        "model_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/models/qwen2_5_7b_instruct_ft",
+        "name": "Qwen2.5-7B-FT"
+      },
+      "motion_n": 102,
+      "motion_obj_accuracy": 0.9411764705882353,
+      "motion_tool_accuracy": 0.9019607843137255,
+      "n": 1947,
+      "schema_errors": 0,
+      "schema_valid_rate": 1.0,
+      "strict_exact_rate": 0.9717514124293786,
+      "timing": {
+        "eval_s": 2438.8438787460327,
+        "examples_per_sec": 0.7983290841072938,
+        "load_s": 48.01080298423767
+      },
+      "tool_accuracy": 0.9943502824858758,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "ALIGN_YAW": 41,
+          "APPROACH": 5,
+          "INTERACT": 1
+        },
+        "APPROACH": {
+          "ALIGN_YAW": 4,
+          "APPROACH": 51
+        },
+        "INTERACT": {
+          "ALIGN_YAW": 1,
+          "INTERACT": 1844
+        }
+      }
+    },
+    {
+      "by_context": {
+        "anything_else": {
+          "interact_choices_valid": 86,
+          "interact_kind_correct": 86,
+          "interact_n": 86,
+          "json_valid": 86,
+          "n": 86,
+          "schema_valid": 86,
+          "strict_exact": 85,
+          "tool_correct": 86
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 177,
+          "interact_kind_correct": 177,
+          "interact_n": 177,
+          "json_valid": 177,
+          "n": 177,
+          "schema_valid": 177,
+          "strict_exact": 159,
+          "tool_correct": 177
+        },
+        "confirm": {
+          "interact_choices_valid": 102,
+          "interact_kind_correct": 96,
+          "interact_n": 102,
+          "json_valid": 179,
+          "motion_n": 77,
+          "motion_obj_correct": 77,
+          "motion_tool_correct": 58,
+          "n": 179,
+          "schema_valid": 179,
+          "strict_exact": 154,
+          "tool_correct": 156,
+          "tool_wrong": 23
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 439,
+          "interact_kind_correct": 445,
+          "interact_n": 446,
+          "json_valid": 446,
+          "n": 446,
+          "schema_invalid": 7,
+          "schema_valid": 439,
+          "strict_exact": 393,
+          "tool_correct": 446
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 7,
+          "interact_kind_correct": 6,
+          "interact_n": 7,
+          "json_valid": 7,
+          "n": 7,
+          "schema_valid": 7,
+          "strict_exact": 6,
+          "tool_correct": 7
+        },
+        "mode_select": {
+          "interact_choices_valid": 49,
+          "interact_kind_correct": 49,
+          "interact_n": 49,
+          "json_valid": 49,
+          "n": 49,
+          "schema_valid": 49,
+          "strict_exact": 30,
+          "tool_correct": 49
+        },
+        "no_context": {
+          "interact_choices_valid": 978,
+          "interact_kind_correct": 973,
+          "interact_n": 978,
+          "json_valid": 1003,
+          "motion_n": 25,
+          "motion_obj_correct": 18,
+          "motion_tool_correct": 25,
+          "n": 1003,
+          "schema_valid": 1003,
+          "strict_exact": 991,
+          "tool_correct": 1000,
+          "tool_wrong": 3
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 98,
+          "motion_n": 2,
+          "motion_obj_correct": 2,
+          "n": 98,
+          "schema_valid": 98,
+          "strict_exact": 95,
+          "tool_correct": 98
+        },
+        "rotation": {
+          "json_valid": 556,
+          "motion_n": 39,
+          "motion_obj_correct": 39,
+          "n": 556,
+          "schema_invalid": 3,
+          "schema_valid": 553,
+          "strict_exact": 524,
+          "tool_correct": 545,
+          "tool_wrong": 11
+        },
+        "translation": {
+          "json_valid": 1293,
+          "motion_n": 61,
+          "motion_obj_correct": 54,
+          "n": 1293,
+          "schema_invalid": 4,
+          "schema_valid": 1289,
+          "strict_exact": 1199,
+          "tool_correct": 1278,
+          "tool_wrong": 15
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 10,
+          "tool_correct": 10
+        },
+        "cands_1": {
+          "n": 82,
+          "tool_correct": 78,
+          "tool_wrong": 4
+        },
+        "cands_2": {
+          "n": 172,
+          "tool_correct": 169,
+          "tool_wrong": 3
+        },
+        "cands_3": {
+          "n": 287,
+          "tool_correct": 284,
+          "tool_wrong": 3
+        },
+        "cands_4": {
+          "n": 287,
+          "tool_correct": 284,
+          "tool_wrong": 3
+        },
+        "cands_5": {
+          "n": 325,
+          "tool_correct": 321,
+          "tool_wrong": 4
+        },
+        "cands_6+": {
+          "n": 784,
+          "tool_correct": 775,
+          "tool_wrong": 9
+        }
+      },
+      "interact_choices_valid_rate": 0.9962059620596206,
+      "interact_kind_accuracy": 0.9929539295392954,
+      "interact_n": 1845,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "mistakes_n": 26,
+      "mistakes_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/evaluation/eval_outputs/paper_benchmark_run001/mistakes_Qwen2.5-3B-FT.jsonl",
+      "model": {
+        "kind": "llm",
+        "model_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/models/qwen2_5_3b_instruct_ft",
+        "name": "Qwen2.5-3B-FT"
+      },
+      "motion_n": 102,
+      "motion_obj_accuracy": 0.9313725490196079,
+      "motion_tool_accuracy": 0.8137254901960784,
+      "n": 1947,
+      "schema_errors": 7,
+      "schema_valid_rate": 0.9964047252182845,
+      "strict_exact_rate": 0.9337442218798151,
+      "timing": {
+        "eval_s": 1378.740914106369,
+        "examples_per_sec": 1.4121579914540712,
+        "load_s": 20.990134239196777
+      },
+      "tool_accuracy": 0.9866461222393426,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "ALIGN_YAW": 38,
+          "APPROACH": 9
+        },
+        "APPROACH": {
+          "ALIGN_YAW": 10,
+          "APPROACH": 45
+        },
+        "INTERACT": {
+          "ALIGN_YAW": 4,
+          "APPROACH": 3,
+          "INTERACT": 1838,
+          "INVALID_SCHEMA": 7
+        }
+      }
+    },
+    {
+      "by_context": {
+        "anything_else": {
+          "interact_choices_valid": 86,
+          "interact_n": 86,
+          "json_valid": 86,
+          "n": 86,
+          "schema_valid": 86,
+          "tool_correct": 5,
+          "tool_wrong": 81
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 177,
+          "interact_kind_correct": 1,
+          "interact_n": 177,
+          "json_valid": 177,
+          "n": 177,
+          "schema_valid": 177,
+          "tool_correct": 4,
+          "tool_wrong": 173
+        },
+        "confirm": {
+          "interact_choices_valid": 101,
+          "interact_kind_correct": 9,
+          "interact_n": 102,
+          "json_valid": 179,
+          "motion_n": 77,
+          "motion_obj_correct": 24,
+          "motion_tool_correct": 40,
+          "n": 179,
+          "schema_invalid": 1,
+          "schema_valid": 178,
+          "strict_exact": 7,
+          "tool_correct": 49,
+          "tool_wrong": 130
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 446,
+          "interact_kind_correct": 14,
+          "interact_n": 446,
+          "json_valid": 446,
+          "n": 446,
+          "schema_valid": 446,
+          "strict_exact": 3,
+          "tool_correct": 14,
+          "tool_wrong": 432
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 7,
+          "interact_n": 7,
+          "json_valid": 7,
+          "n": 7,
+          "schema_valid": 7,
+          "tool_wrong": 7
+        },
+        "mode_select": {
+          "interact_choices_valid": 49,
+          "interact_kind_correct": 1,
+          "interact_n": 49,
+          "json_valid": 49,
+          "n": 49,
+          "schema_valid": 49,
+          "tool_correct": 1,
+          "tool_wrong": 48
+        },
+        "no_context": {
+          "interact_choices_valid": 976,
+          "interact_kind_correct": 606,
+          "interact_n": 978,
+          "json_valid": 1003,
+          "motion_n": 25,
+          "motion_tool_correct": 17,
+          "n": 1003,
+          "schema_invalid": 620,
+          "schema_valid": 383,
+          "tool_correct": 629,
+          "tool_wrong": 374
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 98,
+          "motion_n": 2,
+          "n": 98,
+          "schema_invalid": 64,
+          "schema_valid": 34,
+          "strict_exact": 4,
+          "tool_correct": 95,
+          "tool_wrong": 3
+        },
+        "rotation": {
+          "json_valid": 556,
+          "motion_n": 39,
+          "motion_obj_correct": 16,
+          "n": 556,
+          "schema_invalid": 20,
+          "schema_valid": 536,
+          "strict_exact": 5,
+          "tool_correct": 41,
+          "tool_wrong": 515
+        },
+        "translation": {
+          "json_valid": 1293,
+          "motion_n": 61,
+          "motion_obj_correct": 8,
+          "n": 1293,
+          "schema_invalid": 537,
+          "schema_valid": 756,
+          "strict_exact": 1,
+          "tool_correct": 566,
+          "tool_wrong": 727
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 10,
+          "tool_correct": 2,
+          "tool_wrong": 8
+        },
+        "cands_1": {
+          "n": 82,
+          "tool_correct": 25,
+          "tool_wrong": 57
+        },
+        "cands_2": {
+          "n": 172,
+          "tool_correct": 69,
+          "tool_wrong": 103
+        },
+        "cands_3": {
+          "n": 287,
+          "tool_correct": 94,
+          "tool_wrong": 193
+        },
+        "cands_4": {
+          "n": 287,
+          "tool_correct": 105,
+          "tool_wrong": 182
+        },
+        "cands_5": {
+          "n": 325,
+          "tool_correct": 105,
+          "tool_wrong": 220
+        },
+        "cands_6+": {
+          "n": 784,
+          "tool_correct": 302,
+          "tool_wrong": 482
+        }
+      },
+      "interact_choices_valid_rate": 0.9983739837398374,
+      "interact_kind_accuracy": 0.34200542005420054,
+      "interact_n": 1845,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "mistakes_n": 200,
+      "mistakes_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/evaluation/eval_outputs/paper_benchmark_run001/mistakes_Qwen2.5-7B-ZS.jsonl",
+      "model": {
+        "kind": "llm",
+        "model_path": "Qwen/Qwen2.5-7B-Instruct",
+        "name": "Qwen2.5-7B-ZS"
+      },
+      "motion_n": 102,
+      "motion_obj_accuracy": 0.23529411764705882,
+      "motion_tool_accuracy": 0.5588235294117647,
+      "n": 1947,
+      "schema_errors": 621,
+      "schema_valid_rate": 0.6810477657935285,
+      "strict_exact_rate": 0.005136106831022085,
+      "timing": {
+        "eval_s": 1610.8238780498505,
+        "examples_per_sec": 1.2086982484746516,
+        "load_s": 50.54870963096619
+      },
+      "tool_accuracy": 0.3605546995377504,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "ALIGN_YAW": 25,
+          "APPROACH": 21,
+          "INTERACT": 1,
+          "INVALID_SCHEMA": 1
+        },
+        "APPROACH": {
+          "ALIGN_YAW": 16,
+          "APPROACH": 32,
+          "INTERACT": 7,
+          "INVALID_SCHEMA": 7
+        },
+        "INTERACT": {
+          "ALIGN_YAW": 487,
+          "APPROACH": 713,
+          "INTERACT": 645,
+          "INVALID_SCHEMA": 613
+        }
+      }
+    },
+    {
+      "by_context": {
+        "anything_else": {
+          "interact_choices_valid": 86,
+          "interact_kind_correct": 2,
+          "interact_n": 86,
+          "json_valid": 86,
+          "n": 86,
+          "schema_invalid": 4,
+          "schema_valid": 82,
+          "tool_correct": 52,
+          "tool_wrong": 34
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 153,
+          "interact_kind_correct": 1,
+          "interact_n": 153,
+          "json_valid": 153,
+          "n": 177,
+          "pred_invalid_json": 24,
+          "schema_invalid": 5,
+          "schema_valid": 148,
+          "tool_correct": 5,
+          "tool_wrong": 148
+        },
+        "confirm": {
+          "interact_choices_valid": 99,
+          "interact_kind_correct": 3,
+          "interact_n": 99,
+          "json_valid": 152,
+          "motion_n": 53,
+          "motion_obj_correct": 4,
+          "motion_tool_correct": 32,
+          "n": 179,
+          "pred_invalid_json": 27,
+          "schema_invalid": 3,
+          "schema_valid": 149,
+          "strict_exact": 4,
+          "tool_correct": 72,
+          "tool_wrong": 80
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 402,
+          "interact_kind_correct": 40,
+          "interact_n": 402,
+          "json_valid": 402,
+          "n": 446,
+          "pred_invalid_json": 44,
+          "schema_invalid": 92,
+          "schema_valid": 310,
+          "strict_exact": 38,
+          "tool_correct": 166,
+          "tool_wrong": 236
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 5,
+          "interact_kind_correct": 3,
+          "interact_n": 5,
+          "json_valid": 5,
+          "n": 7,
+          "pred_invalid_json": 2,
+          "schema_invalid": 1,
+          "schema_valid": 4,
+          "strict_exact": 1,
+          "tool_correct": 3,
+          "tool_wrong": 2
+        },
+        "mode_select": {
+          "interact_choices_valid": 49,
+          "interact_n": 49,
+          "json_valid": 49,
+          "n": 49,
+          "schema_valid": 49,
+          "tool_correct": 1,
+          "tool_wrong": 48
+        },
+        "no_context": {
+          "interact_choices_valid": 978,
+          "interact_n": 978,
+          "json_valid": 1003,
+          "motion_n": 25,
+          "motion_obj_correct": 8,
+          "motion_tool_correct": 24,
+          "n": 1003,
+          "schema_valid": 1003,
+          "strict_exact": 8,
+          "tool_correct": 24,
+          "tool_wrong": 979
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 95,
+          "motion_n": 1,
+          "n": 98,
+          "pred_invalid_json": 3,
+          "schema_invalid": 7,
+          "schema_valid": 88,
+          "strict_exact": 1,
+          "tool_correct": 18,
+          "tool_wrong": 77
+        },
+        "rotation": {
+          "json_valid": 530,
+          "motion_n": 27,
+          "motion_obj_correct": 7,
+          "n": 556,
+          "pred_invalid_json": 26,
+          "schema_invalid": 47,
+          "schema_valid": 483,
+          "strict_exact": 21,
+          "tool_correct": 112,
+          "tool_wrong": 418
+        },
+        "translation": {
+          "json_valid": 1225,
+          "motion_n": 50,
+          "motion_obj_correct": 5,
+          "n": 1293,
+          "pred_invalid_json": 68,
+          "schema_invalid": 51,
+          "schema_valid": 1174,
+          "strict_exact": 29,
+          "tool_correct": 193,
+          "tool_wrong": 1032
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 10,
+          "tool_correct": 7,
+          "tool_wrong": 3
+        },
+        "cands_1": {
+          "n": 82,
+          "tool_correct": 34,
+          "tool_wrong": 46
+        },
+        "cands_2": {
+          "n": 172,
+          "tool_correct": 30,
+          "tool_wrong": 135
+        },
+        "cands_3": {
+          "n": 287,
+          "tool_correct": 41,
+          "tool_wrong": 237
+        },
+        "cands_4": {
+          "n": 287,
+          "tool_correct": 40,
+          "tool_wrong": 233
+        },
+        "cands_5": {
+          "n": 325,
+          "tool_correct": 60,
+          "tool_wrong": 255
+        },
+        "cands_6+": {
+          "n": 784,
+          "tool_correct": 111,
+          "tool_wrong": 618
+        }
+      },
+      "interact_choices_valid_rate": 1.0,
+      "interact_kind_accuracy": 0.027652370203160272,
+      "interact_n": 1772,
+      "json_errors": 97,
+      "json_valid_rate": 0.9501797637390857,
+      "mistakes_n": 200,
+      "mistakes_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/evaluation/eval_outputs/paper_benchmark_run001/mistakes_Qwen2.5-3B-ZS.jsonl",
+      "model": {
+        "kind": "llm",
+        "model_path": "Qwen/Qwen2.5-3B-Instruct",
+        "name": "Qwen2.5-3B-ZS"
+      },
+      "motion_n": 78,
+      "motion_obj_accuracy": 0.15384615384615385,
+      "motion_tool_accuracy": 0.717948717948718,
+      "n": 1947,
+      "schema_errors": 105,
+      "schema_valid_rate": 0.8962506420133539,
+      "strict_exact_rate": 0.026194144838212634,
+      "timing": {
+        "eval_s": 645.849035024643,
+        "examples_per_sec": 3.014636384686571,
+        "load_s": 13.895119428634644
+      },
+      "tool_accuracy": 0.16589625064201335,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "ALIGN_YAW": 13,
+          "APPROACH": 20,
+          "INVALID_JSON": 14
+        },
+        "APPROACH": {
+          "ALIGN_YAW": 2,
+          "APPROACH": 43,
+          "INVALID_JSON": 10
+        },
+        "INTERACT": {
+          "ALIGN_YAW": 360,
+          "APPROACH": 1145,
+          "INTERACT": 267,
+          "INVALID_JSON": 73,
+          "INVALID_SCHEMA": 105
+        }
+      }
+    },
+    {
+      "by_context": {
+        "anything_else": {
+          "interact_choices_valid": 86,
+          "interact_n": 86,
+          "json_valid": 86,
+          "n": 86,
+          "schema_valid": 86,
+          "tool_correct": 80,
+          "tool_wrong": 6
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 177,
+          "interact_kind_correct": 23,
+          "interact_n": 177,
+          "json_valid": 177,
+          "n": 177,
+          "schema_valid": 177,
+          "strict_exact": 2,
+          "tool_correct": 171,
+          "tool_wrong": 6
+        },
+        "confirm": {
+          "interact_choices_valid": 102,
+          "interact_kind_correct": 84,
+          "interact_n": 102,
+          "json_valid": 179,
+          "motion_n": 77,
+          "motion_obj_correct": 3,
+          "motion_tool_correct": 3,
+          "n": 179,
+          "schema_valid": 179,
+          "strict_exact": 4,
+          "tool_correct": 98,
+          "tool_wrong": 81
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 446,
+          "interact_kind_correct": 433,
+          "interact_n": 446,
+          "json_valid": 446,
+          "n": 446,
+          "schema_valid": 446,
+          "strict_exact": 99,
+          "tool_correct": 433,
+          "tool_wrong": 13
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 7,
+          "interact_kind_correct": 3,
+          "interact_n": 7,
+          "json_valid": 7,
+          "n": 7,
+          "schema_valid": 7,
+          "tool_correct": 6,
+          "tool_wrong": 1
+        },
+        "mode_select": {
+          "interact_choices_valid": 49,
+          "interact_kind_correct": 45,
+          "interact_n": 49,
+          "json_valid": 49,
+          "n": 49,
+          "schema_valid": 49,
+          "strict_exact": 21,
+          "tool_correct": 45,
+          "tool_wrong": 4
+        },
+        "no_context": {
+          "interact_choices_valid": 978,
+          "interact_kind_correct": 956,
+          "interact_n": 978,
+          "json_valid": 1003,
+          "motion_n": 25,
+          "motion_obj_correct": 14,
+          "motion_tool_correct": 19,
+          "n": 1003,
+          "schema_valid": 1003,
+          "strict_exact": 13,
+          "tool_correct": 976,
+          "tool_wrong": 27
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 98,
+          "motion_n": 2,
+          "n": 98,
+          "schema_valid": 98,
+          "strict_exact": 4,
+          "tool_correct": 95,
+          "tool_wrong": 3
+        },
+        "rotation": {
+          "json_valid": 556,
+          "motion_n": 39,
+          "motion_obj_correct": 9,
+          "n": 556,
+          "schema_valid": 556,
+          "strict_exact": 41,
+          "tool_correct": 517,
+          "tool_wrong": 39
+        },
+        "translation": {
+          "json_valid": 1293,
+          "motion_n": 61,
+          "motion_obj_correct": 8,
+          "n": 1293,
+          "schema_valid": 1293,
+          "strict_exact": 94,
+          "tool_correct": 1197,
+          "tool_wrong": 96
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 10,
+          "tool_correct": 5,
+          "tool_wrong": 5
+        },
+        "cands_1": {
+          "n": 82,
+          "tool_correct": 22,
+          "tool_wrong": 60
+        },
+        "cands_2": {
+          "n": 172,
+          "tool_correct": 166,
+          "tool_wrong": 6
+        },
+        "cands_3": {
+          "n": 287,
+          "tool_correct": 274,
+          "tool_wrong": 13
+        },
+        "cands_4": {
+          "n": 287,
+          "tool_correct": 280,
+          "tool_wrong": 7
+        },
+        "cands_5": {
+          "n": 325,
+          "tool_correct": 312,
+          "tool_wrong": 13
+        },
+        "cands_6+": {
+          "n": 784,
+          "tool_correct": 750,
+          "tool_wrong": 34
+        }
+      },
+      "interact_choices_valid_rate": 1.0,
+      "interact_kind_accuracy": 0.8368563685636856,
+      "interact_n": 1845,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "mistakes_n": 138,
+      "mistakes_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/evaluation/eval_outputs/paper_benchmark_run001/mistakes_H1_ask_if_ambiguous.jsonl",
+      "model": {
+        "kind": "heuristic_ask_if_ambiguous",
+        "model_path": null,
+        "name": "H1_ask_if_ambiguous"
+      },
+      "motion_n": 102,
+      "motion_obj_accuracy": 0.16666666666666666,
+      "motion_tool_accuracy": 0.21568627450980393,
+      "n": 1947,
+      "schema_errors": 0,
+      "schema_valid_rate": 1.0,
+      "strict_exact_rate": 0.07139188495120699,
+      "timing": {
+        "eval_s": 0.11969709396362305,
+        "examples_per_sec": 16266.059062317,
+        "load_s": 0.0
+      },
+      "tool_accuracy": 0.9291217257318952,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "ALIGN_YAW": 9,
+          "APPROACH": 1,
+          "INTERACT": 37
+        },
+        "APPROACH": {
+          "ALIGN_YAW": 1,
+          "APPROACH": 13,
+          "INTERACT": 41
+        },
+        "INTERACT": {
+          "ALIGN_YAW": 9,
+          "APPROACH": 49,
+          "INTERACT": 1787
+        }
+      }
+    },
+    {
+      "by_context": {
+        "anything_else": {
+          "interact_choices_valid": 86,
+          "interact_n": 86,
+          "json_valid": 86,
+          "n": 86,
+          "schema_valid": 86,
+          "tool_correct": 86
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 177,
+          "interact_kind_correct": 29,
+          "interact_n": 177,
+          "json_valid": 177,
+          "n": 177,
+          "schema_valid": 177,
+          "strict_exact": 8,
+          "tool_correct": 177
+        },
+        "confirm": {
+          "interact_choices_valid": 102,
+          "interact_kind_correct": 84,
+          "interact_n": 102,
+          "json_valid": 179,
+          "motion_n": 77,
+          "n": 179,
+          "schema_valid": 179,
+          "strict_exact": 1,
+          "tool_correct": 102,
+          "tool_wrong": 77
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 446,
+          "interact_kind_correct": 433,
+          "interact_n": 446,
+          "json_valid": 446,
+          "n": 446,
+          "schema_valid": 446,
+          "strict_exact": 99,
+          "tool_correct": 446
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 7,
+          "interact_kind_correct": 4,
+          "interact_n": 7,
+          "json_valid": 7,
+          "n": 7,
+          "schema_valid": 7,
+          "strict_exact": 1,
+          "tool_correct": 7
+        },
+        "mode_select": {
+          "interact_choices_valid": 49,
+          "interact_kind_correct": 45,
+          "interact_n": 49,
+          "json_valid": 49,
+          "n": 49,
+          "schema_valid": 49,
+          "strict_exact": 21,
+          "tool_correct": 49
+        },
+        "no_context": {
+          "interact_choices_valid": 978,
+          "interact_kind_correct": 976,
+          "interact_n": 978,
+          "json_valid": 1003,
+          "motion_n": 25,
+          "n": 1003,
+          "schema_valid": 1003,
+          "strict_exact": 20,
+          "tool_correct": 978,
+          "tool_wrong": 25
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 98,
+          "motion_n": 2,
+          "n": 98,
+          "schema_valid": 98,
+          "strict_exact": 5,
+          "tool_correct": 96,
+          "tool_wrong": 2
+        },
+        "rotation": {
+          "json_valid": 556,
+          "motion_n": 39,
+          "n": 556,
+          "schema_valid": 556,
+          "strict_exact": 35,
+          "tool_correct": 517,
+          "tool_wrong": 39
+        },
+        "translation": {
+          "json_valid": 1293,
+          "motion_n": 61,
+          "n": 1293,
+          "schema_valid": 1293,
+          "strict_exact": 110,
+          "tool_correct": 1232,
+          "tool_wrong": 61
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 10,
+          "tool_correct": 5,
+          "tool_wrong": 5
+        },
+        "cands_1": {
+          "n": 82,
+          "tool_correct": 58,
+          "tool_wrong": 24
+        },
+        "cands_2": {
+          "n": 172,
+          "tool_correct": 166,
+          "tool_wrong": 6
+        },
+        "cands_3": {
+          "n": 287,
+          "tool_correct": 274,
+          "tool_wrong": 13
+        },
+        "cands_4": {
+          "n": 287,
+          "tool_correct": 280,
+          "tool_wrong": 7
+        },
+        "cands_5": {
+          "n": 325,
+          "tool_correct": 312,
+          "tool_wrong": 13
+        },
+        "cands_6+": {
+          "n": 784,
+          "tool_correct": 750,
+          "tool_wrong": 34
+        }
+      },
+      "interact_choices_valid_rate": 1.0,
+      "interact_kind_accuracy": 0.851490514905149,
+      "interact_n": 1845,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "mistakes_n": 102,
+      "mistakes_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/evaluation/eval_outputs/paper_benchmark_run001/mistakes_H2_always_ask.jsonl",
+      "model": {
+        "kind": "heuristic_always_ask",
+        "model_path": null,
+        "name": "H2_always_ask"
+      },
+      "motion_n": 102,
+      "motion_obj_accuracy": 0.0,
+      "motion_tool_accuracy": 0.0,
+      "n": 1947,
+      "schema_errors": 0,
+      "schema_valid_rate": 1.0,
+      "strict_exact_rate": 0.07704160246533127,
+      "timing": {
+        "eval_s": 0.12233901023864746,
+        "examples_per_sec": 15914.792805679686,
+        "load_s": 0.0
+      },
+      "tool_accuracy": 0.9476117103235747,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "INTERACT": 47
+        },
+        "APPROACH": {
+          "INTERACT": 55
+        },
+        "INTERACT": {
+          "INTERACT": 1845
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+model,anything_else_acc,candidate_choice_acc,confirm_acc,intent_gate_candidates_acc,intent_gate_yaw_acc,mode_select_acc,no_context_acc,anything_else_n,candidate_choice_n,confirm_n,intent_gate_candidates_n,intent_gate_yaw_n,mode_select_n,no_context_n
+Qwen2.5-7B-FT,1.0000,1.0000,0.9497,1.0000,1.0000,1.0000,0.9980,86,177,179,446,7,49,1003
+Qwen2.5-3B-FT,1.0000,1.0000,0.8715,1.0000,1.0000,1.0000,0.9970,86,177,179,446,7,49,1003
+Qwen2.5-7B-ZS,0.0581,0.0226,0.2737,0.0314,0.0000,0.0204,0.6271,86,177,179,446,7,49,1003
+Qwen2.5-3B-ZS,0.6047,0.0282,0.4022,0.3722,0.4286,0.0204,0.0239,86,177,179,446,7,49,1003
+H1_ask_if_ambiguous,0.9302,0.9661,0.5475,0.9709,0.8571,0.9184,0.9731,86,177,179,446,7,49,1003
+H2_always_ask,1.0000,1.0000,0.5698,1.0000,1.0000,1.0000,0.9751,86,177,179,446,7,49,1003

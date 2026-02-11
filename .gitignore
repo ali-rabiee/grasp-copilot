@@ -7,7 +7,6 @@ models/
 data/
 logs/
 wandb/
-eval_outputs/
 .env
 .env.local
 .env.development.local
