@@ -2,7 +2,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .venv/
-outputs/
 models/
 data/
 logs/
