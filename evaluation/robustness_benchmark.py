@@ -6,18 +6,18 @@ fine-tuned LLM models degrade when the symbolic state is noisy.
 
 Usage:
     # Heuristics only (instant, no GPU):
-    python -m evaluation.robustness_benchmark \
-        --contract_jsonl data/runs/010/llm_contract.jsonl \
-        --perturbations grid_jitter candidate_perturb \
+    python evaluation/robustness_benchmark.py \
+        --contract_jsonl data/runs/001/llm_contract.jsonl \
+        --perturbations user_input \
         --max_examples 0
 
     # With fine-tuned model:
-    python -m evaluation.robustness_benchmark \
-        --contract_jsonl data/runs/010/llm_contract.jsonl \
+    python evaluation/robustness_benchmark.py \
+        --contract_jsonl data/runs/001/llm_contract.jsonl \
         --model_path models/qwen2_5_7b_instruct_ft \
         --model_name ft_7b \
-        --perturbations grid_jitter \
-        --max_examples 500 --use_4bit
+        --perturbations user_input \
+        --max_examples 0
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ except Exception:
 
 from data_generator.grid import CELLS, manhattan as grid_manhattan, neighbors as grid_neighbors
 from data_generator.episode import OBJECT_LABELS
-from data_generator.yaw import YAW_BINS
+from data_generator.yaw import YAW_BINS, neighbors as yaw_neighbors
 
 CANDIDATE_MAX_DIST = 1
 
@@ -100,6 +100,27 @@ def perturb_candidate_set(inp: Dict, p: float, rng: random.Random) -> Dict:
     return out
 
 
+def perturb_user_input(inp: Dict, p: float, rng: random.Random) -> Dict:
+    """Simulate noisy user teleoperation: jitter gripper-history cells and yaw bins.
+
+    This is the most deployment-realistic perturbation: object positions come
+    from a calibrated camera and are stable, but the user's control signal
+    (joystick, head-array, sip-and-puff, etc.) is inherently noisy.  The oracle
+    relies on exact cell counts, yaw-switch counts, and oscillation thresholds
+    over the 6-pose gripper history — all of which are brittle to even single-
+    step input noise.
+    """
+    out = copy.deepcopy(inp)
+    for pose in out.get("gripper_hist", []):
+        if rng.random() < p:
+            pose["cell"] = _jitter_cell(pose["cell"], rng)
+        if rng.random() < p:
+            nbrs = yaw_neighbors(pose["yaw"])
+            pose["yaw"] = rng.choice(nbrs)
+    _recompute_candidates(out)
+    return out
+
+
 def perturb_label_noise(inp: Dict, p: float, rng: random.Random) -> Dict:
     out = copy.deepcopy(inp)
     for obj in out.get("objects", []):
@@ -110,6 +131,7 @@ def perturb_label_noise(inp: Dict, p: float, rng: random.Random) -> Dict:
 
 
 PERTURBATION_REGISTRY: Dict[str, Callable] = {
+    "user_input": perturb_user_input,
     "grid_jitter": perturb_grid_jitter,
     "candidate_perturb": perturb_candidate_set,
     "label_noise": perturb_label_noise,
@@ -155,7 +177,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     ap.add_argument("--contract_jsonl", required=True)
     ap.add_argument("--model_path", default=None, help="Path to fine-tuned model (omit for heuristics-only run).")
     ap.add_argument("--model_name", default="ft_7b")
-    ap.add_argument("--perturbations", nargs="+", default=["grid_jitter"],
+    ap.add_argument("--perturbations", nargs="+", default=["user_input"],
                      choices=list(PERTURBATION_REGISTRY))
     ap.add_argument("--noise_levels", nargs="+", type=float, default=[0.0, 0.1, 0.2, 0.3, 0.5])
     ap.add_argument("--max_examples", type=int, default=0, help="0 = all")
