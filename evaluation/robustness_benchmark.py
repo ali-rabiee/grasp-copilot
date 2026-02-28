@@ -44,6 +44,8 @@ CANDIDATE_MAX_DIST = 1
 
 from llm.utils import json_loads_strict, set_seed
 
+from data_generator.oracle import OracleState, oracle_decide_tool
+
 from evaluation.offline_exec_benchmark import (
     _heuristic_ask_if_ambiguous,
     _heuristic_always_ask,
@@ -170,6 +172,75 @@ def _fresh_counters() -> Dict[str, int]:
     return {"n": 0, "tool_correct": 0, "strict_exact": 0, "motion_n": 0, "motion_obj_correct": 0}
 
 
+# ── oracle with state reconstruction ────────────────────────────────────
+
+def _reconstruct_oracle_state(inp: Dict, gt: Dict) -> OracleState:
+    """Best-effort reconstruction of OracleState from the test-example snapshot.
+
+    The full oracle is stateful across an episode, but the test examples are
+    single-timestep snapshots.  We recover enough of the state to reproduce
+    the oracle's decision for the vast majority of examples:
+      * intended_obj_id: from GT motion target or confirmation context
+      * awaiting_* flags: from memory.last_prompt.context.type
+      * selected_obj_id / pending_mode: from confirmation context
+    """
+    memory = inp.get("memory", {})
+    last_prompt = memory.get("last_prompt", {}) or {}
+    context = last_prompt.get("context", {}) or {}
+    ctx_type = context.get("type", "")
+
+    gt_tool = str(gt.get("tool", ""))
+    gt_args = gt.get("args", {}) or {}
+
+    # --- infer intended_obj_id ---
+    if gt_tool in ("APPROACH", "ALIGN_YAW"):
+        intended = gt_args.get("obj", "o0")
+    elif ctx_type == "confirm" and "obj_id" in context:
+        intended = context["obj_id"]
+    elif ctx_type in ("intent_gate_yaw",) and "obj_id" in context:
+        intended = context["obj_id"]
+    else:
+        candidates = memory.get("candidates", [])
+        intended = candidates[0] if candidates else "o0"
+
+    state = OracleState(intended_obj_id=intended)
+    state.last_prompt_context = context if context else None
+
+    # --- set awaiting flags from context ---
+    if ctx_type == "confirm":
+        state.awaiting_confirmation = True
+        state.selected_obj_id = context.get("obj_id")
+        state.pending_mode = context.get("action")
+    elif ctx_type == "candidate_choice":
+        state.awaiting_choice = True
+        state.pending_mode = context.get("action")
+    elif ctx_type == "help":
+        state.awaiting_help = True
+    elif ctx_type in ("intent_gate_candidates", "intent_gate_yaw"):
+        state.awaiting_intent_gate = True
+    elif ctx_type == "anything_else":
+        state.awaiting_anything_else = True
+    elif ctx_type == "mode_select":
+        state.awaiting_mode_select = True
+
+    state.last_tool_calls = list(memory.get("last_tool_calls", []))
+    return state
+
+
+def _run_oracle(perturbed: Dict, state: OracleState) -> Optional[Dict]:
+    """Run oracle_decide_tool on a perturbed input with reconstructed state."""
+    try:
+        return oracle_decide_tool(
+            perturbed.get("objects", []),
+            perturbed.get("gripper_hist", []),
+            perturbed.get("memory", {}),
+            copy.deepcopy(state),
+            user_state=perturbed.get("user_state"),
+        )
+    except Exception:
+        return None
+
+
 # ── main ────────────────────────────────────────────────────────────────
 
 def main(argv: Optional[List[str]] = None) -> None:
@@ -224,8 +295,8 @@ def main(argv: Optional[List[str]] = None) -> None:
             rng_run = random.Random(args.seed)
 
             systems: Dict[str, Dict[str, int]] = {
+                "Oracle": _fresh_counters(),
                 "H1": _fresh_counters(),
-                "H2": _fresh_counters(),
             }
             if model:
                 systems[args.model_name] = _fresh_counters()
@@ -245,19 +316,23 @@ def main(argv: Optional[List[str]] = None) -> None:
                 perturbed = perturb_fn(inp, p, rng_run)
                 p_str = json.dumps(perturbed, ensure_ascii=False)
 
+                # Oracle (full rule-based oracle with reconstructed state)
+                try:
+                    ostate = _reconstruct_oracle_state(inp, gt)
+                    oracle_out = _run_oracle(perturbed, ostate)
+                    if oracle_out:
+                        _score(gt, _normalize_tool_call(oracle_out), systems["Oracle"])
+                    else:
+                        systems["Oracle"]["n"] += 1
+                except Exception:
+                    systems["Oracle"]["n"] += 1
+
                 # H1
                 try:
                     h1 = _normalize_tool_call(_heuristic_ask_if_ambiguous(p_str))
                     _score(gt, h1, systems["H1"])
                 except Exception:
                     systems["H1"]["n"] += 1
-
-                # H2
-                try:
-                    h2 = _normalize_tool_call(_heuristic_always_ask(p_str))
-                    _score(gt, h2, systems["H2"])
-                except Exception:
-                    systems["H2"]["n"] += 1
 
                 # FT model
                 if model and tok and cfg:

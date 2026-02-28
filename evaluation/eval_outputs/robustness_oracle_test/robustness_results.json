@@ -1,0 +1,124 @@
+{
+  "config": {
+    "contract_jsonl": "data/runs/010/llm_contract.jsonl",
+    "model_path": null,
+    "model_name": "ft_7b",
+    "perturbations": [
+      "user_input"
+    ],
+    "noise_levels": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.5
+    ],
+    "max_examples": 500,
+    "seed": 42,
+    "use_4bit": false,
+    "out_dir": "evaluation/eval_outputs/robustness_oracle_test",
+    "progress_every": 50
+  },
+  "results": [
+    {
+      "perturbation": "user_input",
+      "noise_level": 0.0,
+      "system": "Oracle",
+      "n": 500,
+      "tool_acc": 94.2,
+      "strict_match": 68.0,
+      "motion_obj_acc": 44.19,
+      "elapsed_s": 0.1
+    },
+    {
+      "perturbation": "user_input",
+      "noise_level": 0.0,
+      "system": "H1",
+      "n": 500,
+      "tool_acc": 88.0,
+      "strict_match": 9.8,
+      "motion_obj_acc": 58.14,
+      "elapsed_s": 0.1
+    },
+    {
+      "perturbation": "user_input",
+      "noise_level": 0.1,
+      "system": "Oracle",
+      "n": 500,
+      "tool_acc": 92.4,
+      "strict_match": 65.6,
+      "motion_obj_acc": 37.21,
+      "elapsed_s": 0.1
+    },
+    {
+      "perturbation": "user_input",
+      "noise_level": 0.1,
+      "system": "H1",
+      "n": 500,
+      "tool_acc": 87.4,
+      "strict_match": 8.6,
+      "motion_obj_acc": 48.84,
+      "elapsed_s": 0.1
+    },
+    {
+      "perturbation": "user_input",
+      "noise_level": 0.2,
+      "system": "Oracle",
+      "n": 500,
+      "tool_acc": 90.2,
+      "strict_match": 62.8,
+      "motion_obj_acc": 37.21,
+      "elapsed_s": 0.1
+    },
+    {
+      "perturbation": "user_input",
+      "noise_level": 0.2,
+      "system": "H1",
+      "n": 500,
+      "tool_acc": 87.0,
+      "strict_match": 9.2,
+      "motion_obj_acc": 53.49,
+      "elapsed_s": 0.1
+    },
+    {
+      "perturbation": "user_input",
+      "noise_level": 0.3,
+      "system": "Oracle",
+      "n": 500,
+      "tool_acc": 88.8,
+      "strict_match": 62.0,
+      "motion_obj_acc": 32.56,
+      "elapsed_s": 0.1
+    },
+    {
+      "perturbation": "user_input",
+      "noise_level": 0.3,
+      "system": "H1",
+      "n": 500,
+      "tool_acc": 83.4,
+      "strict_match": 8.0,
+      "motion_obj_acc": 41.86,
+      "elapsed_s": 0.1
+    },
+    {
+      "perturbation": "user_input",
+      "noise_level": 0.5,
+      "system": "Oracle",
+      "n": 500,
+      "tool_acc": 85.4,
+      "strict_match": 58.0,
+      "motion_obj_acc": 25.58,
+      "elapsed_s": 0.1
+    },
+    {
+      "perturbation": "user_input",
+      "noise_level": 0.5,
+      "system": "H1",
+      "n": 500,
+      "tool_acc": 85.2,
+      "strict_match": 7.4,
+      "motion_obj_acc": 39.53,
+      "elapsed_s": 0.1
+    }
+  ]
+}
