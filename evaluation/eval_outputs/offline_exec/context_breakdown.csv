@@ -1,0 +1,3 @@
+model,anything_else_acc,candidate_choice_acc,confirm_acc,intent_gate_candidates_acc,intent_gate_yaw_acc,mode_select_acc,no_context_acc,anything_else_n,candidate_choice_n,confirm_n,intent_gate_candidates_n,intent_gate_yaw_n,mode_select_n,no_context_n
+SA1_predict_then_assist,0.8256,0.8531,0.4916,0.8498,0.8571,0.8571,0.8395,86,177,179,446,7,49,1003
+SA2_bayesian_intent,0.8605,0.8983,0.5028,0.9081,0.8571,0.8367,0.8853,86,177,179,446,7,49,1003

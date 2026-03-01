@@ -135,6 +135,8 @@ def run_benchmark(
     *,
     include_heuristic: bool = True,
     include_heuristic_always_ask: bool = True,
+    include_sa_predict_then_assist: bool = True,
+    include_sa_bayesian_intent: bool = True,
     max_examples: int = 0,
     seed: int = 0,
     use_4bit: bool = False,
@@ -165,6 +167,10 @@ def run_benchmark(
         specs.append(ModelSpec(name="H1_ask_if_ambiguous", kind="heuristic_ask_if_ambiguous"))
     if include_heuristic_always_ask:
         specs.append(ModelSpec(name="H2_always_ask", kind="heuristic_always_ask"))
+    if include_sa_predict_then_assist:
+        specs.append(ModelSpec(name="SA1_predict_then_assist", kind="heuristic_predict_then_assist"))
+    if include_sa_bayesian_intent:
+        specs.append(ModelSpec(name="SA2_bayesian_intent", kind="heuristic_bayesian_intent"))
 
     print(f"[benchmark] Evaluating {len(specs)} model(s): {[s.name for s in specs]}")
 
@@ -276,7 +282,8 @@ def main() -> None:
     ap.add_argument("--out_dir", type=str, default=None, help="Output directory (default: auto-generated timestamp)")
     ap.add_argument("--include_zero_shot", action="store_true", help="Include zero-shot model baselines (slower)")
     ap.add_argument("--skip_finetuned", action="store_true", help="Skip fine-tuned models")
-    ap.add_argument("--skip_heuristics", action="store_true", help="Skip heuristic baselines")
+    ap.add_argument("--skip_heuristics", action="store_true", help="Skip heuristic baselines (H1, H2)")
+    ap.add_argument("--skip_sa_baselines", action="store_true", help="Skip shared autonomy baselines (SA1, SA2)")
     ap.add_argument("--max_examples", type=int, default=0, help="Max examples (0=all)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--use_4bit", action="store_true", help="Use 4-bit quantization")
@@ -331,6 +338,8 @@ def main() -> None:
         out_dir=out_dir,
         include_heuristic=not args.skip_heuristics,
         include_heuristic_always_ask=not args.skip_heuristics,
+        include_sa_predict_then_assist=not args.skip_sa_baselines,
+        include_sa_bayesian_intent=not args.skip_sa_baselines,
         max_examples=args.max_examples,
         seed=args.seed,
         use_4bit=args.use_4bit,

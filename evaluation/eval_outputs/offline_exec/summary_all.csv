@@ -1,0 +1,3 @@
+name,kind,model_path,n,json_valid_rate,schema_valid_rate,tool_accuracy,motion_obj_accuracy,motion_tool_accuracy,interact_kind_accuracy,interact_choices_valid_rate,strict_exact_rate,motion_n,interact_n,json_errors,schema_errors,load_s,eval_s,examples_per_sec,mistakes_path,mistakes_n
+SA1_predict_then_assist,heuristic_predict_then_assist,,1947,1.0000,1.0000,0.8110,0.2255,0.2451,0.7268,1.0000,0.0668,102,1845,0,0,0.0,0.1,13477.85,,
+SA2_bayesian_intent,heuristic_bayesian_intent,,1947,1.0000,1.0000,0.8541,0.1667,0.2353,0.6412,1.0000,0.1171,102,1845,0,0,0.0,0.2,9322.47,,

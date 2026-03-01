@@ -1,0 +1,389 @@
+{
+  "contract_jsonl": "data/runs/001/llm_contract.jsonl",
+  "summaries": [
+    {
+      "by_context": {
+        "anything_else": {
+          "interact_choices_valid": 86,
+          "interact_n": 86,
+          "json_valid": 86,
+          "n": 86,
+          "schema_valid": 86,
+          "tool_correct": 71,
+          "tool_wrong": 15
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 177,
+          "interact_kind_correct": 22,
+          "interact_n": 177,
+          "json_valid": 177,
+          "n": 177,
+          "schema_valid": 177,
+          "strict_exact": 2,
+          "tool_correct": 151,
+          "tool_wrong": 26
+        },
+        "confirm": {
+          "interact_choices_valid": 102,
+          "interact_kind_correct": 72,
+          "interact_n": 102,
+          "json_valid": 179,
+          "motion_n": 77,
+          "motion_obj_correct": 9,
+          "motion_tool_correct": 6,
+          "n": 179,
+          "schema_valid": 179,
+          "strict_exact": 6,
+          "tool_correct": 88,
+          "tool_wrong": 91
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 446,
+          "interact_kind_correct": 379,
+          "interact_n": 446,
+          "json_valid": 446,
+          "n": 446,
+          "schema_valid": 446,
+          "strict_exact": 89,
+          "tool_correct": 379,
+          "tool_wrong": 67
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 7,
+          "interact_kind_correct": 3,
+          "interact_n": 7,
+          "json_valid": 7,
+          "n": 7,
+          "schema_valid": 7,
+          "tool_correct": 6,
+          "tool_wrong": 1
+        },
+        "mode_select": {
+          "interact_choices_valid": 49,
+          "interact_kind_correct": 42,
+          "interact_n": 49,
+          "json_valid": 49,
+          "n": 49,
+          "schema_valid": 49,
+          "strict_exact": 20,
+          "tool_correct": 42,
+          "tool_wrong": 7
+        },
+        "no_context": {
+          "interact_choices_valid": 978,
+          "interact_kind_correct": 823,
+          "interact_n": 978,
+          "json_valid": 1003,
+          "motion_n": 25,
+          "motion_obj_correct": 14,
+          "motion_tool_correct": 19,
+          "n": 1003,
+          "schema_valid": 1003,
+          "strict_exact": 13,
+          "tool_correct": 842,
+          "tool_wrong": 161
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 98,
+          "motion_n": 2,
+          "n": 98,
+          "schema_valid": 98,
+          "strict_exact": 4,
+          "tool_correct": 89,
+          "tool_wrong": 9
+        },
+        "rotation": {
+          "json_valid": 556,
+          "motion_n": 39,
+          "motion_obj_correct": 11,
+          "n": 556,
+          "schema_valid": 556,
+          "strict_exact": 40,
+          "tool_correct": 469,
+          "tool_wrong": 87
+        },
+        "translation": {
+          "json_valid": 1293,
+          "motion_n": 61,
+          "motion_obj_correct": 12,
+          "n": 1293,
+          "schema_valid": 1293,
+          "strict_exact": 86,
+          "tool_correct": 1021,
+          "tool_wrong": 272
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 10,
+          "tool_correct": 5,
+          "tool_wrong": 5
+        },
+        "cands_1": {
+          "n": 82,
+          "tool_correct": 22,
+          "tool_wrong": 60
+        },
+        "cands_2": {
+          "n": 172,
+          "tool_correct": 73,
+          "tool_wrong": 99
+        },
+        "cands_3": {
+          "n": 287,
+          "tool_correct": 200,
+          "tool_wrong": 87
+        },
+        "cands_4": {
+          "n": 287,
+          "tool_correct": 256,
+          "tool_wrong": 31
+        },
+        "cands_5": {
+          "n": 325,
+          "tool_correct": 293,
+          "tool_wrong": 32
+        },
+        "cands_6+": {
+          "n": 784,
+          "tool_correct": 730,
+          "tool_wrong": 54
+        }
+      },
+      "interact_choices_valid_rate": 1.0,
+      "interact_kind_accuracy": 0.7268292682926829,
+      "interact_n": 1845,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "model": {
+        "kind": "heuristic_predict_then_assist",
+        "model_path": null,
+        "name": "SA1_predict_then_assist"
+      },
+      "motion_n": 102,
+      "motion_obj_accuracy": 0.22549019607843138,
+      "motion_tool_accuracy": 0.24509803921568626,
+      "n": 1947,
+      "schema_errors": 0,
+      "schema_valid_rate": 1.0,
+      "strict_exact_rate": 0.0667693888032871,
+      "timing": {
+        "eval_s": 0.14445924758911133,
+        "examples_per_sec": 13477.849514611178,
+        "load_s": 0.0
+      },
+      "tool_accuracy": 0.8109912686183872,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "ALIGN_YAW": 11,
+          "APPROACH": 6,
+          "INTERACT": 30
+        },
+        "APPROACH": {
+          "ALIGN_YAW": 2,
+          "APPROACH": 14,
+          "INTERACT": 39
+        },
+        "INTERACT": {
+          "ALIGN_YAW": 59,
+          "APPROACH": 232,
+          "INTERACT": 1554
+        }
+      }
+    },
+    {
+      "by_context": {
+        "anything_else": {
+          "interact_choices_valid": 86,
+          "interact_n": 86,
+          "json_valid": 86,
+          "n": 86,
+          "schema_valid": 86,
+          "tool_correct": 74,
+          "tool_wrong": 12
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 177,
+          "interact_kind_correct": 40,
+          "interact_n": 177,
+          "json_valid": 177,
+          "n": 177,
+          "schema_valid": 177,
+          "strict_exact": 25,
+          "tool_correct": 159,
+          "tool_wrong": 18
+        },
+        "confirm": {
+          "interact_choices_valid": 102,
+          "interact_kind_correct": 62,
+          "interact_n": 102,
+          "json_valid": 179,
+          "motion_n": 77,
+          "motion_obj_correct": 3,
+          "motion_tool_correct": 5,
+          "n": 179,
+          "schema_valid": 179,
+          "strict_exact": 5,
+          "tool_correct": 90,
+          "tool_wrong": 89
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 446,
+          "interact_kind_correct": 337,
+          "interact_n": 446,
+          "json_valid": 446,
+          "n": 446,
+          "schema_valid": 446,
+          "strict_exact": 157,
+          "tool_correct": 405,
+          "tool_wrong": 41
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 7,
+          "interact_kind_correct": 2,
+          "interact_n": 7,
+          "json_valid": 7,
+          "n": 7,
+          "schema_valid": 7,
+          "tool_correct": 6,
+          "tool_wrong": 1
+        },
+        "mode_select": {
+          "interact_choices_valid": 49,
+          "interact_kind_correct": 33,
+          "interact_n": 49,
+          "json_valid": 49,
+          "n": 49,
+          "schema_valid": 49,
+          "strict_exact": 28,
+          "tool_correct": 41,
+          "tool_wrong": 8
+        },
+        "no_context": {
+          "interact_choices_valid": 978,
+          "interact_kind_correct": 709,
+          "interact_n": 978,
+          "json_valid": 1003,
+          "motion_n": 25,
+          "motion_obj_correct": 14,
+          "motion_tool_correct": 19,
+          "n": 1003,
+          "schema_valid": 1003,
+          "strict_exact": 13,
+          "tool_correct": 888,
+          "tool_wrong": 115
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 98,
+          "motion_n": 2,
+          "n": 98,
+          "schema_valid": 98,
+          "strict_exact": 10,
+          "tool_correct": 86,
+          "tool_wrong": 12
+        },
+        "rotation": {
+          "json_valid": 556,
+          "motion_n": 39,
+          "motion_obj_correct": 9,
+          "n": 556,
+          "schema_valid": 556,
+          "strict_exact": 81,
+          "tool_correct": 478,
+          "tool_wrong": 78
+        },
+        "translation": {
+          "json_valid": 1293,
+          "motion_n": 61,
+          "motion_obj_correct": 8,
+          "n": 1293,
+          "schema_valid": 1293,
+          "strict_exact": 137,
+          "tool_correct": 1099,
+          "tool_wrong": 194
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 10,
+          "tool_correct": 5,
+          "tool_wrong": 5
+        },
+        "cands_1": {
+          "n": 82,
+          "tool_correct": 22,
+          "tool_wrong": 60
+        },
+        "cands_2": {
+          "n": 172,
+          "tool_correct": 119,
+          "tool_wrong": 53
+        },
+        "cands_3": {
+          "n": 287,
+          "tool_correct": 237,
+          "tool_wrong": 50
+        },
+        "cands_4": {
+          "n": 287,
+          "tool_correct": 254,
+          "tool_wrong": 33
+        },
+        "cands_5": {
+          "n": 325,
+          "tool_correct": 299,
+          "tool_wrong": 26
+        },
+        "cands_6+": {
+          "n": 784,
+          "tool_correct": 727,
+          "tool_wrong": 57
+        }
+      },
+      "interact_choices_valid_rate": 1.0,
+      "interact_kind_accuracy": 0.6411924119241192,
+      "interact_n": 1845,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "model": {
+        "kind": "heuristic_bayesian_intent",
+        "model_path": null,
+        "name": "SA2_bayesian_intent"
+      },
+      "motion_n": 102,
+      "motion_obj_accuracy": 0.16666666666666666,
+      "motion_tool_accuracy": 0.23529411764705882,
+      "n": 1947,
+      "schema_errors": 0,
+      "schema_valid_rate": 1.0,
+      "strict_exact_rate": 0.11710323574730354,
+      "timing": {
+        "eval_s": 0.20885014533996582,
+        "examples_per_sec": 9322.473761417199,
+        "load_s": 0.0
+      },
+      "tool_accuracy": 0.8541345659989728,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "ALIGN_YAW": 9,
+          "APPROACH": 2,
+          "INTERACT": 36
+        },
+        "APPROACH": {
+          "ALIGN_YAW": 1,
+          "APPROACH": 15,
+          "INTERACT": 39
+        },
+        "INTERACT": {
+          "ALIGN_YAW": 48,
+          "APPROACH": 158,
+          "INTERACT": 1639
+        }
+      }
+    }
+  ]
+}

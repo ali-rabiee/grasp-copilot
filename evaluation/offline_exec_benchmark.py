@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import time
 from collections import Counter
 from dataclasses import dataclass, field
@@ -29,6 +30,7 @@ try:
 except Exception:
     import _bootstrap  # type: ignore  # noqa: F401
 
+from data_generator.grid import manhattan as _grid_manhattan
 from data_generator.oracle import validate_tool_call
 
 from llm.inference import InferenceConfig, _build_messages, _generate_once, _load_model_and_tokenizer
@@ -265,6 +267,183 @@ def _heuristic_always_ask(input_str: str) -> Dict[str, Any]:
     return {"tool": "INTERACT", "args": {"kind": "QUESTION", "text": "Which object do you want help with?", "choices": choices}}
 
 
+def _heuristic_predict_then_assist(input_str: str) -> Dict[str, Any]:
+    """
+    SA1: Predict-then-Assist baseline.
+
+    Inspired by policy-blending shared autonomy (Dragan & Srinivasa, 2013)
+    and predict-then-assist (Herlant et al., 2016).
+
+    Computes per-candidate intent probability via inverse-distance softmax
+    weighted by gripper motion direction. Acts when the maximum probability
+    exceeds a confidence threshold tau; otherwise asks for clarification.
+    """
+    _BETA = 1.5          # inverse temperature for distance softmax
+    _DIR_W = 0.5         # weight for motion-direction bonus
+    _TAU = 0.6           # confidence threshold for acting
+
+    inp = json_loads_strict(input_str)
+    assert isinstance(inp, dict)
+    objects = inp.get("objects") or []
+    memory = inp.get("memory") or {}
+    user_state = inp.get("user_state") or {}
+    gripper_hist = inp.get("gripper_hist") or []
+    candidates = list((memory.get("candidates") or [])) if isinstance(memory, dict) else []
+
+    mode = str((user_state.get("mode") if isinstance(user_state, dict) else "") or "translation").strip().lower()
+    desired_tool = "APPROACH" if mode in {"translation", "gripper"} else "ALIGN_YAW"
+
+    if not candidates or not gripper_hist:
+        return {
+            "tool": "INTERACT",
+            "args": {"kind": "QUESTION", "text": "What do you want help with?", "choices": ["1) YES", "2) NO"]},
+        }
+
+    if len(candidates) == 1:
+        return {"tool": desired_tool, "args": {"obj": str(candidates[0])}}
+
+    current_cell = gripper_hist[-1]["cell"]
+    objects_by_id = {str(o["id"]): o for o in objects if isinstance(o, dict)}
+
+    scores: Dict[str, float] = {}
+    for cid in candidates:
+        obj = objects_by_id.get(str(cid))
+        if not obj:
+            continue
+        dist = _grid_manhattan(current_cell, obj["cell"])
+        score = -_BETA * dist
+
+        if len(gripper_hist) >= 2:
+            prev_cell = gripper_hist[-2]["cell"]
+            prev_dist = _grid_manhattan(prev_cell, obj["cell"])
+            score += _DIR_W * (prev_dist - dist)
+
+        scores[str(cid)] = score
+
+    if not scores:
+        return {
+            "tool": "INTERACT",
+            "args": {"kind": "QUESTION", "text": "Which object do you want help with?", "choices": ["1) YES", "2) NO"]},
+        }
+
+    max_score = max(scores.values())
+    probs = {k: math.exp(v - max_score) for k, v in scores.items()}
+    total = sum(probs.values())
+    probs = {k: v / total for k, v in probs.items()}
+
+    best_obj = max(probs, key=lambda k: probs[k])
+    if probs[best_obj] >= _TAU:
+        return {"tool": desired_tool, "args": {"obj": best_obj}}
+
+    labels: List[str] = []
+    for oid in candidates:
+        lab = _label_by_id(objects if isinstance(objects, list) else [], str(oid))
+        if lab:
+            labels.append(lab)
+    labels = labels[:4]
+    choices = [f"{i+1}) {lab}" for i, lab in enumerate(labels)]
+    if len(choices) < 5:
+        choices.append(f"{len(choices)+1}) None of them")
+    return {"tool": "INTERACT", "args": {"kind": "QUESTION", "text": "Which object do you want help with?", "choices": choices}}
+
+
+def _heuristic_bayesian_intent(input_str: str) -> Dict[str, Any]:
+    """
+    SA2: Bayesian Intent Inference baseline.
+
+    Inspired by POMDP-based shared autonomy with hindsight optimization
+    (Javdani et al., 2015/2018) and POMDP grasping (Yow et al., 2023).
+
+    Maintains a posterior belief over candidate objects using proximity and
+    full gripper-motion history as observation evidence.  Uses normalised
+    posterior entropy to choose among three strategies:
+      - Low  entropy  (<0.3): execute directly on MAP object
+      - Mid  entropy  (0.3-0.7): confirm MAP object
+      - High entropy  (>0.7): present ranked candidate menu
+    """
+    _DIST_W = 1.0           # weight for proximity term
+    _MOTION_W = 1.5         # weight per history step for motion-toward signal
+    _ENT_LOW = 0.3          # below: execute
+    _ENT_HIGH = 0.7         # above: full question menu
+
+    inp = json_loads_strict(input_str)
+    assert isinstance(inp, dict)
+    objects = inp.get("objects") or []
+    memory = inp.get("memory") or {}
+    user_state = inp.get("user_state") or {}
+    gripper_hist = inp.get("gripper_hist") or []
+    candidates = list((memory.get("candidates") or [])) if isinstance(memory, dict) else []
+
+    mode = str((user_state.get("mode") if isinstance(user_state, dict) else "") or "translation").strip().lower()
+    desired_tool = "APPROACH" if mode in {"translation", "gripper"} else "ALIGN_YAW"
+    action_verb = "approach" if mode in {"translation", "gripper"} else "align yaw to"
+
+    if not candidates or not gripper_hist:
+        return {
+            "tool": "INTERACT",
+            "args": {"kind": "QUESTION", "text": "What do you want help with?", "choices": ["1) YES", "2) NO"]},
+        }
+
+    if len(candidates) == 1:
+        return {"tool": desired_tool, "args": {"obj": str(candidates[0])}}
+
+    current_cell = gripper_hist[-1]["cell"]
+    objects_by_id = {str(o["id"]): o for o in objects if isinstance(o, dict)}
+
+    log_liks: Dict[str, float] = {}
+    for cid in candidates:
+        obj = objects_by_id.get(str(cid))
+        if not obj:
+            continue
+        dist = _grid_manhattan(current_cell, obj["cell"])
+        ll = -_DIST_W * dist
+
+        for i in range(1, len(gripper_hist)):
+            prev_d = _grid_manhattan(gripper_hist[i - 1]["cell"], obj["cell"])
+            cur_d = _grid_manhattan(gripper_hist[i]["cell"], obj["cell"])
+            ll += _MOTION_W * (prev_d - cur_d)
+
+        log_liks[str(cid)] = ll
+
+    if not log_liks:
+        return {
+            "tool": "INTERACT",
+            "args": {"kind": "QUESTION", "text": "What do you want help with?", "choices": ["1) YES", "2) NO"]},
+        }
+
+    max_ll = max(log_liks.values())
+    posteriors = {k: math.exp(v - max_ll) for k, v in log_liks.items()}
+    total = sum(posteriors.values())
+    posteriors = {k: v / total for k, v in posteriors.items()}
+
+    entropy = -sum(p * math.log(p + 1e-10) for p in posteriors.values())
+    max_entropy = math.log(len(posteriors)) if len(posteriors) > 1 else 1.0
+    norm_ent = entropy / max_entropy if max_entropy > 0 else 0.0
+
+    map_obj = max(posteriors, key=lambda k: posteriors[k])
+
+    if norm_ent < _ENT_LOW:
+        return {"tool": desired_tool, "args": {"obj": map_obj}}
+
+    if norm_ent < _ENT_HIGH:
+        lab = _label_by_id(objects, map_obj) or map_obj
+        return {
+            "tool": "INTERACT",
+            "args": {"kind": "CONFIRM", "text": f"Do you want me to {action_verb} the {lab}?", "choices": ["1) YES", "2) NO"]},
+        }
+
+    sorted_objs = sorted(posteriors.items(), key=lambda x: -x[1])
+    labels: List[str] = []
+    for oid, _ in sorted_objs[:4]:
+        lab = _label_by_id(objects, str(oid))
+        if lab:
+            labels.append(lab)
+    choices = [f"{i+1}) {lab}" for i, lab in enumerate(labels)]
+    if len(choices) < 5:
+        choices.append(f"{len(choices)+1}) None of them")
+    return {"tool": "INTERACT", "args": {"kind": "QUESTION", "text": "Which object do you want help with?", "choices": choices}}
+
+
 # =============================================================================
 # Metrics
 # =============================================================================
@@ -436,6 +615,14 @@ def _eval_one_model(
             pred_raw_obj = _heuristic_always_ask(input_str)
             raw = json.dumps(pred_raw_obj, ensure_ascii=False)
             pred_obj = pred_raw_obj
+        elif spec.kind == "heuristic_predict_then_assist":
+            pred_raw_obj = _heuristic_predict_then_assist(input_str)
+            raw = json.dumps(pred_raw_obj, ensure_ascii=False)
+            pred_obj = pred_raw_obj
+        elif spec.kind == "heuristic_bayesian_intent":
+            pred_raw_obj = _heuristic_bayesian_intent(input_str)
+            raw = json.dumps(pred_raw_obj, ensure_ascii=False)
+            pred_obj = pred_raw_obj
         else:
             assert cfg is not None and model is not None and tok is not None
             prompt = f"{instruction}\n\nInput:\n{input_str}"
@@ -597,7 +784,14 @@ def _eval_one_model(
     return summary
 
 
-def _parse_model_specs(models: Sequence[str], *, include_heuristic: bool, include_heuristic_always_ask: bool) -> List[ModelSpec]:
+def _parse_model_specs(
+    models: Sequence[str],
+    *,
+    include_heuristic: bool,
+    include_heuristic_always_ask: bool,
+    include_sa_predict_then_assist: bool = False,
+    include_sa_bayesian_intent: bool = False,
+) -> List[ModelSpec]:
     specs: List[ModelSpec] = []
     for m in models:
         if "=" in m:
@@ -614,6 +808,10 @@ def _parse_model_specs(models: Sequence[str], *, include_heuristic: bool, includ
         specs.append(ModelSpec(name="H1_ask_if_ambiguous", kind="heuristic_ask_if_ambiguous"))
     if include_heuristic_always_ask:
         specs.append(ModelSpec(name="H2_always_ask", kind="heuristic_always_ask"))
+    if include_sa_predict_then_assist:
+        specs.append(ModelSpec(name="SA1_predict_then_assist", kind="heuristic_predict_then_assist"))
+    if include_sa_bayesian_intent:
+        specs.append(ModelSpec(name="SA2_bayesian_intent", kind="heuristic_bayesian_intent"))
     return specs
 
 
@@ -735,6 +933,8 @@ def main(argv: Optional[List[str]] = None) -> None:
     ap.add_argument("--models", type=str, nargs="*", default=[], help='Models: "name=path" or "path".')
     ap.add_argument("--include_heuristic", action="store_true", help="Include H1: ask-if-ambiguous baseline.")
     ap.add_argument("--include_heuristic_always_ask", action="store_true", help="Include H2: always-ask baseline.")
+    ap.add_argument("--include_sa_predict_then_assist", action="store_true", help="Include SA1: predict-then-assist baseline.")
+    ap.add_argument("--include_sa_bayesian_intent", action="store_true", help="Include SA2: Bayesian intent inference baseline.")
     ap.add_argument("--out_dir", type=str, default="evaluation/eval_outputs/offline_exec", help="Output directory.")
 
     ap.add_argument("--max_examples", type=int, default=0, help="Max examples (0=all).")
@@ -765,9 +965,11 @@ def main(argv: Optional[List[str]] = None) -> None:
         list(args.models),
         include_heuristic=bool(args.include_heuristic),
         include_heuristic_always_ask=bool(args.include_heuristic_always_ask),
+        include_sa_predict_then_assist=bool(args.include_sa_predict_then_assist),
+        include_sa_bayesian_intent=bool(args.include_sa_bayesian_intent),
     )
     if not specs:
-        raise SystemExit("Pass at least one --models path or use --include_heuristic / --include_heuristic_always_ask.")
+        raise SystemExit("Pass at least one --models path or use --include_heuristic / --include_heuristic_always_ask / --include_sa_predict_then_assist / --include_sa_bayesian_intent.")
 
     print(f"[benchmark] Evaluating {len(specs)} model(s): {[s.name for s in specs]}")
 
