@@ -84,7 +84,7 @@ export TOKENIZERS_PARALLELISM=false
 python scripts/train_sft_lora.py \
     --model_name "$MODEL_NAME" \
     --train_path "$TRAIN_PATH" \
-    --no-full_finetune --no-use_4bit \
+    --no-use_4bit \
     --lora_r "$LORA_R" --lora_alpha "$LORA_ALPHA" --lora_dropout "$LORA_DROPOUT" \
     --max_seq_length "$MAX_SEQ_LENGTH" \
     --per_device_train_batch_size "$PER_DEVICE_TRAIN_BATCH_SIZE" \
