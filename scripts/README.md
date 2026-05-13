@@ -116,7 +116,7 @@ python scripts/inference_demo.py \
 # Or feed a JSONL of inputs and dump tool calls
 python scripts/inference_demo.py \
     --model_path models/qwen2_5_7b_instruct_ft \
-    --input_jsonl data/runs/NNN/llm_contract.jsonl \
+    --input_jsonl data/<env>/01/llm_contract_<N>.jsonl \
     --output_jsonl predictions.jsonl
 ```
 
@@ -128,13 +128,13 @@ Backed by `llm/inference.py`.
 
 ```bash
 # Raw oracle output (per-tick records)
-python scripts/inspect_data.py --file data/runs/NNN/grasp_gen.jsonl --mode generator --n 5
+python scripts/inspect_data.py --file data/<env>/01/grasp_gen_<N>.jsonl --mode generator --n 5
 
 # SFT contract (instruction/input/output)
-python scripts/inspect_data.py --file data/runs/NNN/llm_contract.jsonl --mode contract --n 5
+python scripts/inspect_data.py --file data/<env>/01/llm_contract_<N>.jsonl --mode contract --n 5
 
 # Qwen chat format (messages)
-python scripts/inspect_data.py --file data/runs/NNN/llm_chat.jsonl --mode chat --n 5
+python scripts/inspect_data.py --file data/<env>/01/llm_chat_<N>.jsonl --mode chat --n 5
 ```
 
 ---
@@ -146,9 +146,9 @@ scripting:
 
 ```bash
 python -m llm.prepare_llm_data \
-    --generator_jsonl data/runs/NNN/grasp_gen.jsonl \
-    --out_contract    data/runs/NNN/llm_contract.jsonl \
-    --out_chat        data/runs/NNN/llm_chat.jsonl
+    --generator_jsonl data/<env>/01/grasp_gen_<N>.jsonl \
+    --out_contract    data/<env>/01/llm_contract_<N>.jsonl \
+    --out_chat        data/<env>/01/llm_chat_<N>.jsonl
 ```
 
 For most users, `grasp-collect` already does this in one shot — only
@@ -164,8 +164,8 @@ variant for training:
 
 ```bash
 python scripts/rebalance_contract.py \
-    --in_path    data/runs/NNN/llm_contract.jsonl \
-    --out_path   data/runs/NNN/llm_contract_rebalanced.jsonl \
+    --in_path    data/<env>/01/llm_contract_<N>.jsonl \
+    --out_path   data/<env>/01/llm_contract_<N>_rebalanced.jsonl \
     --motion_repeat 10 \
     --interact_keep_prob 0.7 \
     --seed 0
@@ -183,8 +183,8 @@ Full-parameter fine-tune on H100-class GPUs:
 ```bash
 python scripts/train_sft_lora.py \
     --model_name Qwen/Qwen2.5-7B-Instruct \
-    --train_path data/runs/NNN/llm_contract_rebalanced.jsonl \
-    --valid_path data/runs/NNN/llm_contract.jsonl \
+    --train_path data/<env>/01/llm_contract_<N>_rebalanced.jsonl \
+    --valid_path data/<env>/01/llm_contract_<N>.jsonl \
     --full_finetune --no-use_4bit \
     --max_seq_length 2048 \
     --per_device_train_batch_size 2 \
@@ -199,8 +199,8 @@ QLoRA on a smaller GPU:
 ```bash
 python scripts/train_sft_lora.py \
     --model_name Qwen/Qwen2.5-3B-Instruct \
-    --train_path data/runs/NNN/llm_contract_rebalanced.jsonl \
-    --valid_path data/runs/NNN/llm_contract.jsonl \
+    --train_path data/<env>/01/llm_contract_<N>_rebalanced.jsonl \
+    --valid_path data/<env>/01/llm_contract_<N>.jsonl \
     --max_seq_length 1024 \
     --per_device_train_batch_size 1 --gradient_accumulation_steps 16 \
     --lr 2e-4 --optim paged_adamw_32bit \
@@ -249,7 +249,7 @@ grasp-collect --env cube_stacking      --episodes 10000 --rebalance
 grasp-collect --env pouring            --episodes 10000 --rebalance
 
 # 3) Inspect a sample
-python scripts/inspect_data.py --file data/runs/NNN/grasp_gen.jsonl --mode generator --n 5
+python scripts/inspect_data.py --file data/<env>/01/grasp_gen_<N>.jsonl --mode generator --n 5
 
 # 4) Train
 python scripts/train_sft_lora.py --train_path … --valid_path … --output_dir models/…

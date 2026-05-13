@@ -9,15 +9,28 @@ from typing import Optional
 from .episode import write_jsonl
 from .generate_dataset import generate as generate_records
 from .oracle_registry import ENV_REGISTRY
-from .run_dirs import allocate_numbered_run_dir
+from .run_dirs import _repo_root, allocate_numbered_run_dir
 
 
-def _default_paths(out_dir: str) -> tuple[str, str, str]:
+# Short directory names used under data/ — chosen for readability rather than
+# the long env identifiers.  Layout:
+#   data/<short>/<NN>/grasp_gen_<episodes>.jsonl
+#   data/<short>/<NN>/llm_contract_<episodes>.jsonl
+#   data/<short>/<NN>/llm_chat_<episodes>.jsonl
+ENV_SHORT_NAME = {
+    "reach_to_grasp_ycb": "ycb",
+    "cube_stacking": "stacking",
+    "pouring": "pouring",
+}
+
+
+def _default_paths(out_dir: str, episodes: Optional[int]) -> tuple[str, str, str]:
     d = Path(out_dir)
+    suffix = f"_{int(episodes)}" if episodes else ""
     return (
-        str(d / "grasp_gen.jsonl"),
-        str(d / "llm_contract.jsonl"),
-        str(d / "llm_chat.jsonl"),
+        str(d / f"grasp_gen{suffix}.jsonl"),
+        str(d / f"llm_contract{suffix}.jsonl"),
+        str(d / f"llm_chat{suffix}.jsonl"),
     )
 
 
@@ -128,11 +141,17 @@ def main(argv: Optional[list[str]] = None) -> None:
         out_dir_path = Path(str(args.out_dir))
         out_dir_path.mkdir(parents=True, exist_ok=True)
     else:
-        out_dir_path = allocate_numbered_run_dir()
-        print(f"[collect] out_dir: {out_dir_path}")
+        # Env-specific layout: data/<short>/<NN>/. Width-2 ids (01, 02, …).
+        short = ENV_SHORT_NAME.get(args.env, args.env)
+        env_root = _repo_root() / "data" / short
+        out_dir_path = allocate_numbered_run_dir(runs_root=env_root, width=2)
+        print(f"[collect] env={args.env}  out_dir: {out_dir_path}")
 
     out_dir = str(out_dir_path)
-    out_gen_default, out_contract_default, out_chat_default = _default_paths(out_dir)
+    # Embed the episode count in default filenames so a folder full of
+    # multiple runs (or re-preps) is self-describing.
+    episodes_for_naming = int(args.episodes) if args.episodes else None
+    out_gen_default, out_contract_default, out_chat_default = _default_paths(out_dir, episodes_for_naming)
 
     out_generator = str(args.out_generator or out_gen_default)
     out_contract = str(args.out_contract or out_contract_default)

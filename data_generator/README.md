@@ -50,17 +50,30 @@ grasp-collect --env cube_stacking --episodes 10000 --seed 0 --rebalance
 grasp-collect --env pouring --episodes 10000 --seed 0 --rebalance
 ```
 
-Each run writes into a fresh `data/runs/NNN/` directory (auto-numbered):
+Each run writes into a fresh, **env-named, auto-numbered** directory under
+`data/`. Layout:
 
 ```
-data/runs/NNN/
-├── grasp_gen.jsonl                  ← raw per-tick generator output (this file is the "ground truth")
-├── grasp_gen.jsonl.stats.json       ← tool distribution, user-reply distribution
-├── llm_contract.jsonl               ← {instruction, input, output} for SFT
-├── llm_contract_rebalanced.jsonl    ← motion-tool-upsampled training file (if --rebalance)
-├── llm_chat.jsonl                   ← Qwen chat format
-└── llm_chat_rebalanced.jsonl
+data/
+├── ycb/
+│   ├── 01/
+│   │   ├── grasp_gen_<N>.jsonl              raw per-tick generator output (this file is the "ground truth")
+│   │   ├── grasp_gen_<N>.jsonl.stats.json   tool distribution, user-reply distribution
+│   │   ├── llm_contract_<N>.jsonl           {instruction, input, output} for SFT
+│   │   ├── llm_contract_<N>_rebalanced.jsonl   motion-tool-upsampled training file (if --rebalance)
+│   │   ├── llm_chat_<N>.jsonl               Qwen chat format
+│   │   └── llm_chat_<N>_rebalanced.jsonl
+│   └── 02/    (next run on this env)
+├── stacking/
+│   └── 01/
+└── pouring/
+    └── 01/
 ```
+
+Where `<N>` is the value passed to `--episodes` (e.g., `grasp_gen_10000.jsonl`),
+so a folder full of related runs is self-describing. Env short names are
+`ycb`, `stacking`, `pouring`. Pass `--out_dir` to override the default
+auto-allocation.
 
 `--rebalance` upsamples motion-tool examples (`APPROACH/ALIGN_YAW/STACK/GRAB/POUR`)
 because the natural distribution is INTERACT-heavy (~85–90 %).
@@ -75,7 +88,7 @@ You almost always want this for training.
 | `--episodes N` | **10000** | Number of episodes to roll out. |
 | `--env NAME` | `reach_to_grasp_ycb` | Pick the oracle/env. |
 | `--seed N` | `0` | Reproducibility. Use a different seed per parallel run. |
-| `--out_dir PATH` | auto-numbered | If set, writes there instead of `data/runs/NNN/`. |
+| `--out_dir PATH` | auto-numbered | If set, writes there instead of `data/<env>/NN/`. |
 | `--n_obj_min / --n_obj_max` | `2 / 10` | YCB / stacking scene size range. Pouring ignores these (uses 1–3 cups). |
 | `--collision_p` | `0.15` | YCB only: prob two objects share a cell. |
 | `--candidate_max_dist` | env default | Manhattan radius for the candidate set. Defaults: ycb=1, stacking=2, pouring=2. |
@@ -99,20 +112,20 @@ into its own subfolder, then either:
 ```bash
 # generate
 grasp-collect --env reach_to_grasp_ycb --episodes 10000 --seed 0 --rebalance \
-              --out_dir data/runs/merged_v1/ycb
+              --out_dir data/merged_v1/ycb
 grasp-collect --env cube_stacking      --episodes 10000 --seed 0 --rebalance \
-              --out_dir data/runs/merged_v1/stacking
+              --out_dir data/merged_v1/stacking
 grasp-collect --env pouring            --episodes 10000 --seed 0 --rebalance \
-              --out_dir data/runs/merged_v1/pouring
+              --out_dir data/merged_v1/pouring
 
 # concat (the contract format is identical across envs)
-cat data/runs/merged_v1/{ycb,stacking,pouring}/llm_contract_rebalanced.jsonl \
-    > data/runs/merged_v1/llm_contract_rebalanced.jsonl
+cat data/merged_v1/{ycb,stacking,pouring}/llm_contract_10000_rebalanced.jsonl \
+    > data/merged_v1/llm_contract_10000_rebalanced.jsonl
 
 # convert to chat format for the trainer
 python -m llm.data convert-contract-to-chat \
-    --in data/runs/merged_v1/llm_contract_rebalanced.jsonl \
-    --out data/runs/merged_v1/llm_chat_rebalanced.jsonl
+    --in data/merged_v1/llm_contract_10000_rebalanced.jsonl \
+    --out data/merged_v1/llm_chat_10000_rebalanced.jsonl
 ```
 
 **(b)** or train per-env adapters separately and merge later.
@@ -141,9 +154,9 @@ Outputs:
 Quick eyeball:
 
 ```bash
-python scripts/inspect_data.py --file data/runs/NNN/grasp_gen.jsonl --mode generator --n 5
-python scripts/inspect_data.py --file data/runs/NNN/llm_contract.jsonl --mode contract --n 5
-python scripts/inspect_data.py --file data/runs/NNN/llm_chat.jsonl     --mode chat     --n 5
+python scripts/inspect_data.py --file data/<env>/NN/grasp_gen_<N>.jsonl --mode generator --n 5
+python scripts/inspect_data.py --file data/<env>/NN/llm_contract_<N>.jsonl --mode contract --n 5
+python scripts/inspect_data.py --file data/<env>/NN/llm_chat_<N>.jsonl     --mode chat     --n 5
 ```
 
 Programmatic sanity (every record schema-valid, motion always preceded
@@ -153,7 +166,7 @@ by consent):
 import json
 from data_generator.oracle import validate_tool_call
 for env in ("reach_to_grasp_ycb", "cube_stacking", "pouring"):
-    path = f"data/runs/NNN/grasp_gen.jsonl"   # one path per env
+    path = f"data/{env}/01/grasp_gen_<N>.jsonl"   # one path per env, e.g. data/pouring/01/grasp_gen_10000.jsonl
     for line in open(path):
         rec = json.loads(line)
         validate_tool_call(rec["target_tool_call"], env=rec.get("env", env))
@@ -162,7 +175,7 @@ for env in ("reach_to_grasp_ycb", "cube_stacking", "pouring"):
 Stats file gives the tool distribution and per-context reply counts:
 
 ```bash
-cat data/runs/NNN/grasp_gen.jsonl.stats.json | jq .
+cat data/<env>/NN/grasp_gen_<N>.jsonl.stats.json | jq .
 ```
 
 ---
