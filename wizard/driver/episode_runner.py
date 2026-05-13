@@ -109,12 +109,12 @@ class EpisodeRunner:
             self._update_candidates_from_reply(kind, text, choices, reply)
             return False
 
-        if tool in {"APPROACH", "ALIGN_YAW"}:
+        if tool in {"APPROACH", "ALIGN_YAW", "STACK", "RELEASE", "GRAB", "POUR"}:
             obj_id = args.get("obj", "")
-            self.env.apply_execution_skill(tool, obj_id)
+            self.env.apply_execution_skill(tool, obj_id, args.get("amount"))
             self.scheduler.mark_post_execution()
             target = next((o for o in self.env.objects if o.id == self.env.intended_obj_id), None)
-            if target is not None and obj_id == target.id and tool == "ALIGN_YAW":
+            if target is not None and obj_id == target.id and tool in {"ALIGN_YAW", "STACK", "POUR"}:
                 return True
             return False
 

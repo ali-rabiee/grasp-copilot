@@ -54,6 +54,9 @@ class ObjectState:
     cell: str
     yaw: str
     is_held: bool = False
+    kind: Optional[str] = None
+    fill: Optional[str] = None
+    top_of_stack: bool = True
 
 
 @dataclass
@@ -97,12 +100,20 @@ def sample_scene(cfg: EnvConfig, rng: random.Random) -> Tuple[List[ObjectState],
         n = rng.randint(cfg.n_objects_min, cfg.n_objects_max)
 
     cells = _sample_unique_cells(rng, n)
-    labels = list(rng.sample(labels_pool, k=min(n, len(labels_pool))))
+    if cfg.env_name == "pouring":
+        labels = ["pitcher"] + list(rng.sample([l for l in labels_pool if l != "pitcher"], k=max(1, n - 1)))
+    else:
+        labels = list(rng.sample(labels_pool, k=min(n, len(labels_pool))))
     while len(labels) < n:
         labels.append(rng.choice(labels_pool))
 
     objects: List[ObjectState] = []
     for i in range(n):
+        kind = None
+        fill = None
+        if cfg.env_name == "pouring":
+            kind = "pitcher" if labels[i] == "pitcher" else "cup"
+            fill = None if kind == "pitcher" else rng.choice(["EMPTY", "SMALL", "HALF"])
         objects.append(
             ObjectState(
                 id=_new_id(i),
@@ -110,6 +121,8 @@ def sample_scene(cfg: EnvConfig, rng: random.Random) -> Tuple[List[ObjectState],
                 cell=cells[i],
                 yaw=rng.choice(yawlib.YAW_BINS),
                 is_held=False,
+                kind=kind,
+                fill=fill,
             )
         )
 
@@ -223,10 +236,10 @@ class SchematicEnv:
 
     # ------------------------------------------------------------- skill apply
 
-    def apply_execution_skill(self, tool: str, obj_id: str) -> str:
-        """Execute APPROACH or ALIGN_YAW deterministically. Returns outcome label."""
+    def apply_execution_skill(self, tool: str, obj_id: str = "", amount: Optional[str] = None) -> str:
+        """Execute a symbolic PRIME skill deterministically. Returns outcome label."""
         target = next((o for o in self.objects if o.id == obj_id), None)
-        if target is None:
+        if tool not in {"RELEASE"} and target is None:
             return "fail_target_missing"
         if tool == "APPROACH":
             self.gripper.cell = target.cell
@@ -235,10 +248,53 @@ class SchematicEnv:
         elif tool == "ALIGN_YAW":
             self.gripper.yaw = target.yaw
             outcome = "success"
+        elif tool == "STACK":
+            held = next((o for o in self.objects if o.is_held), None)
+            if held is None or target is None or target.is_held:
+                outcome = "fail_no_stack_target"
+            else:
+                held.is_held = False
+                held.cell = target.cell
+                held.yaw = target.yaw
+                held.top_of_stack = True
+                target.top_of_stack = False
+                self.gripper.cell = target.cell
+                self.gripper.z = "LOW"
+                outcome = "success"
+        elif tool == "RELEASE":
+            held = next((o for o in self.objects if o.is_held), None)
+            if held is None:
+                outcome = "fail_nothing_held"
+            else:
+                held.is_held = False
+                held.cell = self.gripper.cell
+                held.yaw = self.gripper.yaw
+                outcome = "success"
+        elif tool == "GRAB":
+            held = next((o for o in self.objects if o.is_held), None)
+            if held is not None or target is None:
+                outcome = "fail_gripper_occupied"
+            else:
+                target.is_held = True
+                self.gripper.cell = target.cell
+                self.gripper.yaw = target.yaw
+                self.gripper.z = "LOW"
+                outcome = "success"
+        elif tool == "POUR":
+            if target is None or target.kind != "cup":
+                outcome = "fail_not_cup"
+            else:
+                target.fill = amount or "FULL"
+                outcome = "success"
         else:
             return "fail_unknown_tool"
         self.gripper_hist.append(self._gripper_record())
-        self.memory["last_action"] = {"tool": tool, "obj": obj_id, "outcome": outcome}
+        action = {"tool": tool, "outcome": outcome}
+        if obj_id:
+            action["obj"] = obj_id
+        if amount:
+            action["amount"] = amount
+        self.memory["last_action"] = action
         last_calls = list(self.memory.get("last_tool_calls") or [])
         last_calls.append(tool)
         self.memory["last_tool_calls"] = last_calls[-3:]
@@ -270,11 +326,19 @@ class SchematicEnv:
 
         Excludes ``intended_obj_id`` and any other ground-truth fields.
         """
+        object_records = []
+        for o in self.objects:
+            rec = {"id": o.id, "label": o.label, "cell": o.cell, "yaw": o.yaw, "is_held": o.is_held}
+            if o.kind is not None:
+                rec["kind"] = o.kind
+            if o.fill is not None:
+                rec["fill"] = o.fill
+            if not o.top_of_stack:
+                rec["top_of_stack"] = False
+            object_records.append(rec)
+
         return {
-            "objects": [
-                {"id": o.id, "label": o.label, "cell": o.cell, "yaw": o.yaw, "is_held": o.is_held}
-                for o in self.objects
-            ],
+            "objects": object_records,
             "gripper_hist": list(self.gripper_hist),
             "memory": {
                 "n_interactions": int(self.memory.get("n_interactions", 0)),

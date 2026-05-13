@@ -16,6 +16,7 @@ import matplotlib
 
 matplotlib.use("Agg")  # default non-interactive backend; FigureCanvasTkAgg overrides
 from matplotlib.figure import Figure
+from matplotlib.patches import Rectangle
 
 from data_generator import grid as gridlib
 
@@ -77,6 +78,26 @@ class GridView:
 
         objects: List[Dict] = list(blob.get("objects") or [])
         gripper_hist: List[Dict] = list(blob.get("gripper_hist") or [])
+        mem = blob.get("memory") or {}
+        candidates = set(mem.get("candidates") or [])
+        excluded = set(mem.get("excluded_obj_ids") or [])
+
+        for o in objects:
+            if o.get("id") not in candidates and o.get("id") not in excluded:
+                continue
+            cell = o.get("cell")
+            if not cell:
+                continue
+            x, y = _cell_to_xy(cell)
+            face = "#ecfdf3" if o.get("id") in candidates else "#f3f4f6"
+            edge = "#0f766e" if o.get("id") in candidates else "#9ca3af"
+            ax.add_patch(
+                Rectangle(
+                    (x - 0.48, y - 0.48), 0.96, 0.96,
+                    facecolor=face, edgecolor=edge, linewidth=1.2,
+                    alpha=0.55, zorder=0,
+                )
+            )
 
         # Group objects per cell to fan them out.
         per_cell: Dict[str, List[Dict]] = {}
@@ -93,12 +114,21 @@ class GridView:
                 oy = cy + 0.18 * math.sin(offset_angle) if n > 1 else cy
                 color = _OBJ_PALETTE[hash(o["id"]) % len(_OBJ_PALETTE)]
                 marker = "s" if o.get("is_held") else "o"
-                ax.scatter([ox], [oy], s=160, c=color, marker=marker,
-                           edgecolors="black", linewidths=0.6, zorder=3)
+                is_candidate = o.get("id") in candidates
+                is_excluded = o.get("id") in excluded
+                size = 230 if is_candidate else 170
+                edge = "#0f766e" if is_candidate else "#6b7280" if is_excluded else "black"
+                alpha = 0.38 if is_excluded else 1.0
+                ax.scatter([ox], [oy], s=size, c=color, marker=marker,
+                           edgecolors=edge, linewidths=2.0 if is_candidate else 0.8,
+                           alpha=alpha, zorder=3)
                 vx, vy = _YAW_VEC.get(o["yaw"], (0.0, 1.0))
                 ax.plot([ox, ox + 0.22 * vx], [oy, oy + 0.22 * vy],
-                        color="black", lw=1.2, zorder=4)
-                ax.text(ox, oy - 0.3, f"{o['id']}\n{o['label']}",
+                        color=edge, lw=1.5 if is_candidate else 1.2,
+                        alpha=alpha, zorder=4)
+                status = "CAND" if is_candidate else "EXCL" if is_excluded else ""
+                label = f"{o['id']}\n{o['label']}" if not status else f"{o['id']}  {status}\n{o['label']}"
+                ax.text(ox, oy - 0.3, label,
                         fontsize=7, ha="center", va="top", color="#333333", zorder=5)
 
         # Gripper history trail.
@@ -178,4 +208,9 @@ class GridView:
                 ax.text(gx + 0.22, gy + 0.22, f"×{runs[-1]['count']}",
                         fontsize=8, color="#000000", fontweight="bold", zorder=8)
 
+        ax.text(
+            0.03, -0.08,
+            "green cell/ring = candidate   gray cell = excluded   X = gripper",
+            transform=ax.transAxes, fontsize=8, color="#4b5563",
+        )
         ax.set_title("Workspace (top-down · row A is far)", fontsize=10)

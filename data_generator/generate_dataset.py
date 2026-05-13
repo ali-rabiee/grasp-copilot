@@ -513,7 +513,9 @@ def generate(
                     la["amount"] = tool_call["args"]["amount"]
                 memory["last_action"] = la
             if t < ep.T - 1:
-                skip_user_motion = tool_call["tool"] != "INTERACT" and rng.random() < 0.85
+                # Treat an INTERACT as a conversational turn: the user answers
+                # the assistant, then motion resumes on a later timestep.
+                skip_user_motion = tool_call["tool"] == "INTERACT" or rng.random() < 0.85
                 if not skip_user_motion:
                     ep.apply_user_motion()
 
@@ -594,4 +596,3 @@ def main(argv: Optional[List[str]] = None) -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -18,7 +18,6 @@ Tk root to advance episodes without blocking the UI thread.
 
 from __future__ import annotations
 
-import json
 import queue
 import threading
 import tkinter as tk
@@ -59,6 +58,10 @@ COL_ACCENT      = "#1a73e8"
 COL_BORDER      = "#d1d5db"
 COL_LATEST      = "#f9ab00"
 COL_ALERT_BG    = "#ffb74d"
+COL_SUCCESS     = "#0f766e"
+COL_DANGER      = "#b42318"
+COL_ASK_BG      = "#e8f1ff"
+COL_ACT_BG      = "#ecfdf3"
 
 REPLY_STYLE = {
     "YES":  ("#d4edda", "#0f5132"),  # green
@@ -90,6 +93,7 @@ FONT_HEADER   = ("Helvetica", 13, "bold")
 FONT_CHIP     = ("Helvetica", 9, "bold")
 FONT_REPLY    = ("Helvetica", 15, "bold")
 FONT_REPLY_HI = ("Helvetica", 20, "bold")
+FONT_PREVIEW   = ("Courier", 9)
 
 
 def _classify_reply(reply: str) -> tuple[str, str]:
@@ -162,154 +166,264 @@ class WizardApp:
     # ------------------------------------------------------------ UI build
 
     def _build_ui(self) -> None:
-        # Header
-        self.header = tk.Frame(self.root, bg="#222222", padx=10, pady=6)
+        self.root.configure(bg=COL_BG)
+        self.root.geometry("1320x960")
+
+        # ─── Header (dark strip) ──────────────────────────────────────
+        self.header = tk.Frame(self.root, bg=COL_HEADER_BG, padx=14, pady=8)
         self.header.pack(fill="x")
-        self.header_label = tk.Label(self.header,
-                                     text="Waiting for first alert…",
-                                     fg="white", bg="#222222",
-                                     font=("Helvetica", 11, "bold"))
+        self.header_label = tk.Label(
+            self.header, text="Waiting for first alert…",
+            fg=COL_HEADER_FG, bg=COL_HEADER_BG, font=FONT_HEADER,
+        )
         self.header_label.pack(side="left")
-        self.alert_banner = tk.Label(self.header, text="", fg="#ffd166",
-                                     bg="#222222", font=("Helvetica", 11, "bold"))
-        self.alert_banner.pack(side="right")
 
-        # Mid section: grid + memory side by side
-        mid = tk.Frame(self.root)
-        mid.pack(fill="both", expand=True, padx=8, pady=6)
+        # Full-width alert strip below header — visually distinct & wide
+        self.alert_strip = tk.Frame(self.root, bg=COL_BG, padx=14, pady=6)
+        self.alert_strip.pack(fill="x")
+        self.alert_banner = tk.Label(
+            self.alert_strip, text="", bg=COL_BG, fg=COL_HEADER_BG,
+            font=FONT_SECTION, anchor="w", padx=12, pady=6,
+        )
+        self.alert_banner.pack(fill="x")
 
-        left = tk.Frame(mid)
-        left.pack(side="left", fill="both", expand=True)
+        # ─── Mid section: grid (left) + dialog + scene (right stacked) ─
+        mid = tk.Frame(self.root, bg=COL_BG)
+        mid.pack(fill="both", expand=True, padx=10, pady=(0, 8))
+
+        # Left: grid view
+        left = tk.Frame(mid, bg=COL_PANEL, bd=1, relief="solid",
+                        highlightbackground=COL_BORDER, highlightthickness=1)
+        left.pack(side="left", fill="both", expand=True, padx=(0, 6))
+        tk.Label(left, text="🗺  WORKSPACE  (top-down · row A is far)",
+                 bg=COL_PANEL, fg=COL_HEADER_BG, font=FONT_SECTION,
+                 anchor="w", padx=8, pady=6).pack(fill="x")
         self.grid_view = GridView()
         self.canvas = FigureCanvasTkAgg(self.grid_view.fig, master=left)
-        self.canvas.get_tk_widget().pack(fill="both", expand=True)
+        self.canvas.get_tk_widget().pack(fill="both", expand=True, padx=6, pady=(0, 6))
 
-        right = tk.Frame(mid, width=420)
-        right.pack(side="right", fill="y")
+        # Right: dialog (top) + scene (bottom)
+        right = tk.Frame(mid, bg=COL_BG, width=520)
+        right.pack(side="right", fill="y", padx=(6, 0))
         right.pack_propagate(False)
 
-        ttk.Label(right, text="Memory", font=("Helvetica", 11, "bold")).pack(anchor="w", pady=(0, 4))
-        self.memory_text = tk.Text(right, width=52, height=20, font=("Courier", 9),
-                                   wrap="word", state="disabled", bg="#fafafa")
-        self.memory_text.pack(fill="both", expand=True)
+        self._build_dialog_panel(right)
+        self._build_scene_panel(right)
 
-        # Decision panel — templated wizard form
-        decision = tk.Frame(self.root, padx=8, pady=8, bg="#f4f4f4")
+        self._build_decision_panel()
+
+    def _build_decision_panel(self) -> None:
+        decision = tk.Frame(self.root, padx=10, pady=8, bg=COL_BG)
         decision.pack(fill="x")
 
-        # ============ INTERACT (templated) ============
-        interact_frame = ttk.LabelFrame(decision, text="Interaction (templated)")
-        interact_frame.pack(side="left", fill="both", expand=True, padx=(0, 6))
+        title_row = tk.Frame(decision, bg=COL_BG)
+        title_row.pack(fill="x", pady=(0, 4))
+        tk.Label(
+            title_row, text="Decision", bg=COL_BG, fg=COL_HEADER_BG,
+            font=FONT_SECTION,
+        ).pack(side="left")
+        tk.Label(
+            title_row,
+            text="Ask and act are separate turns; an ask waits for the user's reply before any state-changing tool.",
+            bg=COL_BG, fg=COL_MUTED, font=FONT_SMALL,
+        ).pack(side="right")
 
-        # Prompt type dropdown with friendly labels.
-        ttk.Label(interact_frame, text="Prompt:").grid(row=0, column=0, sticky="w")
+        body = tk.Frame(decision, bg=COL_BG)
+        body.pack(fill="x")
+
+        self.decision_notebook = ttk.Notebook(body)
+        self.decision_notebook.pack(side="left", fill="both", expand=True, padx=(0, 8))
+        self.decision_notebook.bind("<<NotebookTabChanged>>", lambda _e: self._on_form_changed())
+
+        interact_frame = tk.Frame(self.decision_notebook, bg=COL_PANEL, padx=10, pady=10)
+        execute_frame = tk.Frame(self.decision_notebook, bg=COL_PANEL, padx=10, pady=10)
+        self.decision_notebook.add(interact_frame, text="Ask user")
+        self.decision_notebook.add(execute_frame, text="Take action")
+
+        preview_frame = tk.Frame(
+            body, bg=COL_PANEL, bd=1, relief="solid",
+            highlightbackground=COL_BORDER, highlightthickness=1,
+        )
+        preview_frame.pack(side="right", fill="both")
+        tk.Label(
+            preview_frame, text="Oracle-format preview", bg=COL_PANEL,
+            fg=COL_HEADER_BG, font=FONT_LABEL, anchor="w", padx=8, pady=6,
+        ).pack(fill="x")
+        self.preview_text = tk.Text(
+            preview_frame, height=15, width=58, font=FONT_PREVIEW,
+            bg="#ffffff", fg=COL_VALUE, state="disabled", wrap="word",
+            padx=8, pady=8, relief="flat",
+        )
+        self.preview_text.pack(fill="both", expand=True, padx=8, pady=(0, 8))
+
+        tk.Label(
+            interact_frame, text="Oracle template", bg=COL_PANEL,
+            fg=COL_LABEL, font=FONT_LABEL,
+        ).pack(anchor="w")
         self.prompt_type_var = tk.StringVar()
-        self._prompt_type_labels: List[str] = [
-            display_label(pt) for pt in list_prompt_types(self.env)
-        ]
         self._prompt_type_keys: List[str] = list(list_prompt_types(self.env))
+        self._prompt_type_labels: List[str] = [
+            display_label(pt) for pt in self._prompt_type_keys
+        ]
         self.prompt_type_combo = ttk.Combobox(
             interact_frame, textvariable=self.prompt_type_var, state="readonly",
-            values=self._prompt_type_labels, width=80,
+            values=self._prompt_type_labels, width=82,
         )
-        self.prompt_type_combo.grid(row=0, column=1, columnspan=3, sticky="we", pady=2)
+        self.prompt_type_combo.pack(fill="x", pady=(2, 4))
         self.prompt_type_combo.bind("<<ComboboxSelected>>", lambda _e: self._on_form_changed())
+        self.prompt_hint_label = tk.Label(
+            interact_frame, text="Pick the oracle prompt shape first.",
+            bg=COL_ASK_BG, fg=COL_HEADER_BG, font=FONT_SMALL,
+            anchor="w", justify="left", padx=8, pady=5,
+        )
+        self.prompt_hint_label.pack(fill="x", pady=(0, 8))
 
-        # Target dropdown (visible for prompts that need a target)
-        ttk.Label(interact_frame, text="Target:").grid(row=1, column=0, sticky="w")
         self.target_var = tk.StringVar()
-        self.target_combo = ttk.Combobox(interact_frame, textvariable=self.target_var, state="readonly", width=40)
-        self.target_combo.grid(row=1, column=1, columnspan=3, sticky="we", pady=2)
+        self.target_row = self._build_combo_row(
+            interact_frame, "Target object",
+            "Only shown for templates whose oracle context needs a primary object.",
+            self.target_var, width=54,
+        )
+        self.target_combo = self.target_row.combo
         self.target_combo.bind("<<ComboboxSelected>>", lambda _e: self._on_form_changed())
 
-        # Alt-target dropdown (only for *_redirect prompts)
-        ttk.Label(interact_frame, text="Alt target:").grid(row=2, column=0, sticky="w")
         self.alt_target_var = tk.StringVar()
-        self.alt_target_combo = ttk.Combobox(interact_frame, textvariable=self.alt_target_var, state="readonly", width=40)
-        self.alt_target_combo.grid(row=2, column=1, columnspan=3, sticky="we", pady=2)
+        self.alt_target_row = self._build_combo_row(
+            interact_frame, "Alternative target",
+            "Used by redirect templates such as covered-cube or full-cup suggestions.",
+            self.alt_target_var, width=54,
+        )
+        self.alt_target_combo = self.alt_target_row.combo
         self.alt_target_combo.bind("<<ComboboxSelected>>", lambda _e: self._on_form_changed())
 
-        # Action dropdown (for plain "confirm")
-        ttk.Label(interact_frame, text="Action:").grid(row=3, column=0, sticky="w")
         self.action_var = tk.StringVar()
-        self.action_combo = ttk.Combobox(
-            interact_frame, textvariable=self.action_var, state="readonly",
-            values=list(valid_actions(self.env, "confirm")), width=14,
+        self.action_row = self._build_combo_row(
+            interact_frame, "Action to confirm",
+            "Used only by the generic confirm template.",
+            self.action_var, width=18,
         )
-        self.action_combo.grid(row=3, column=1, sticky="w", pady=2)
+        self.action_combo = self.action_row.combo
+        self.action_combo["values"] = list(valid_actions(self.env, "confirm"))
         self.action_combo.bind("<<ComboboxSelected>>", lambda _e: self._on_form_changed())
 
-        # Amount dropdown (for confirm_amount)
-        ttk.Label(interact_frame, text="Amount:").grid(row=3, column=2, sticky="e")
         self.amount_var = tk.StringVar()
-        self.amount_combo = ttk.Combobox(
-            interact_frame, textvariable=self.amount_var, state="readonly",
-            values=list(valid_amounts()), width=10,
+        self.amount_row = self._build_combo_row(
+            interact_frame, "Pour amount",
+            "Used only by amount-confirmation prompts.",
+            self.amount_var, width=18,
         )
-        self.amount_combo.grid(row=3, column=3, sticky="w", pady=2)
+        self.amount_combo = self.amount_row.combo
+        self.amount_combo["values"] = list(valid_amounts())
         self.amount_combo.bind("<<ComboboxSelected>>", lambda _e: self._on_form_changed())
 
-        # Free-text fallback (only enabled when prompt type = "other")
-        ttk.Label(interact_frame, text="Free text:").grid(row=4, column=0, sticky="w")
+        self.free_text_row = tk.Frame(interact_frame, bg=COL_PANEL)
+        tk.Label(
+            self.free_text_row, text="Free-text fallback", bg=COL_PANEL,
+            fg=COL_LABEL, font=FONT_LABEL,
+        ).pack(anchor="w")
         self.free_text_var = tk.StringVar()
-        self.free_text_entry = ttk.Entry(interact_frame, textvariable=self.free_text_var, width=58, state="disabled")
-        self.free_text_entry.grid(row=4, column=1, columnspan=3, sticky="we", pady=2)
+        self.free_text_entry = ttk.Entry(
+            self.free_text_row, textvariable=self.free_text_var,
+            width=58, state="disabled",
+        )
+        self.free_text_entry.pack(fill="x", pady=(2, 4))
         self.free_text_entry.bind("<KeyRelease>", lambda _e: self._on_form_changed())
 
+        self.free_choice_row = tk.Frame(interact_frame, bg=COL_PANEL)
+        tk.Label(
+            self.free_choice_row, text="Choices", bg=COL_PANEL,
+            fg=COL_LABEL, font=FONT_LABEL,
+        ).pack(anchor="w")
         self.free_choice_vars: List[tk.StringVar] = []
         self.free_choice_entries: List[ttk.Entry] = []
         for i in range(MAX_INTERACT_CHOICES):
-            ttk.Label(interact_frame, text=f"opt {i+1}:").grid(row=5 + i, column=0, sticky="w")
+            opt = tk.Frame(self.free_choice_row, bg=COL_PANEL)
+            opt.pack(fill="x", pady=1)
+            tk.Label(
+                opt, text=f"{i + 1})", bg=COL_PANEL, fg=COL_MUTED,
+                font=FONT_SMALL, width=3,
+            ).pack(side="left")
             v = tk.StringVar()
             self.free_choice_vars.append(v)
-            ent = ttk.Entry(interact_frame, textvariable=v, width=58, state="disabled")
-            ent.grid(row=5 + i, column=1, columnspan=3, sticky="we", pady=1)
+            ent = ttk.Entry(opt, textvariable=v, width=58, state="disabled")
+            ent.pack(side="left", fill="x", expand=True)
             ent.bind("<KeyRelease>", lambda _e: self._on_form_changed())
             self.free_choice_entries.append(ent)
 
-        # Live preview pane
-        ttk.Label(interact_frame, text="Preview:").grid(row=10, column=0, sticky="nw", pady=(6, 0))
-        self.preview_text = tk.Text(interact_frame, height=12, width=58, font=("Courier", 9),
-                                    bg="#ffffff", state="disabled", wrap="word")
-        self.preview_text.grid(row=10, column=1, columnspan=3, sticky="we", pady=(6, 0))
-
-        # ============ EXECUTE ============
-        execute_frame = ttk.LabelFrame(decision, text="Execution")
-        execute_frame.pack(side="left", fill="y", padx=(6, 0))
-
-        ttk.Label(execute_frame, text="Tool:").grid(row=0, column=0, sticky="w", padx=4, pady=4)
+        tk.Label(
+            execute_frame, text="Execution tool", bg=COL_PANEL,
+            fg=COL_LABEL, font=FONT_LABEL,
+        ).pack(anchor="w")
         self.exec_tool_var = tk.StringVar()
         self.exec_tool_combo = ttk.Combobox(
-            execute_frame, textvariable=self.exec_tool_var, state="readonly", width=14,
+            execute_frame, textvariable=self.exec_tool_var,
+            state="readonly", width=18,
         )
-        self.exec_tool_combo.grid(row=0, column=1, sticky="w", padx=4, pady=4)
+        self.exec_tool_combo.pack(anchor="w", pady=(2, 8))
         self.exec_tool_combo.bind("<<ComboboxSelected>>", lambda _e: self._on_form_changed())
 
-        ttk.Label(execute_frame, text="Target:").grid(row=1, column=0, sticky="w", padx=4, pady=4)
         self.exec_target_var = tk.StringVar()
-        self.exec_target_combo = ttk.Combobox(
-            execute_frame, textvariable=self.exec_target_var, state="readonly", width=32,
+        self.exec_target_row = self._build_combo_row(
+            execute_frame, "Object",
+            "Filtered to the objects that the selected tool can legally use.",
+            self.exec_target_var, width=46,
         )
-        self.exec_target_combo.grid(row=1, column=1, sticky="w", padx=4, pady=4)
+        self.exec_target_combo = self.exec_target_row.combo
         self.exec_target_combo.bind("<<ComboboxSelected>>", lambda _e: self._on_form_changed())
 
-        ttk.Label(execute_frame, text="Amount:").grid(row=2, column=0, sticky="w", padx=4, pady=4)
         self.exec_amount_var = tk.StringVar()
-        self.exec_amount_combo = ttk.Combobox(
-            execute_frame, textvariable=self.exec_amount_var, state="readonly",
-            values=list(valid_amounts()), width=10,
+        self.exec_amount_row = self._build_combo_row(
+            execute_frame, "Amount",
+            "Required only for POUR.",
+            self.exec_amount_var, width=18,
         )
-        self.exec_amount_combo.grid(row=2, column=1, sticky="w", padx=4, pady=4)
+        self.exec_amount_combo = self.exec_amount_row.combo
+        self.exec_amount_combo["values"] = list(valid_amounts())
         self.exec_amount_combo.bind("<<ComboboxSelected>>", lambda _e: self._on_form_changed())
 
-        # ============ Submit row ============
-        submit_row = tk.Frame(self.root, pady=6)
+        submit_row = tk.Frame(self.root, pady=6, bg=COL_BG)
         submit_row.pack(fill="x")
-        ttk.Button(submit_row, text="Submit INTERACT", command=self._on_submit_interact).pack(side="left", padx=6)
-        ttk.Button(submit_row, text="Submit EXECUTION", command=self._on_submit_execution).pack(side="left", padx=6)
-        ttk.Button(submit_row, text="Defer (skip this alert)", command=self._on_skip).pack(side="left", padx=6)
-        self.status_label = tk.Label(submit_row, text="", fg="#a00000")
+        self.submit_button = ttk.Button(
+            submit_row, text="Submit ask", command=self._on_submit_current,
+        )
+        self.submit_button.pack(side="left", padx=6)
+        ttk.Button(
+            submit_row, text="Defer (skip this alert)", command=self._on_skip,
+        ).pack(side="left", padx=6)
+        self.status_label = tk.Label(
+            submit_row, text="", bg=COL_BG, fg=COL_DANGER, font=FONT_LABEL,
+        )
         self.status_label.pack(side="right", padx=8)
+        self._on_form_changed()
+
+    def _build_combo_row(
+        self,
+        parent: tk.Widget,
+        label: str,
+        help_text: str,
+        variable: tk.StringVar,
+        *,
+        width: int,
+    ) -> tk.Frame:
+        row = tk.Frame(parent, bg=COL_PANEL)
+        row.pack(fill="x", pady=(0, 8))
+        tk.Label(
+            row, text=label, bg=COL_PANEL, fg=COL_LABEL,
+            font=FONT_LABEL,
+        ).pack(anchor="w")
+        control = tk.Frame(row, bg=COL_PANEL)
+        control.pack(fill="x", pady=(2, 2))
+        combo = ttk.Combobox(
+            control, textvariable=variable, state="readonly", width=width,
+        )
+        combo.pack(side="left", fill="x", expand=True)
+        tk.Label(
+            row, text=help_text, bg=COL_PANEL, fg=COL_MUTED,
+            font=FONT_SMALL, anchor="w", justify="left",
+        ).pack(fill="x")
+        row.control = control  # type: ignore[attr-defined]
+        row.combo = combo  # type: ignore[attr-defined]
+        return row
 
     # -------------------------------------------------------- runner thread
 
@@ -347,34 +461,20 @@ class WizardApp:
             self.header_label.config(
                 text=f"Episode {ep_idx + 1}/{self.num_episodes} · tick {tick} · mode={mode}"
             )
-        self.alert_banner.config(text=f"⚠ ALERT · {reason.value if reason else ''}")
+        rkey = reason.value if reason else ""
+        label = ALERT_LABEL.get(rkey, f"⚠  ALERT · {rkey}") if rkey else "⚠  ALERT"
+        self.alert_banner.config(
+            text=f"{label}    ·    please decide",
+            bg=COL_ALERT_BG, fg="#1a1a1a",
+        )
 
         # Render grid.
         self.grid_view.render(blob)
         self.canvas.draw()
 
-        # Render memory.
-        mem = blob.get("memory", {})
-        hist = blob.get("gripper_hist") or []
-        hist_str = " → ".join(f"{g.get('cell')}/{g.get('yaw')}" for g in hist) if hist else "(empty)"
-        lines = [
-            f"gripper_hist (old→new): {hist_str}",
-            f"candidates           : {mem.get('candidates')}",
-            f"excluded_obj_ids     : {mem.get('excluded_obj_ids')}",
-            f"last_action          : {mem.get('last_action')}",
-            f"last_tool_calls (3)  : {mem.get('last_tool_calls')}",
-            f"last_prompt          : {json.dumps(mem.get('last_prompt') or {}, indent=2)}",
-            "",
-            "past_dialogs:",
-        ]
-        for d in mem.get("past_dialogs") or []:
-            lines.append(f"  · [{d.get('kind')}] {d.get('prompt')!r}")
-            lines.append(f"        choices={d.get('choices')}  reply={d.get('reply')!r}")
-
-        self.memory_text.config(state="normal")
-        self.memory_text.delete("1.0", "end")
-        self.memory_text.insert("1.0", "\n".join(lines))
-        self.memory_text.config(state="disabled")
+        # Render the new dialog + scene panels.
+        self._render_dialog_history(blob.get("memory", {}).get("past_dialogs") or [])
+        self._render_scene_state(blob)
 
         # Refresh execution tool dropdown for this env.
         from data_generator.oracle import ENV_SKILLS
@@ -394,8 +494,213 @@ class WizardApp:
         self.free_text_var.set("")
         for v in self.free_choice_vars:
             v.set("")
+        self.decision_notebook.select(0)
         self._on_form_changed()  # refresh dropdown contents + preview
         self.status_label.config(text="")
+
+    # ─────────────────────────────── dialog + scene panels ──────────
+
+    def _build_dialog_panel(self, parent: tk.Widget) -> None:
+        """Scrollable card list of past INTERACT turns with bold user replies."""
+        title_bar = tk.Frame(parent, bg=COL_BG)
+        title_bar.pack(fill="x", padx=2, pady=(2, 0))
+        tk.Label(title_bar, text="💬  DIALOG HISTORY  (user replies)",
+                 bg=COL_BG, fg=COL_HEADER_BG, font=FONT_SECTION,
+                 anchor="w").pack(side="left")
+        self.dialog_count_label = tk.Label(title_bar, text="",
+                                           bg=COL_BG, fg=COL_MUTED,
+                                           font=FONT_SMALL)
+        self.dialog_count_label.pack(side="right")
+
+        outer = tk.Frame(parent, bg=COL_PANEL, bd=1, relief="solid",
+                         highlightbackground=COL_BORDER, highlightthickness=1)
+        outer.pack(fill="both", expand=True, padx=2, pady=(4, 6))
+
+        canvas = tk.Canvas(outer, bg=COL_PANEL, highlightthickness=0, height=340)
+        vsb = tk.Scrollbar(outer, orient="vertical", command=canvas.yview)
+        canvas.configure(yscrollcommand=vsb.set)
+        vsb.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
+
+        self.dialog_inner = tk.Frame(canvas, bg=COL_PANEL)
+        self._dialog_window = canvas.create_window(
+            (0, 0), window=self.dialog_inner, anchor="nw",
+        )
+
+        def _on_inner_configure(_e=None):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+
+        def _on_canvas_configure(e):
+            canvas.itemconfig(self._dialog_window, width=e.width)
+
+        self.dialog_inner.bind("<Configure>", _on_inner_configure)
+        canvas.bind("<Configure>", _on_canvas_configure)
+
+        def _on_wheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        canvas.bind("<Enter>", lambda _e: canvas.bind_all("<MouseWheel>", _on_wheel))
+        canvas.bind("<Leave>", lambda _e: canvas.unbind_all("<MouseWheel>"))
+
+        self._dialog_canvas = canvas
+
+    def _build_scene_panel(self, parent: tk.Widget) -> None:
+        """Compact structured key/value rows for the rest of the symbolic state."""
+        tk.Label(parent, text="📋  SCENE STATE", bg=COL_BG,
+                 fg=COL_HEADER_BG, font=FONT_SECTION, anchor="w",
+                 ).pack(fill="x", padx=2, pady=(6, 2))
+
+        card = tk.Frame(parent, bg=COL_PANEL, bd=1, relief="solid",
+                        highlightbackground=COL_BORDER, highlightthickness=1)
+        card.pack(fill="x", padx=2, pady=(0, 4))
+
+        inner = tk.Frame(card, bg=COL_PANEL, padx=10, pady=8)
+        inner.pack(fill="x")
+
+        self._scene_value_labels: Dict[str, tk.Label] = {}
+        rows = [
+            ("mode",        "User mode"),
+            ("candidates",  "Candidates"),
+            ("excluded",    "Excluded"),
+            ("last_action", "Last action"),
+            ("last_tools",  "Last 3 tools"),
+            ("gripper",     "Gripper trail"),
+            ("last_prompt", "Last prompt"),
+        ]
+        for i, (key, label) in enumerate(rows):
+            tk.Label(inner, text=label, bg=COL_PANEL, fg=COL_LABEL,
+                     font=FONT_LABEL, anchor="nw").grid(
+                row=i, column=0, sticky="nw", padx=(0, 10), pady=2)
+            v = tk.Label(inner, text="—", bg=COL_PANEL, fg=COL_VALUE,
+                         font=FONT_BASE, anchor="w", justify="left",
+                         wraplength=360)
+            v.grid(row=i, column=1, sticky="we", pady=2)
+            self._scene_value_labels[key] = v
+        inner.columnconfigure(1, weight=1)
+
+    def _make_dialog_card(self, parent: tk.Widget, turn_idx: int,
+                          dialog: Dict, is_latest: bool) -> None:
+        kind = (dialog.get("kind") or "").upper()
+        chip_bg, chip_fg = KIND_CHIP.get(kind, ("#eceff1", "#37474f"))
+        reply = dialog.get("reply") or "(no reply yet)"
+        bg, fg = _classify_reply(reply)
+
+        card = tk.Frame(
+            parent, bg=COL_PANEL,
+            highlightthickness=3 if is_latest else 1,
+            highlightbackground=COL_LATEST if is_latest else COL_BORDER,
+            bd=0,
+        )
+        card.pack(fill="x", padx=8, pady=(10 if is_latest else 4, 4))
+
+        inner = tk.Frame(card, bg=COL_PANEL, padx=10, pady=8)
+        inner.pack(fill="x")
+
+        # Header strip
+        head = tk.Frame(inner, bg=COL_PANEL)
+        head.pack(fill="x")
+        tk.Label(head, text=f"Turn {turn_idx}", bg=COL_PANEL, fg=COL_MUTED,
+                 font=FONT_SMALL).pack(side="left")
+        tk.Label(head, text=f"  {kind}  ", bg=chip_bg, fg=chip_fg,
+                 font=FONT_CHIP, padx=6, pady=1).pack(side="left", padx=(8, 0))
+        if is_latest:
+            tk.Label(head, text="  ★ LATEST  ", bg=COL_LATEST, fg="#1a1a1a",
+                     font=FONT_CHIP, padx=6, pady=1).pack(side="right")
+
+        # Prompt
+        prompt = dialog.get("prompt") or "(no prompt)"
+        tk.Label(inner, text=prompt, bg=COL_PANEL, fg=COL_VALUE,
+                 font=FONT_BASE, wraplength=440, justify="left",
+                 anchor="w").pack(fill="x", pady=(6, 2))
+
+        # Choices
+        choices = dialog.get("choices") or []
+        if choices:
+            choices_str = "Choices:   " + "    ·   ".join(str(c) for c in choices)
+            tk.Label(inner, text=choices_str, bg=COL_PANEL, fg=COL_MUTED,
+                     font=FONT_MUTED, wraplength=440, justify="left",
+                     anchor="w").pack(fill="x", pady=(0, 8))
+
+        # Reply badge — the headline of the card
+        reply_row = tk.Frame(inner, bg=COL_PANEL)
+        reply_row.pack(fill="x")
+        tk.Label(reply_row, text="USER REPLY  →", bg=COL_PANEL,
+                 fg=COL_LABEL, font=FONT_LABEL).pack(side="left")
+        font = FONT_REPLY_HI if is_latest else FONT_REPLY
+        tk.Label(reply_row, text=f"  {reply}  ", bg=bg, fg=fg, font=font,
+                 padx=12, pady=4).pack(side="left", padx=8)
+
+    def _render_dialog_history(self, past_dialogs: List[Dict]) -> None:
+        for child in self.dialog_inner.winfo_children():
+            child.destroy()
+
+        n = len(past_dialogs)
+        self.dialog_count_label.config(
+            text=f"{n} turn(s)" if n else "no turns yet"
+        )
+
+        if not past_dialogs:
+            tk.Label(
+                self.dialog_inner,
+                text="(no past dialogs — this is the first interaction)",
+                bg=COL_PANEL, fg=COL_MUTED, font=FONT_MUTED, pady=24,
+            ).pack(fill="x")
+            return
+
+        # Most-recent first so the latest reply sits at the top.
+        for idx, dialog in enumerate(reversed(past_dialogs)):
+            turn_idx = n - idx
+            self._make_dialog_card(self.dialog_inner, turn_idx, dialog,
+                                   is_latest=(idx == 0))
+
+        self.dialog_inner.update_idletasks()
+        self._dialog_canvas.yview_moveto(0.0)
+
+    def _render_scene_state(self, blob: Dict) -> None:
+        mem = blob.get("memory") or {}
+        user_state = blob.get("user_state") or {}
+        hist = blob.get("gripper_hist") or []
+        L = self._scene_value_labels
+
+        L["mode"].config(text=user_state.get("mode", "—"), fg=COL_VALUE)
+
+        cands = mem.get("candidates") or []
+        L["candidates"].config(text=(", ".join(cands) if cands else "—"))
+
+        excl = mem.get("excluded_obj_ids") or []
+        L["excluded"].config(text=(", ".join(excl) if excl else "—"))
+
+        la = mem.get("last_action") or {}
+        if la:
+            outcome = (la.get("outcome") or "?").lower()
+            fg = (COL_SUCCESS if outcome == "success"
+                  else COL_DANGER if outcome in ("fail", "failure", "timeout")
+                  else COL_VALUE)
+            tool = la.get("tool", "?")
+            obj = la.get("obj", "")
+            L["last_action"].config(
+                text=f"{tool}({obj}) → {outcome}", fg=fg)
+        else:
+            L["last_action"].config(text="—", fg=COL_VALUE)
+
+        tools = mem.get("last_tool_calls") or []
+        L["last_tools"].config(text=(" → ".join(tools) if tools else "—"))
+
+        if hist:
+            trail = " → ".join(g.get("cell", "?") for g in hist)
+            cur = hist[-1]
+            L["gripper"].config(
+                text=f"{trail}      yaw={cur.get('yaw','?')}   z={cur.get('z','?')}"
+            )
+        else:
+            L["gripper"].config(text="—")
+
+        lp = mem.get("last_prompt") or {}
+        if lp:
+            lp_text = lp.get("text") or lp.get("prompt") or ""
+            L["last_prompt"].config(
+                text=f"[{lp.get('kind','?')}]  {lp_text}")
+        else:
+            L["last_prompt"].config(text="—")
 
     def _poll_pending_alert(self) -> None:
         # Used to keep mainloop responsive; nothing to do here unless extended.
@@ -419,7 +724,12 @@ class WizardApp:
 
     def _target_label(self, obj: Dict) -> str:
         """Render an object as a dropdown entry."""
+        mem = (self._current_blob or {}).get("memory") or {}
+        candidates = set(mem.get("candidates") or [])
+        excluded = set(mem.get("excluded_obj_ids") or [])
         extras = []
+        if obj.get("id") in candidates: extras.append("candidate")
+        if obj.get("id") in excluded: extras.append("excluded")
         if obj.get("is_held"): extras.append("HELD")
         if obj.get("kind"): extras.append(obj["kind"])
         if obj.get("fill"): extras.append(f"fill={obj['fill']}")
@@ -434,23 +744,50 @@ class WizardApp:
         """Re-derive widget visibility, target dropdown contents, and preview pane."""
         blob = self._current_blob or {}
         objs = blob.get("objects") or []
-        if not objs:
-            return
         pt = self._selected_prompt_type() or ""
 
         # Interaction target list filtered by prompt type.
-        if pt:
+        sig = set(prompt_signature(pt))
+        if pt and objs:
             int_targets = valid_targets(self.env, pt, blob)
-            self.target_combo["values"] = [self._target_label(o) for o in int_targets]
+            target_values = [self._target_label(o) for o in int_targets]
+            self.target_combo["values"] = target_values
+            if self.target_var.get() and self.target_var.get() not in target_values:
+                self.target_var.set("")
             # Alt target gets the same pool, minus the chosen primary.
             primary_id = self._id_from_target_label(self.target_var.get())
             alt_pool = [o for o in int_targets if o["id"] != primary_id]
-            self.alt_target_combo["values"] = [self._target_label(o) for o in alt_pool]
+            alt_values = [self._target_label(o) for o in alt_pool]
+            self.alt_target_combo["values"] = alt_values
+            if self.alt_target_var.get() and self.alt_target_var.get() not in alt_values:
+                self.alt_target_var.set("")
 
-        # Show/hide action/amount based on prompt signature.
-        sig = set(prompt_signature(pt))
+        uses = []
+        if "target" in sig:
+            uses.append("target")
+        if "alt_target" in sig:
+            uses.append("alternative target")
+        if "action" in sig:
+            uses.append("action")
+        if "amount" in sig:
+            uses.append("amount")
+        if pt == "other":
+            uses.append("free text")
+        if pt:
+            detail = ", ".join(uses) if uses else "no extra fields"
+            self.prompt_hint_label.config(text=f"{pt}: oracle template uses {detail}.")
+        else:
+            self.prompt_hint_label.config(text="Pick the oracle prompt shape first.")
+
+        self._show_row(self.target_row, "target" in sig)
+        self._show_row(self.alt_target_row, "alt_target" in sig)
+        self._show_row(self.action_row, "action" in sig)
+        self._show_row(self.amount_row, "amount" in sig)
+        self._show_row(self.free_text_row, pt == "other")
+        self._show_row(self.free_choice_row, pt == "other")
         self._set_widget_state(self.action_combo, "action" in sig)
         self._set_widget_state(self.amount_combo, "amount" in sig)
+        self._set_widget_state(self.target_combo, "target" in sig)
         self._set_widget_state(self.alt_target_combo, "alt_target" in sig)
         self._set_widget_state(self.free_text_entry, pt == "other")
         for ent in self.free_choice_entries:
@@ -458,13 +795,37 @@ class WizardApp:
 
         # Execution target list filtered by tool.
         tool = self.exec_tool_var.get()
-        if tool:
+        if tool and objs:
             pool = self._exec_targets_for_tool(blob, tool)
-            self.exec_target_combo["values"] = [self._target_label(o) for o in pool]
-            self._set_widget_state(self.exec_amount_combo, tool == "POUR")
+            exec_values = [self._target_label(o) for o in pool]
+            self.exec_target_combo["values"] = exec_values
+            if self.exec_target_var.get() and self.exec_target_var.get() not in exec_values:
+                self.exec_target_var.set("")
+        self._show_row(self.exec_target_row, bool(tool and tool != "RELEASE"))
+        self._show_row(self.exec_amount_row, tool == "POUR")
+        self._set_widget_state(self.exec_target_combo, bool(tool and tool != "RELEASE"))
+        self._set_widget_state(self.exec_amount_combo, tool == "POUR")
+
+        if hasattr(self, "submit_button"):
+            self.submit_button.config(
+                text="Submit ask" if self._active_decision_mode() == "ask" else "Submit action"
+            )
 
         # Live preview.
         self._refresh_preview()
+
+    def _active_decision_mode(self) -> str:
+        try:
+            return "act" if self.decision_notebook.index("current") == 1 else "ask"
+        except Exception:
+            return "ask"
+
+    @staticmethod
+    def _show_row(row: tk.Widget, visible: bool) -> None:
+        if visible:
+            row.pack(fill="x", pady=(0, 8))
+        else:
+            row.pack_forget()
 
     @staticmethod
     def _set_widget_state(widget, enabled: bool) -> None:
@@ -561,112 +922,125 @@ class WizardApp:
         return tool_call
 
     def _refresh_preview(self) -> None:
-        """Always render *something* into the preview pane.
-
-        Three sections:
-          1. INTERACT preview — full templated text + choices, or a missing-args list.
-          2. EXECUTION preview — full tool call, or a missing-args list.
-          3. Status line — precondition_status from the factory ("ok" / "warn" / "fail" + message).
-        """
+        """Render the active decision lane in the same shape the oracle emits."""
         blob = self._current_blob or {}
         lines: List[str] = []
+        mode = self._active_decision_mode()
 
-        # ───── INTERACT preview ─────
-        pt = self._selected_prompt_type()
-        if pt:
-            sig = set(prompt_signature(pt))
-            kwargs: Dict = {}
-            missing: List[str] = []
-            if "target" in sig:
-                tid = self._id_from_target_label(self.target_var.get())
-                if tid:
-                    kwargs["target_id"] = tid
-                else:
-                    missing.append("target")
-            if "alt_target" in sig:
-                atid = self._id_from_target_label(self.alt_target_var.get())
-                if atid:
-                    kwargs["alt_target_id"] = atid
-                else:
-                    missing.append("alt_target")
-            if "action" in sig:
-                if self.action_var.get():
-                    kwargs["action"] = self.action_var.get()
-                else:
-                    missing.append("action")
-            if "amount" in sig:
-                if self.amount_var.get():
-                    kwargs["amount"] = self.amount_var.get()
-                else:
-                    missing.append("amount")
-            if pt == "other":
-                ft = self.free_text_var.get().strip()
-                fc = [v.get().strip() for v in self.free_choice_vars if v.get().strip()]
-                if ft and fc:
-                    kwargs["free_text"] = ft
-                    kwargs["free_choices"] = fc
-                else:
-                    if not ft:
-                        missing.append("free_text")
-                    if not fc:
-                        missing.append("free_choices")
+        if mode == "ask":
+            pt = self._selected_prompt_type()
+            if pt:
+                sig = set(prompt_signature(pt))
+                kwargs: Dict = {}
+                missing: List[str] = []
+                if "target" in sig:
+                    tid = self._id_from_target_label(self.target_var.get())
+                    if tid:
+                        kwargs["target_id"] = tid
+                    else:
+                        missing.append("target")
+                if "alt_target" in sig:
+                    atid = self._id_from_target_label(self.alt_target_var.get())
+                    if atid:
+                        kwargs["alt_target_id"] = atid
+                    else:
+                        missing.append("alternative target")
+                if "action" in sig:
+                    if self.action_var.get():
+                        kwargs["action"] = self.action_var.get()
+                    else:
+                        missing.append("action")
+                if "amount" in sig:
+                    if self.amount_var.get():
+                        kwargs["amount"] = self.amount_var.get()
+                    else:
+                        missing.append("amount")
+                if pt == "other":
+                    ft = self.free_text_var.get().strip()
+                    fc = [v.get().strip() for v in self.free_choice_vars if v.get().strip()]
+                    if ft and fc:
+                        kwargs["free_text"] = ft
+                        kwargs["free_choices"] = fc
+                    else:
+                        if not ft:
+                            missing.append("free text")
+                        if not fc:
+                            missing.append("choices")
 
-            lines.append(f"── INTERACT [{pt}] ──")
-            if missing:
-                lines.append(f"⏳ Waiting for: {', '.join(missing)}")
+                lines.append(f"INTERACT / {pt}")
+                lines.append("")
+                if missing:
+                    lines.append(f"Waiting for: {', '.join(missing)}")
+                else:
+                    try:
+                        tc, _ = build_prompt(self.env, pt, blob, **kwargs)
+                        lines.append(f"kind: {tc['args']['kind']}")
+                        lines.append(f"text: {tc['args']['text']}")
+                        lines.append("choices:")
+                        for c in tc["args"]["choices"]:
+                            lines.append(f"  {c}")
+                    except Exception as e:
+                        lines.append(f"Build error: {e}")
+
+                level, msg = precondition_status(self.env, pt, blob)
+                lines.append("")
+                if level == "fail":
+                    lines.append(f"Oracle check: FAIL - {msg}")
+                elif level == "warn":
+                    lines.append(f"Oracle check: WARN - {msg}")
+                else:
+                    lines.append("Oracle check: OK - consistent with the oracle tree here.")
+                lines.append("")
+                lines.append("Flow: submit only this INTERACT turn. The runner records the user reply before the next decision.")
             else:
-                try:
-                    tc, _ = build_prompt(self.env, pt, blob, **kwargs)
-                    lines.append(f"[{tc['args']['kind']}] {tc['args']['text']}")
-                    for c in tc["args"]["choices"]:
-                        lines.append(f"  · {c}")
-                except Exception as e:
-                    lines.append(f"⚠ build error: {e}")
-
-            # Precondition status
-            level, msg = precondition_status(self.env, pt, blob)
-            if level == "fail":
-                lines.append(f"❌ ORACLE CHECK: {msg}")
-            elif level == "warn":
-                lines.append(f"⚠  ORACLE CHECK: {msg}")
-            else:
-                lines.append(f"✓ ORACLE CHECK: this prompt is consistent with the oracle's tree here.")
+                lines.append("INTERACT")
+                lines.append("")
+                lines.append("Pick an oracle template to preview the exact prompt and choices.")
+            bg = COL_ASK_BG
         else:
-            lines.append("── INTERACT ──")
-            lines.append("(pick a Prompt type to preview)")
-
-        # ───── EXECUTION preview ─────
-        lines.append("")
-        tool = self.exec_tool_var.get()
-        if tool:
-            args: Dict = {}
-            missing: List[str] = []
-            if tool != "RELEASE":
-                tid = self._id_from_target_label(self.exec_target_var.get())
-                if tid:
-                    args["obj"] = tid
+            tool = self.exec_tool_var.get()
+            if tool:
+                args: Dict = {}
+                missing: List[str] = []
+                if tool != "RELEASE":
+                    tid = self._id_from_target_label(self.exec_target_var.get())
+                    if tid:
+                        args["obj"] = tid
+                    else:
+                        missing.append("object")
+                if tool == "POUR":
+                    if self.exec_amount_var.get():
+                        args["amount"] = self.exec_amount_var.get()
+                    else:
+                        missing.append("amount")
+                lines.append(f"EXECUTE / {tool}")
+                lines.append("")
+                if missing:
+                    lines.append(f"Waiting for: {', '.join(missing)}")
                 else:
-                    missing.append("target")
-            if tool == "POUR":
-                if self.exec_amount_var.get():
-                    args["amount"] = self.exec_amount_var.get()
-                else:
-                    missing.append("amount")
-            lines.append(f"── EXECUTE [{tool}] ──")
-            if missing:
-                lines.append(f"⏳ Waiting for: {', '.join(missing)}")
+                    lines.append(f"tool: {tool}")
+                    lines.append(f"args: {args}")
+                lines.append("")
+                lines.append("Flow: this changes the schematic state immediately and logs one execution tool call.")
             else:
-                lines.append(f'{{"tool": "{tool}", "args": {args}}}')
-        else:
-            lines.append("── EXECUTE ──")
-            lines.append("(pick a tool to preview)")
+                lines.append("EXECUTE")
+                lines.append("")
+                lines.append("Pick a tool to preview the validated action call.")
+            bg = COL_ACT_BG
 
         self.preview_text.config(state="normal")
+        self.preview_text.config(bg=bg)
         self.preview_text.delete("1.0", "end")
         self.preview_text.insert("1.0", "\n".join(lines))
         self.preview_text.config(state="disabled")
 
     # ----------------------------------------------------------- submit ops
+
+    def _on_submit_current(self) -> None:
+        if self._active_decision_mode() == "act":
+            self._on_submit_execution()
+        else:
+            self._on_submit_interact()
 
     def _on_submit_interact(self) -> None:
         tool_call = self._build_interact_from_form()
