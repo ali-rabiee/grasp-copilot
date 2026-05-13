@@ -47,6 +47,64 @@ from .grid_view import GridView
 
 KIND_OPTIONS = ("QUESTION", "CONFIRM", "SUGGESTION")
 
+# ─── visual palette ──────────────────────────────────────────────────────
+COL_BG          = "#f5f6f8"
+COL_PANEL       = "#ffffff"
+COL_HEADER_BG   = "#1f2933"
+COL_HEADER_FG   = "#ffffff"
+COL_MUTED       = "#6b7280"
+COL_LABEL       = "#374151"
+COL_VALUE       = "#111827"
+COL_ACCENT      = "#1a73e8"
+COL_BORDER      = "#d1d5db"
+COL_LATEST      = "#f9ab00"
+COL_ALERT_BG    = "#ffb74d"
+
+REPLY_STYLE = {
+    "YES":  ("#d4edda", "#0f5132"),  # green
+    "NO":   ("#f8d7da", "#842029"),  # red
+    "PICK": ("#cfe2ff", "#084298"),  # blue
+    "NEUT": ("#e9ecef", "#212529"),  # gray
+}
+
+KIND_CHIP = {
+    "QUESTION":   ("#e3f2fd", "#1565c0"),
+    "CONFIRM":    ("#fff3e0", "#e65100"),
+    "SUGGESTION": ("#f3e5f5", "#6a1b9a"),
+}
+
+ALERT_LABEL = {
+    "episode_start":    "🆕  EPISODE START",
+    "post_execution":   "✅  POST-EXECUTION",
+    "candidate_change": "🔄  CANDIDATE SET CHANGED",
+    "stochastic":       "🎲  STOCHASTIC ALERT",
+    "replay":           "▶  REPLAY DECISION POINT",
+}
+
+FONT_BASE     = ("Helvetica", 10)
+FONT_SMALL    = ("Helvetica", 9)
+FONT_MUTED    = ("Helvetica", 9, "italic")
+FONT_LABEL    = ("Helvetica", 10, "bold")
+FONT_SECTION  = ("Helvetica", 12, "bold")
+FONT_HEADER   = ("Helvetica", 13, "bold")
+FONT_CHIP     = ("Helvetica", 9, "bold")
+FONT_REPLY    = ("Helvetica", 15, "bold")
+FONT_REPLY_HI = ("Helvetica", 20, "bold")
+
+
+def _classify_reply(reply: str) -> tuple[str, str]:
+    r = (reply or "").strip().upper()
+    if not r:
+        return REPLY_STYLE["NEUT"]
+    if r in ("YES", "Y", "ACK", "OK", "CONFIRM"):
+        return REPLY_STYLE["YES"]
+    if r in ("NO", "N", "NACK", "STOP", "CANCEL"):
+        return REPLY_STYLE["NO"]
+    # Looks like a multiple-choice pick: "1) ...", "2) ...", or starts with digit
+    if r[0].isdigit() or ")" in r[:3]:
+        return REPLY_STYLE["PICK"]
+    return REPLY_STYLE["NEUT"]
+
 
 class WizardApp:
     """Top-level Tk app. Owns the runner and runs episodes in a worker thread."""
