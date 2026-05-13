@@ -32,8 +32,13 @@ import _bootstrap  # noqa: F401
 
 from data_generator import grid as gridlib
 from data_generator import yaw as yawlib
-from data_generator.episode import OBJECT_LABELS, Z_BINS
+from data_generator.episode import OBJECT_LABELS, Z_BINS, Episode as EpisodeYCB
+from data_generator.episode_stacking import CUBE_LABELS, EpisodeStacking
+from data_generator.episode_pouring import EpisodePouring, FILL_LEVELS, POUR_AMOUNTS
 from data_generator.oracle import OracleState, oracle_decide_tool, validate_tool_call
+from data_generator.oracle_pouring import pouring_decide_tool
+from data_generator.oracle_registry import ENV_REGISTRY, get_spec
+from data_generator.oracle_stacking import stacking_decide_tool
 from llm.inference import InferenceConfig, generate_json_only
 
 
@@ -88,87 +93,65 @@ class Pose:
 
 
 class GridWorld:
-    def __init__(self, rng: random.Random, *, n_obj: int, collision_p: float) -> None:
-        labels = list(OBJECT_LABELS)
-        rng.shuffle(labels)
-        labels = labels[: max(2, min(n_obj, len(labels)))]
+    """Env-agnostic adapter wrapping a per-env Episode.
 
-        objs: List[Obj] = []
-        for i, label in enumerate(labels):
-            if objs and rng.random() < collision_p:
-                cell = rng.choice([o.cell for o in objs])
-            else:
-                cell = rng.choice(list(gridlib.CELLS))
-            yaw = rng.choice(list(yawlib.YAW_BINS))
-            objs.append(Obj(id=f"o{i}", label=label, cell=cell, yaw=yaw))
-        self.objects = objs
+    The canvas renderer and the keyboard handler use this class via a small
+    surface (objects, gripper_hist, intended_obj_id, get_obj, candidates,
+    push_gripper, apply_tool) so they don't need to know whether the
+    underlying scene is YCB, cube_stacking, or pouring.
+    """
 
-        init_pose = Pose(
-            cell=rng.choice(list(gridlib.CELLS)),
-            yaw=rng.choice(list(yawlib.YAW_BINS)),
-            z=rng.choice(list(Z_BINS)),
-        )
-        # Option B: warm-start history with motion toward a random "intended" object to mimic exploration.
-        intended = rng.choice(self.objects).id
-        self.intended_obj_id = intended
-        self.gripper_hist: List[Pose] = [init_pose]
-        while len(self.gripper_hist) < 6:
-            self._apply_user_motion_toward(intended_obj_id=intended, rng=rng)
+    def __init__(self, env_name: str, rng: random.Random, *, n_obj: int, collision_p: float) -> None:
+        self.env_name = env_name
+        if env_name == "reach_to_grasp_ycb":
+            max_n = min(n_obj, len(OBJECT_LABELS))
+            min_n = max(2, min(n_obj, max_n))
+            self.episode = EpisodeYCB(
+                rng=rng, episode_id=0,
+                n_obj=rng.randint(min_n, max_n) if max_n > min_n else min_n,
+                collision_p=collision_p,
+            )
+        elif env_name == "cube_stacking":
+            max_n = min(n_obj, len(CUBE_LABELS))
+            n_cubes = max(2, min(n_obj, max_n))
+            self.episode = EpisodeStacking(rng=rng, episode_id=0, n_cubes=n_cubes)
+        elif env_name == "pouring":
+            self.episode = EpisodePouring(rng=rng, episode_id=0)
+        else:
+            raise ValueError(f"Unsupported env: {env_name}")
 
-    def get_obj(self, obj_id: str) -> Obj:
-        for o in self.objects:
-            if o.id == obj_id:
-                return o
-        raise KeyError(obj_id)
+    # ---- mirror the legacy GridWorld surface ----
+    @property
+    def objects(self) -> List[Any]:
+        return self.episode.objects
+
+    @property
+    def gripper_hist(self) -> List[Any]:
+        return self.episode.gripper_hist
+
+    @property
+    def intended_obj_id(self) -> str:
+        return self.episode.intended_obj_id
+
+    def get_obj(self, obj_id: str) -> Any:
+        return self.episode.get_obj(obj_id)
 
     def candidates(self, max_dist: int) -> List[str]:
-        cell = self.gripper_hist[-1].cell
-        out: List[str] = []
-        for o in self.objects:
-            if o.is_held:
-                continue
-            if gridlib.manhattan(cell, o.cell) <= max_dist:
-                out.append(o.id)
-        return out
+        return self.episode.gripper_candidates(max_dist=max_dist)
 
     def push_gripper(self, pose: Pose) -> None:
-        self.gripper_hist.append(pose)
-        self.gripper_hist = self.gripper_hist[-6:]
+        # Each per-env Episode has its own Pose dataclass with the same fields.
+        # Build the env-correct one to keep type expectations clean.
+        if self.env_name == "reach_to_grasp_ycb":
+            from data_generator.episode import Pose as EnvPose  # type: ignore
+        elif self.env_name == "cube_stacking":
+            from data_generator.episode_stacking import Pose as EnvPose  # type: ignore
+        else:
+            from data_generator.episode_pouring import Pose as EnvPose  # type: ignore
+        self.episode._push_gripper(EnvPose(cell=pose.cell, yaw=pose.yaw, z=pose.z))
 
     def apply_tool(self, tool_call: Dict[str, Any]) -> None:
-        tool = tool_call["tool"]
-        args = tool_call["args"]
-        cur = self.gripper_hist[-1]
-        if tool == "INTERACT":
-            return
-        if tool == "APPROACH":
-            obj = self.get_obj(args["obj"])
-            self.push_gripper(Pose(cell=obj.cell, yaw=cur.yaw, z="HIGH"))
-        elif tool == "ALIGN_YAW":
-            obj = self.get_obj(args["obj"])
-            self.push_gripper(Pose(cell=cur.cell, yaw=obj.yaw, z=cur.z))
-
-    def _apply_user_motion_toward(self, intended_obj_id: str, rng: random.Random) -> None:
-        cur = self.gripper_hist[-1]
-        intended = self.get_obj(intended_obj_id)
-        # Move 1 step toward intended cell with some jitter.
-        if rng.random() < 0.8:
-            next_cell = gridlib.step_toward(cur.cell, intended.cell)
-        else:
-            neigh = gridlib.neighbors(cur.cell)
-            next_cell = rng.choice(neigh) if neigh else cur.cell
-        # Yaw: drift toward object yaw, with occasional oscillation on same cell.
-        if cur.cell == intended.cell and rng.random() < 0.55:
-            yaw_neighbors = yawlib.neighbors(intended.yaw)
-            next_yaw = rng.choice([cur.yaw, yaw_neighbors[0], yaw_neighbors[1]])
-        else:
-            next_yaw = yawlib.move_toward(cur.yaw, intended.yaw, steps=1)
-        # Z: drift down when on cell.
-        if next_cell == intended.cell:
-            next_z = "LOW" if cur.z != "LOW" and rng.random() < 0.65 else cur.z
-        else:
-            next_z = "HIGH" if cur.z == "MID" and rng.random() < 0.5 else cur.z
-        self.push_gripper(Pose(cell=next_cell, yaw=next_yaw, z=next_z))
+        self.episode.apply_tool(tool_call)
 
 
 class AssistantBackend:
@@ -177,8 +160,12 @@ class AssistantBackend:
 
 
 class OracleBackend(AssistantBackend):
+    def __init__(self, env: str = "reach_to_grasp_ycb") -> None:
+        self.env = env
+        self.decide_fn = get_spec(env).decide_fn
+
     def predict(self, input_blob: Dict[str, Any], *, world: GridWorld, state: OracleState) -> Dict[str, Any]:
-        return oracle_decide_tool(
+        return self.decide_fn(
             input_blob["objects"],
             input_blob["gripper_hist"],
             input_blob["memory"],
@@ -351,6 +338,10 @@ def _build_input(world: GridWorld, memory: Dict[str, Any]) -> Dict[str, Any]:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--backend", choices=["oracle", "hf"], default="oracle")
+    ap.add_argument("--env", choices=sorted(ENV_REGISTRY.keys()),
+                    default="reach_to_grasp_ycb",
+                    help="Which environment / oracle to visually test. "
+                         "Defaults to YCB (backward compatible).")
     ap.add_argument("--model_path", type=str, default=None, help="Path/HF id of a merged standalone model (HF backend).")
     # Backward compatible aliases (deprecated).
     ap.add_argument("--model_name", type=str, default=None, help="DEPRECATED: use --model_path")
@@ -366,10 +357,18 @@ def main() -> None:
         action="store_true",
         help="Make HF backend as deterministic as possible (forces greedy decoding + deterministic torch settings).",
     )
-    ap.add_argument("--n_obj", type=int, default=8)
+    ap.add_argument("--n_obj", type=int, default=None,
+                    help="Number of objects to spawn. Defaults: ycb=8, cube_stacking=4, pouring=3.")
     ap.add_argument("--collision_p", type=float, default=0.2)
-    ap.add_argument("--candidate_max_dist", type=int, default=2)
+    ap.add_argument("--candidate_max_dist", type=int, default=None,
+                    help="Manhattan radius for the candidate set. Defaults from oracle_registry.")
     args = ap.parse_args()
+
+    # Resolve env-aware defaults so YCB scripts keep behaving identically.
+    if args.n_obj is None:
+        args.n_obj = {"reach_to_grasp_ycb": 8, "cube_stacking": 4, "pouring": 3}[args.env]
+    if args.candidate_max_dist is None:
+        args.candidate_max_dist = get_spec(args.env).default_candidate_max_dist
 
     import tkinter as tk
     from tkinter import ttk
@@ -377,7 +376,7 @@ def main() -> None:
     rng = random.Random(args.seed)
 
     def new_world() -> Tuple[GridWorld, OracleState, Dict[str, Any]]:
-        w = GridWorld(rng, n_obj=args.n_obj, collision_p=args.collision_p)
+        w = GridWorld(args.env, rng, n_obj=args.n_obj, collision_p=args.collision_p)
         st = OracleState(intended_obj_id=w.intended_obj_id)
         mem: Dict[str, Any] = {
             "n_interactions": 0,
@@ -394,7 +393,7 @@ def main() -> None:
     world, state, memory = new_world()
 
     if args.backend == "oracle":
-        backend: AssistantBackend = OracleBackend()
+        backend: AssistantBackend = OracleBackend(env=args.env)
     else:
         model_path = args.model_path or args.merged_model_path or args.model_name
         if not model_path:
@@ -429,7 +428,7 @@ def main() -> None:
         backend = HFBackend(cfg)
 
     root = tk.Tk()
-    root.title("grasp-copilot GUI demo")
+    root.title(f"grasp-copilot GUI demo · env={args.env} · backend={args.backend}")
     # Maximize by default (cross-platform best-effort).
     # - Windows often supports: root.state("zoomed")
     # - Some Linux window managers support: root.attributes("-zoomed", True)
@@ -582,7 +581,58 @@ def main() -> None:
                 px, py = pts[i] if i < len(pts) else (0.5, 0.5)
                 cx = x0 + px * (x1 - x0)
                 cy = y0 + py * (y1 - y0)
-                canvas.create_oval(cx - r, cy - r, cx + r, cy + r, outline="#333", width=2)
+                kind = getattr(o, "kind", None)
+                is_held = bool(getattr(o, "is_held", False))
+                fill_level = getattr(o, "fill", None)
+                top_of_stack = getattr(o, "top_of_stack", True)
+
+                # Pouring: pitcher rendered as a tall rectangle; cup as an open beaker.
+                if kind == "pitcher":
+                    canvas.create_rectangle(
+                        cx - r, cy - int(r * 1.3), cx + r, cy + int(r * 1.0),
+                        outline="#7f3d00", width=3, fill="#fff3e0",
+                    )
+                    # spout
+                    canvas.create_polygon(
+                        cx + r, cy - int(r * 1.1), cx + int(r * 1.5), cy - int(r * 0.7), cx + r, cy - int(r * 0.6),
+                        outline="#7f3d00", fill="#fff3e0", width=2,
+                    )
+                elif kind == "cup":
+                    canvas.create_rectangle(
+                        cx - r, cy - r, cx + r, cy + r,
+                        outline="#1f5fa8", width=3, fill="#eaf2fb",
+                    )
+                else:
+                    # YCB / cube_stacking
+                    outline = "#333"
+                    width = 2
+                    if is_held:
+                        outline = "#d62728"
+                        width = 4
+                    elif not top_of_stack:
+                        # Covered cube — dimmer outline
+                        outline = "#aaa"
+                    canvas.create_oval(cx - r, cy - r, cx + r, cy + r,
+                                       outline=outline, width=width)
+                    if is_held:
+                        # Small "HELD" badge above the shape.
+                        canvas.create_text(cx, cy - int(r * 1.7),
+                                           text="HELD", fill="#d62728",
+                                           font=("Arial", max(8, int(r * 0.7)), "bold"))
+
+                # Fill-level bar for pouring vessels.
+                if fill_level is not None and fill_level in FILL_LEVELS:
+                    frac = {"EMPTY": 0.05, "PARTIAL": 0.5, "FULL": 0.95}[fill_level]
+                    bar_h = int((2 * r) * frac)
+                    bar_color = "#3f9bff" if kind == "cup" else "#b27a3c"
+                    canvas.create_rectangle(
+                        cx - int(r * 0.6), cy + r - bar_h,
+                        cx + int(r * 0.6), cy + r - 1,
+                        fill=bar_color, outline="",
+                    )
+                    canvas.create_text(cx, cy + r + int(r * 0.6),
+                                       text=fill_level, fill="#333",
+                                       font=("Arial", max(7, int(r * 0.55))))
 
             # Render labels as a stacked list inside the cell so they don't overlap each other.
             # Show at most 4, then summarize.
@@ -810,11 +860,17 @@ def main() -> None:
                 if action in {"APPROACH", "ALIGN_YAW"}:
                     state.pending_mode = action
             else:
-                # Reject: go to recovery.
+                # Reject: go to recovery. Also exclude the declined object so
+                # the user isn't re-offered the same target on the next round.
                 state.pending_action_obj_id = None
                 state.pending_mode = None
                 state.selected_obj_id = None
                 state.awaiting_anything_else = True
+                if isinstance(obj_id, str):
+                    ex = set(memory.get("excluded_obj_ids") or [])
+                    ex.add(obj_id)
+                    memory["excluded_obj_ids"] = sorted(ex)
+                    update_candidates()
             state.awaiting_confirmation = False
         elif t == "help":
             obj_id = ctx.get("obj_id")
@@ -830,9 +886,15 @@ def main() -> None:
             state.awaiting_help = False
         elif t == "anything_else":
             if user_content.upper() == "YES":
-                # Recovery: if the user repeatedly chose "None of them", they may have excluded
-                # all nearby candidates. Clear exclusions when restarting help flow.
-                memory["excluded_obj_ids"] = []
+                # Recovery: re-enter mode_select. Only clear exclusions if the
+                # current candidate set would otherwise be empty (e.g., user said
+                # "None of them" repeatedly). Otherwise preserve them so previously-
+                # declined targets stay out of the next round.
+                cur_candidates = list(memory.get("candidates") or [])
+                excluded = set(memory.get("excluded_obj_ids") or [])
+                live = [c for c in cur_candidates if c not in excluded]
+                if not live:
+                    memory["excluded_obj_ids"] = []
                 state.awaiting_mode_select = True
                 state.awaiting_anything_else = False
             else:
@@ -843,20 +905,102 @@ def main() -> None:
                 status.set("Okay — no assistance. You can press 'Ask assistance' anytime.")
                 auto_continue = False
         elif t == "mode_select":
-            # Prefer semantic replies ("APPROACH"/"ALIGN_YAW"), but accept numeric for compatibility.
+            # Accept semantic or numeric. Choices vary per env (ctx["actions"]).
             uc = user_content.strip().upper()
-            if uc in {"APPROACH", "ALIGN_YAW"}:
-                state.pending_mode = uc
-            elif user_content == "1":
-                state.pending_mode = "APPROACH"
-            elif user_content == "2":
-                state.pending_mode = "ALIGN_YAW"
+            actions: List[str] = list(ctx.get("actions") or ["APPROACH", "ALIGN_YAW"])
+            picked: Optional[str] = None
+            if uc in {a.upper() for a in actions}:
+                picked = uc
+            elif user_content.isdigit():
+                idx = int(user_content) - 1
+                if 0 <= idx < len(actions):
+                    picked = actions[idx].upper()
+            if picked:
+                state.pending_mode = picked
             state.awaiting_mode_select = False
             state.awaiting_choice = True
         elif t == "terminal_ack":
             reset_conversation_only()
             status.set("Okay. You can press 'Ask assistance' anytime.")
             auto_continue = False
+        # ---------------------------- cube_stacking / pouring contexts ----------------------------
+        elif t in {"intent_gate_stack", "intent_gate_pour"}:
+            if user_content.upper() == "YES":
+                state.awaiting_choice = True
+                state.awaiting_intent_gate = False
+                action = str(ctx.get("action") or "APPROACH").upper()
+                if action not in {"APPROACH", "ALIGN_YAW", "STACK", "GRAB", "POUR"}:
+                    action = "APPROACH"
+                state.pending_mode = action
+            else:
+                state.awaiting_intent_gate = False
+                state.awaiting_choice = False
+                state.awaiting_anything_else = True
+                state.pending_mode = None
+                state.selected_obj_id = None
+        elif t in {"confirm_stack", "confirm_pour", "confirm_grab", "pitcher_acquisition"}:
+            obj_id = ctx.get("obj_id")
+            action = str(ctx.get("action") or "").upper()
+            if user_content.upper() == "YES" and isinstance(obj_id, str):
+                state.pending_action_obj_id = obj_id
+                state.selected_obj_id = obj_id
+                if action in {"APPROACH", "ALIGN_YAW", "STACK", "GRAB", "POUR"}:
+                    state.pending_mode = action
+            else:
+                state.pending_action_obj_id = None
+                state.pending_mode = None
+                state.selected_obj_id = None
+                state.awaiting_anything_else = True
+                # Loop preventer: exclude the declined obj_id so re-entering the
+                # candidate flow won't re-offer the same target.
+                if isinstance(obj_id, str):
+                    ex = set(memory.get("excluded_obj_ids") or [])
+                    ex.add(obj_id)
+                    memory["excluded_obj_ids"] = sorted(ex)
+                    update_candidates()
+            state.awaiting_confirmation = False
+        elif t in {"non_top_redirect", "cup_full_redirect"}:
+            alt_id = ctx.get("alt_obj_id")
+            if user_content.upper() == "YES" and isinstance(alt_id, str):
+                state.intended_obj_id = alt_id
+                state.selected_obj_id = None
+                state.pending_action_obj_id = None
+                state.pending_mode = None
+                state.awaiting_intent_gate = False
+                state.awaiting_confirmation = False
+            else:
+                state.awaiting_intent_gate = False
+                state.awaiting_anything_else = True
+        elif t == "amount_choice":
+            amounts: List[str] = list(ctx.get("amounts") or list(POUR_AMOUNTS))
+            none_index = int(ctx.get("none_index") or (len(amounts) + 1))
+            uc = user_content.strip().upper()
+            if uc in {a.upper() for a in amounts}:
+                state.pending_amount = uc
+                state.awaiting_amount_choice = False
+                state.awaiting_amount_confirmation = True
+            elif user_content.isdigit():
+                idx = int(user_content)
+                if idx == none_index:
+                    state.awaiting_amount_choice = False
+                    state.awaiting_anything_else = True
+                elif 1 <= idx <= len(amounts):
+                    state.pending_amount = amounts[idx - 1]
+                    state.awaiting_amount_choice = False
+                    state.awaiting_amount_confirmation = True
+            elif user_content.strip().lower().startswith("none"):
+                state.awaiting_amount_choice = False
+                state.awaiting_anything_else = True
+        elif t == "confirm_amount":
+            if user_content.upper() == "YES":
+                state.awaiting_amount_confirmation = False
+                state.pending_action_obj_id = state.selected_obj_id or state.intended_obj_id
+                state.pending_mode = "POUR"
+                state.awaiting_confirmation = False
+            else:
+                state.awaiting_amount_confirmation = False
+                state.awaiting_amount_choice = True
+                state.pending_amount = None
 
         # Consume the prompt context once applied.
         state.last_prompt_context = None
@@ -898,7 +1042,7 @@ def main() -> None:
         input_blob = _build_input(world, memory)
         try:
             tool_call = backend.predict(input_blob, world=world, state=state)
-            validate_tool_call(tool_call)
+            validate_tool_call(tool_call, env=args.env)
         except Exception as e:
             status.set(f"Model error: {e}")
             log_line(f"[error] {e}")
@@ -952,8 +1096,14 @@ def main() -> None:
         # Motion tools apply immediately.
         status.set(f"Executing: {tool_call['tool']}({tool_call['args']})")
         world.apply_tool(tool_call)
-        if tool_call["tool"] in {"APPROACH", "ALIGN_YAW"}:
-            memory["last_action"] = {"tool": tool_call["tool"], "obj": tool_call["args"]["obj"]}
+        motion_set = {"APPROACH", "ALIGN_YAW", "STACK", "GRAB", "POUR", "RELEASE"}
+        if tool_call["tool"] in motion_set:
+            la: Dict[str, Any] = {"tool": tool_call["tool"]}
+            if "obj" in (tool_call.get("args") or {}):
+                la["obj"] = tool_call["args"]["obj"]
+            if "amount" in (tool_call.get("args") or {}):
+                la["amount"] = tool_call["args"]["amount"]
+            memory["last_action"] = la
         update_candidates()
         redraw()
 
@@ -1046,7 +1196,9 @@ def main() -> None:
     root.bind("<Key>", on_key)
     canvas.bind("<Configure>", schedule_redraw)
     redraw()
-    log_line(f"[info] backend={args.backend}")
+    from data_generator.oracle import ENV_SKILLS as _ENV_SKILLS
+    log_line(f"[info] env={args.env} backend={args.backend}")
+    log_line(f"[info] skills available: {list(_ENV_SKILLS[args.env])}")
     log_line("[info] Modes: 1=translation, 2=rotation, 3=gripper")
     log_line("[info] Controls: arrows act in current mode; q/e rotate; w/s open/close")
     root.mainloop()

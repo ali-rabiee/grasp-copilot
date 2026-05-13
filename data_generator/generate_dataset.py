@@ -7,7 +7,8 @@ import random
 from typing import Dict, List, Optional, Tuple
 
 from .episode import Episode, OBJECT_LABELS, write_jsonl
-from .oracle import OracleState, oracle_decide_tool, validate_tool_call
+from .oracle import POUR_AMOUNTS, OracleState, oracle_decide_tool, validate_tool_call
+from .oracle_registry import ENV_REGISTRY, get_spec
 
 
 def _deepcopy_memory(mem: Dict) -> Dict:
@@ -103,6 +104,8 @@ def _simulate_user_response(
         or state.awaiting_intent_gate
         or state.awaiting_anything_else
         or state.awaiting_mode_select
+        or state.awaiting_amount_choice
+        or state.awaiting_amount_confirmation
     )
     if (not must_respond) and rng.random() >= 0.6:
         if isinstance(stats, dict):
@@ -130,36 +133,43 @@ def _simulate_user_response(
                 if isinstance(bucket, dict):
                     bucket[key] = int(bucket.get(key, 0)) + 1
 
-    if ctx.get("type") in {"confirm", "help"}:
-        obj_id = ctx.get("obj_id")
+    if ctx.get("type") in {
+        "confirm", "help", "confirm_stack", "confirm_pour", "confirm_grab",
+        "pitcher_acquisition", "non_top_redirect", "cup_full_redirect",
+    }:
+        obj_id = ctx.get("obj_id") or ctx.get("alt_obj_id")
         resp = "YES" if rng.random() < float(yes_p) else "NO"
         append_user(resp)
         if resp == "YES" and obj_id:
             state.pending_action_obj_id = obj_id
             state.selected_obj_id = obj_id
-            # Lock mode to whatever was being confirmed (if present).
             action = (ctx.get("action") or "").upper()
-            if action in {"APPROACH", "ALIGN_YAW"}:
+            if action in {"APPROACH", "ALIGN_YAW", "STACK", "GRAB", "POUR"}:
                 state.pending_mode = action
-            # If the user confirmed, lock the goal to that object.
-            state.intended_obj_id = obj_id
+            # Redirect prompts replace the intended target.
+            if ctx["type"] in {"non_top_redirect", "cup_full_redirect"}:
+                state.intended_obj_id = obj_id
+            else:
+                state.intended_obj_id = obj_id
             state.last_declined_obj_id = None
         elif resp == "NO" and obj_id:
             state.last_declined_obj_id = obj_id
-            # On NO, fall back into recovery / mode selection rather than acting.
             state.pending_action_obj_id = None
             state.pending_mode = None
-            # If user rejected help/confirm, ask if anything else we can do.
             state.awaiting_anything_else = True
-        # Once the user answered, don't keep re-confirming the same selection.
-        # The oracle can rely on pending_action_obj_id (on YES) to proceed.
-        if ctx["type"] in {"confirm", "help"}:
+            # Loop preventer: exclude the declined object from future candidate
+            # offers so the simulator/user can't be re-offered the same target.
+            ex = set(memory.get("excluded_obj_ids") or [])
+            ex.add(str(obj_id))
+            memory["excluded_obj_ids"] = sorted(ex)
+        if ctx["type"] in {"confirm", "help", "confirm_stack", "confirm_pour", "confirm_grab"}:
             state.selected_obj_id = None
-        if ctx["type"] == "confirm":
+        if ctx["type"] in {"confirm", "confirm_stack", "confirm_pour", "confirm_grab", "pitcher_acquisition",
+                            "non_top_redirect", "cup_full_redirect"}:
             state.awaiting_confirmation = False
         if ctx["type"] == "help":
             state.awaiting_help = False
-    elif ctx.get("type") in {"intent_gate_candidates", "intent_gate_yaw"}:
+    elif ctx.get("type") in {"intent_gate_candidates", "intent_gate_yaw", "intent_gate_stack", "intent_gate_pour"}:
         # Decide whether the oracle's inferred intent matches the hidden intent often,
         # but not always, to produce recovery branches.
         inferred_labels = set(ctx.get("labels") or [])
@@ -169,22 +179,22 @@ def _simulate_user_response(
         resp = "YES" if rng.random() < float(yes_p) else "NO"
         append_user(resp)
         if resp == "YES":
-            # Move to the next prompt: either object choice (candidates) or help confirm (yaw).
-            if ctx.get("type") == "intent_gate_candidates":
+            ctx_type = ctx.get("type")
+            if ctx_type in {"intent_gate_candidates", "intent_gate_stack", "intent_gate_pour"}:
                 state.awaiting_choice = True
                 state.awaiting_intent_gate = False
-                # Set pending mode based on the prompt's implied action (translation vs rotation).
                 action = str(ctx.get("action") or "APPROACH").upper()
-                state.pending_mode = action if action in {"APPROACH", "ALIGN_YAW"} else "APPROACH"
+                if action not in {"APPROACH", "ALIGN_YAW", "STACK", "POUR", "GRAB"}:
+                    action = "APPROACH"
+                state.pending_mode = action
             else:
-                # Yaw struggle intent accepted: ask if user wants help.
+                # intent_gate_yaw: ask if user wants help aligning.
                 state.awaiting_help = True
                 state.awaiting_intent_gate = False
                 state.pending_mode = "ALIGN_YAW"
                 if inferred_obj_id:
                     state.selected_obj_id = inferred_obj_id
         else:
-            # Recovery: ask if anything else we can help with.
             state.awaiting_intent_gate = False
             state.awaiting_choice = False
             state.awaiting_help = False
@@ -195,29 +205,79 @@ def _simulate_user_response(
         resp = "YES" if rng.random() < float(yes_p) else "NO"
         append_user(resp)
         if resp == "YES":
-            # If the user said "None of them" repeatedly, they may have excluded all nearby objects.
-            # Clear exclusions to let the assistant restart the help flow cleanly.
-            memory["excluded_obj_ids"] = []
+            # Only clear exclusions if the live candidate set is otherwise empty
+            # (e.g., user said "None of them" repeatedly). Otherwise preserve
+            # them so previously-declined targets stay out of the next round —
+            # this is the key loop preventer.
+            cur_candidates = list(memory.get("candidates") or [])
+            excluded = set(memory.get("excluded_obj_ids") or [])
+            live = [c for c in cur_candidates if c not in excluded]
+            if not live:
+                memory["excluded_obj_ids"] = []
             state.awaiting_mode_select = True
             state.awaiting_anything_else = False
         else:
             state.terminate_episode = True
             state.awaiting_anything_else = False
     elif ctx.get("type") == "mode_select":
-        # Pick a mode aligned with the hidden intent: if we're not in the target cell yet,
-        # prefer approach; otherwise, align yaw.
+        # Pick a mode aligned with hidden intent. Choices vary per env, surfaced as ctx["actions"].
+        actions = list(ctx.get("actions") or ["APPROACH", "ALIGN_YAW"])
         intended = episode.intended_obj()
         cur = episode.gripper_hist[-1]
-        prefer = "APPROACH" if cur.cell != intended.cell else "ALIGN_YAW"
-        # If you want 50/50 here too, pass yes_p=0.5 and set prefer randomly.
-        # Keep intent-aligned preference by default but allow variety.
+
+        if "STACK" in actions:
+            prefer = "APPROACH" if cur.cell != intended.cell else "STACK"
+        elif "POUR" in actions or "GRAB" in actions:
+            pitcher = getattr(episode, "pitcher", None)
+            pitcher_obj = pitcher() if callable(pitcher) else None
+            if pitcher_obj is not None and not pitcher_obj.is_held and "GRAB" in actions:
+                prefer = "GRAB"
+            else:
+                prefer = "APPROACH" if cur.cell != intended.cell else "POUR"
+        else:
+            prefer = "APPROACH" if cur.cell != intended.cell else "ALIGN_YAW"
+
         if rng.random() < 0.15:
-            prefer = "ALIGN_YAW" if prefer == "APPROACH" else "APPROACH"
-        # Reply with semantic label (preferred for training).
+            others = [a for a in actions if a != prefer]
+            if others:
+                prefer = rng.choice(others)
+        if prefer not in actions:
+            prefer = actions[0]
         append_user(prefer)
         state.pending_mode = prefer
         state.awaiting_mode_select = False
         state.awaiting_choice = True
+    elif ctx.get("type") == "amount_choice":
+        # Pouring: pick a bucket. Bias toward the episode's hidden ``intended_amount``
+        # so episodes terminate, but inject occasional disagreement → recovery branches.
+        intended_amount = getattr(episode, "intended_amount", None) or "HALF"
+        amounts = list(ctx.get("amounts") or list(POUR_AMOUNTS))
+        none_index = int(ctx.get("none_index") or (len(amounts) + 1))
+        if rng.random() < float(none_of_them_p):
+            append_user("None — don't pour")
+            state.awaiting_amount_choice = False
+            state.awaiting_anything_else = True
+        else:
+            pick = intended_amount if (intended_amount in amounts and rng.random() < 0.85) else rng.choice(amounts)
+            append_user(pick)
+            state.pending_amount = pick
+            state.awaiting_amount_choice = False
+            state.awaiting_amount_confirmation = True
+    elif ctx.get("type") == "confirm_amount":
+        # Confirm the chosen amount. YES → ready to fire POUR; NO → re-pick.
+        amount = ctx.get("amount") or state.pending_amount
+        resp = "YES" if rng.random() < float(yes_p) else "NO"
+        append_user(resp)
+        if resp == "YES":
+            state.awaiting_amount_confirmation = False
+            # Re-arm the pending action so the next decide() emits POUR with this amount.
+            state.pending_action_obj_id = state.selected_obj_id or state.intended_obj_id
+            state.pending_mode = "POUR"
+            state.awaiting_confirmation = False
+        else:
+            state.awaiting_amount_confirmation = False
+            state.awaiting_amount_choice = True
+            state.pending_amount = None
     elif ctx.get("type") == "candidate_choice":
         # Choose which object; respond with the semantic label (preferred for training).
         labels = list(ctx.get("labels") or [])
@@ -270,9 +330,14 @@ def _simulate_user_response(
         state.awaiting_choice = False
         state.awaiting_confirmation = False
     else:
-        # Fallback: if it's a YES/NO style prompt, answer with YES/NO.
+        # Fallback: if it's a strict YES/NO style prompt, answer with YES/NO.
+        # Match against the semantic label (after stripping "N) ") and use
+        # equality — not substring — so options like "None — don't pour"
+        # don't trip the YES/NO branch via "NO" ⊂ "None".
         labels = [c for c in tool_call["args"].get("choices", [])]
-        if any("YES" in l.upper() for l in labels) and any("NO" in l.upper() for l in labels):
+        semantics = [_strip_choice_label(l).strip().upper() for l in labels]
+        is_yes_no = "YES" in semantics and "NO" in semantics
+        if is_yes_no:
             resp = "YES" if rng.random() < 0.55 else "NO"
             append_user(resp)
         else:
@@ -285,32 +350,61 @@ def _simulate_user_response(
     state.last_prompt_context = None
 
 
-def _schema_validate_record(rec: Dict) -> None:
+def _schema_validate_record(rec: Dict, *, env: Optional[str] = None) -> None:
     for k in ("episode_id", "objects", "gripper_hist", "memory", "user_state", "target_tool_call"):
         if k not in rec:
             raise ValueError(f"Missing key: {k}")
     if len(rec["gripper_hist"]) != 6:
         raise ValueError("gripper_hist must have length 6")
-    validate_tool_call(rec["target_tool_call"])
+    validate_tool_call(rec["target_tool_call"], env=env)
     us = rec.get("user_state") or {}
     if not isinstance(us, dict) or us.get("mode") not in {"translation", "rotation", "gripper"}:
         raise ValueError("user_state.mode must be one of {translation, rotation, gripper}")
+
+
+def _build_episode(env: str, rng: random.Random, episode_id: int, *, n_obj_min: int, n_obj_max: int, collision_p: float):
+    """Construct the per-env Episode object with env-appropriate kwargs."""
+    spec = get_spec(env)
+    cls = spec.episode_cls
+    if env == "reach_to_grasp_ycb":
+        max_n = min(int(n_obj_max), len(OBJECT_LABELS))
+        min_n = max(2, min(int(n_obj_min), max_n))
+        n_obj = rng.randint(min_n, max_n)
+        return cls(rng=rng, episode_id=episode_id, n_obj=n_obj, collision_p=collision_p)
+    if env == "cube_stacking":
+        from .episode_stacking import CUBE_LABELS
+        max_n = min(int(n_obj_max), len(CUBE_LABELS))
+        min_n = max(2, min(int(n_obj_min), max_n))
+        n_cubes = rng.randint(min_n, max_n)
+        return cls(rng=rng, episode_id=episode_id, n_cubes=n_cubes)
+    if env == "pouring":
+        # n_cups inferred internally; n_obj_min/max ignored here.
+        return cls(rng=rng, episode_id=episode_id)
+    raise ValueError(f"Unsupported env: {env}")
 
 
 def generate(
     episodes: int,
     seed: int,
     *,
+    env: str = "reach_to_grasp_ycb",
     n_obj_min: int = 2,
     n_obj_max: int = 10,
     collision_p: float = 0.15,
-    candidate_max_dist: int = 1,
+    candidate_max_dist: Optional[int] = None,
     user_yes_p: float = 0.5,
     user_none_of_them_p: float = 0.2,
 ) -> Tuple[List[Dict], Dict]:
+    spec = get_spec(env)
+    decide_fn = spec.decide_fn
+    if candidate_max_dist is None:
+        candidate_max_dist = spec.default_candidate_max_dist
+
     rng = random.Random(seed)
     records: List[Dict] = []
-    tool_counts: Dict[str, int] = {"INTERACT": 0, "APPROACH": 0, "ALIGN_YAW": 0}
+    # Seed tool_counts with the env's full skill set so the stats file always has them.
+    from .oracle import ENV_SKILLS
+    tool_counts: Dict[str, int] = {t: 0 for t in ENV_SKILLS[env]}
     reply_stats: Dict = {
         "user_replies_total": 0,
         "user_replies_yes": 0,
@@ -318,15 +412,15 @@ def generate(
         "user_replies_none_of_them": 0,
         "user_replies_mode_approach": 0,
         "user_replies_mode_align_yaw": 0,
+        "user_replies_mode_stack": 0,
+        "user_replies_mode_grab": 0,
+        "user_replies_mode_pour": 0,
         "user_silent_steps": 0,
         "user_replies_by_context": {},
     }
 
     for episode_id in range(episodes):
-        max_n = min(int(n_obj_max), len(OBJECT_LABELS))
-        min_n = max(2, min(int(n_obj_min), max_n))
-        n_obj = rng.randint(min_n, max_n)
-        ep = Episode(rng=rng, episode_id=episode_id, n_obj=n_obj, collision_p=collision_p)
+        ep = _build_episode(env, rng, episode_id, n_obj_min=n_obj_min, n_obj_max=n_obj_max, collision_p=collision_p)
         state = OracleState(intended_obj_id=ep.intended_obj_id)
         memory: Dict = {
             "n_interactions": 0,
@@ -340,8 +434,17 @@ def generate(
             "last_prompt": {},
         }
 
+        # Hard cap on per-episode interactions as a backstop against any
+        # logic loop that slips past the per-prompt loop preventers. ~12 turns
+        # is well above the natural episode length (median 4-6) yet small
+        # enough that pathological cycles can't dominate the dataset.
+        max_interactions_per_episode = 12
+
         for t in range(ep.T):
             if state.terminate_episode:
+                break
+            if int(memory.get("n_interactions", 0)) >= max_interactions_per_episode:
+                state.terminate_episode = True
                 break
             # Snapshot before choosing the tool call.
             memory["candidates"] = ep.gripper_candidates(max_dist=candidate_max_dist)
@@ -352,21 +455,22 @@ def generate(
                 "gripper_hist": gripper_hist,
                 "memory": _deepcopy_memory(memory),
                 "user_state": {"mode": _infer_user_mode_from_gripper_hist(gripper_hist)},
+                "env": env,
             }
 
-            tool_call = oracle_decide_tool(
+            tool_call = decide_fn(
                 record["objects"],
                 record["gripper_hist"],
                 memory,
                 state,
                 user_state=record["user_state"],
             )
-            validate_tool_call(tool_call)
+            validate_tool_call(tool_call, env=env)
             record["target_tool_call"] = tool_call
-            _schema_validate_record(record)
+            _schema_validate_record(record, env=env)
             records.append(record)
 
-            tool_counts[tool_call["tool"]] += 1
+            tool_counts[tool_call["tool"]] = tool_counts.get(tool_call["tool"], 0) + 1
 
             # Update dialog and interaction counters.
             if tool_call["tool"] == "INTERACT":
@@ -400,23 +504,41 @@ def generate(
 
             # Apply tool effects then simulate teleop toward intent.
             ep.apply_tool(tool_call)
-            if tool_call["tool"] in {"APPROACH", "ALIGN_YAW"}:
-                memory["last_action"] = {"tool": tool_call["tool"], "obj": tool_call["args"]["obj"]}
+            motion_tools = {"APPROACH", "ALIGN_YAW", "STACK", "GRAB", "POUR", "RELEASE"}
+            if tool_call["tool"] in motion_tools:
+                la: Dict = {"tool": tool_call["tool"]}
+                if "obj" in (tool_call.get("args") or {}):
+                    la["obj"] = tool_call["args"]["obj"]
+                if "amount" in (tool_call.get("args") or {}):
+                    la["amount"] = tool_call["args"]["amount"]
+                memory["last_action"] = la
             if t < ep.T - 1:
-                # If the assistant executed a non-interactive tool, the human is less likely
-                # to keep fighting the motion on the very next step. This reduces unrealistic
-                # "ALIGN_YAW spam" / oscillatory behavior.
                 skip_user_motion = tool_call["tool"] != "INTERACT" and rng.random() < 0.85
                 if not skip_user_motion:
                     ep.apply_user_motion()
 
-            # If we've reached the currently intended object pose (cell + yaw),
-            # stop the episode early. This makes APPROACH/ALIGN_YAW naturally "final"
-            # actions and avoids long post-goal chat loops.
-            intended = ep.get_obj(state.intended_obj_id)
-            g = ep.gripper_hist[-1]
-            if g.cell == intended.cell and g.yaw == intended.yaw:
-                break
+            # Env-specific termination conditions.
+            if env == "reach_to_grasp_ycb":
+                intended = ep.get_obj(state.intended_obj_id)
+                g = ep.gripper_hist[-1]
+                if g.cell == intended.cell and g.yaw == intended.yaw:
+                    break
+            elif env == "cube_stacking":
+                # Terminate as soon as the held cube has been stacked on the
+                # intended base (regardless of whether the base was itself the
+                # topper of a pre-existing stack — its own ``stacked_on`` may
+                # already be non-None from scene init).
+                if any(o.stacked_on == state.intended_obj_id for o in ep.objects):
+                    break
+                # Also terminate if nothing is held anymore (RELEASE or a stack
+                # to a non-intended base): no recovery is possible without a held cube.
+                if not any(o.is_held for o in ep.objects):
+                    break
+            elif env == "pouring":
+                # Terminate after a successful POUR on the intended cup.
+                la = memory.get("last_action") or {}
+                if la.get("tool") == "POUR" and la.get("obj") == state.intended_obj_id:
+                    break
 
         # Reset per-episode flags that should not leak; none currently.
         state.last_tool_calls.clear()
@@ -427,13 +549,18 @@ def generate(
 
 def main(argv: Optional[List[str]] = None) -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--episodes", type=int, required=True)
+    ap.add_argument("--episodes", type=int, default=10000,
+                    help="Number of episodes to generate (default: 10000).")
     ap.add_argument("--out", type=str, required=True)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--env", type=str, default="reach_to_grasp_ycb",
+                    choices=sorted(ENV_REGISTRY.keys()),
+                    help="Which environment's oracle/episode to use.")
     ap.add_argument("--n_obj_min", type=int, default=2)
     ap.add_argument("--n_obj_max", type=int, default=10)
     ap.add_argument("--collision_p", type=float, default=0.15)
-    ap.add_argument("--candidate_max_dist", type=int, default=1)
+    ap.add_argument("--candidate_max_dist", type=int, default=None,
+                    help="Override env default candidate radius (Manhattan).")
     ap.add_argument(
         "--user_yes_p",
         type=float,
@@ -451,6 +578,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     records, stats = generate(
         episodes=args.episodes,
         seed=args.seed,
+        env=args.env,
         n_obj_min=args.n_obj_min,
         n_obj_max=args.n_obj_max,
         collision_p=args.collision_p,

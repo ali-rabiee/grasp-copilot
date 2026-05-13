@@ -102,25 +102,80 @@ class GridView:
                         fontsize=7, ha="center", va="top", color="#333333", zorder=5)
 
         # Gripper history trail.
+        # Collapse consecutive identical (cell, yaw) entries into "runs" so a
+        # 6-entry deque seeded with the starting pose renders as one marker
+        # with a "×6" badge instead of six invisible overlapping dots.
         if gripper_hist:
-            for i, g in enumerate(gripper_hist[:-1]):
-                gx, gy = _cell_to_xy(g["cell"])
-                # Slight jitter so a stack of identical history points is visible.
-                jitter = 0.03 * (i - len(gripper_hist) / 2)
-                ax.scatter([gx + jitter], [gy + jitter], s=40,
-                           c="#444444", alpha=0.15 + 0.10 * i,
-                           edgecolors="none", zorder=2)
+            n_hist = len(gripper_hist)
+            runs: List[Dict] = []
+            for i, g in enumerate(gripper_hist):
+                sig = (g.get("cell"), g.get("yaw"))
+                if runs and (runs[-1]["cell"], runs[-1]["yaw"]) == sig:
+                    runs[-1]["count"] += 1
+                    runs[-1]["last_idx"] = i
+                else:
+                    runs.append({"cell": g.get("cell"), "yaw": g.get("yaw"),
+                                 "z": g.get("z"), "count": 1,
+                                 "first_idx": i, "last_idx": i})
 
+            # Connect distinct-cell runs with arrows (oldest → newest).
+            for prev, nxt in zip(runs[:-1], runs[1:]):
+                if prev["cell"] == nxt["cell"]:
+                    continue
+                x0, y0 = _cell_to_xy(prev["cell"])
+                x1, y1 = _cell_to_xy(nxt["cell"])
+                # Shorten so the arrow head doesn't overshoot the marker.
+                dx, dy = x1 - x0, y1 - y0
+                norm = max((dx ** 2 + dy ** 2) ** 0.5, 1e-6)
+                shrink = 0.22 / norm
+                ax.annotate(
+                    "", xy=(x1 - dx * shrink, y1 - dy * shrink),
+                    xytext=(x0 + dx * shrink, y0 + dy * shrink),
+                    arrowprops=dict(arrowstyle="->", color="#1a73e8",
+                                    lw=1.6, alpha=0.85),
+                    zorder=3,
+                )
+
+            # Render every history run except the most recent (which the big
+            # current-gripper marker covers). Age fades from light → saturated.
+            for run in runs[:-1]:
+                gx, gy = _cell_to_xy(run["cell"])
+                age_frac = run["last_idx"] / max(n_hist - 1, 1)
+                alpha = 0.25 + 0.55 * age_frac
+                ax.scatter([gx], [gy], s=110, c="#1a73e8", alpha=alpha,
+                           edgecolors="black", linewidths=0.6, zorder=4)
+                if run["yaw"]:
+                    vx, vy = _YAW_VEC.get(run["yaw"], (0.0, 1.0))
+                    ax.plot([gx, gx + 0.18 * vx], [gy, gy + 0.18 * vy],
+                            color="#1a73e8", alpha=alpha, lw=1.4, zorder=4)
+                if run["count"] > 1:
+                    ax.text(gx + 0.22, gy - 0.22, f"×{run['count']}",
+                            fontsize=8, color="#0b3d91", alpha=alpha,
+                            fontweight="bold", zorder=5)
+
+            # Always show a "trail starts here" marker on the oldest run if
+            # the trail has any motion at all (otherwise it's all under the X).
+            if len(runs) >= 2:
+                ox, oy = _cell_to_xy(runs[0]["cell"])
+                ax.text(ox - 0.30, oy + 0.30, "start",
+                        fontsize=7, color="#0b3d91", alpha=0.7, zorder=5)
+
+            # Current gripper (always on top, large X).
             cur = gripper_hist[-1]
             gx, gy = _cell_to_xy(cur["cell"])
-            ax.scatter([gx], [gy], s=320, c="#000000", marker="X",
-                       edgecolors="white", linewidths=1.4, zorder=6)
+            ax.scatter([gx], [gy], s=340, c="#000000", marker="X",
+                       edgecolors="white", linewidths=1.6, zorder=6)
             vx, vy = _YAW_VEC.get(cur["yaw"], (0.0, 1.0))
-            ax.plot([gx, gx + 0.32 * vx], [gy, gy + 0.32 * vy],
-                    color="#000000", lw=2.0, zorder=7)
-            ax.text(gx + 0.32 * vx, gy + 0.32 * vy + 0.04,
+            ax.plot([gx, gx + 0.34 * vx], [gy, gy + 0.34 * vy],
+                    color="#000000", lw=2.4, zorder=7)
+            ax.text(gx + 0.34 * vx, gy + 0.34 * vy + 0.05,
                     f"G  z={cur.get('z','?')}",
-                    fontsize=8, ha="center", va="bottom",
+                    fontsize=9, ha="center", va="bottom",
                     color="#000000", fontweight="bold", zorder=8)
+            # Show "stayed N" on the current cell when history says we've been
+            # parked here for multiple ticks (useful for rotation/no-op streaks).
+            if runs and runs[-1]["count"] > 1:
+                ax.text(gx + 0.22, gy + 0.22, f"×{runs[-1]['count']}",
+                        fontsize=8, color="#000000", fontweight="bold", zorder=8)
 
         ax.set_title("Workspace (top-down · row A is far)", fontsize=10)

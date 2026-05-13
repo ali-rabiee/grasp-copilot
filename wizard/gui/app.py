@@ -173,7 +173,10 @@ class WizardApp:
 
         # Render memory.
         mem = blob.get("memory", {})
+        hist = blob.get("gripper_hist") or []
+        hist_str = " → ".join(f"{g.get('cell')}/{g.get('yaw')}" for g in hist) if hist else "(empty)"
         lines = [
+            f"gripper_hist (old→new): {hist_str}",
             f"candidates           : {mem.get('candidates')}",
             f"excluded_obj_ids     : {mem.get('excluded_obj_ids')}",
             f"last_action          : {mem.get('last_action')}",

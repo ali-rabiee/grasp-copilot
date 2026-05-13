@@ -8,6 +8,7 @@ from typing import Optional
 
 from .episode import write_jsonl
 from .generate_dataset import generate as generate_records
+from .oracle_registry import ENV_REGISTRY
 from .run_dirs import allocate_numbered_run_dir
 
 
@@ -36,14 +37,29 @@ def main(argv: Optional[list[str]] = None) -> None:
     ap.add_argument(
         "--episodes",
         type=int,
-        default=None,
-        help="Number of scripted episodes to generate (required unless --generator_jsonl is provided).",
+        default=10000,
+        help="Number of scripted episodes to generate (default: 10000). "
+             "Ignored if --generator_jsonl is provided.",
+    )
+    ap.add_argument(
+        "--env",
+        type=str,
+        default="reach_to_grasp_ycb",
+        choices=sorted(ENV_REGISTRY.keys()),
+        help="Which oracle/environment to collect from. "
+             "Defaults to reach_to_grasp_ycb (backward compatible).",
     )
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--n_obj_min", type=int, default=2)
     ap.add_argument("--n_obj_max", type=int, default=10)
     ap.add_argument("--collision_p", type=float, default=0.15)
-    ap.add_argument("--candidate_max_dist", type=int, default=1)
+    ap.add_argument(
+        "--candidate_max_dist",
+        type=int,
+        default=None,
+        help="Override env default candidate radius (Manhattan). "
+             "Defaults are: ycb=1, cube_stacking=2, pouring=2.",
+    )
 
     ap.add_argument(
         "--generator_jsonl",
@@ -135,10 +151,11 @@ def main(argv: Optional[list[str]] = None) -> None:
         records, stats = generate_records(
             episodes=int(args.episodes),
             seed=int(args.seed),
+            env=str(args.env),
             n_obj_min=int(args.n_obj_min),
             n_obj_max=int(args.n_obj_max),
             collision_p=float(args.collision_p),
-            candidate_max_dist=int(args.candidate_max_dist),
+            candidate_max_dist=(int(args.candidate_max_dist) if args.candidate_max_dist is not None else None),
         )
         write_jsonl(out_generator, records)
         with open(out_generator + ".stats.json", "w", encoding="utf-8") as f:

@@ -12,18 +12,33 @@ UserState = Dict[str, str]  # expects {"mode": "translation"|"rotation"|"gripper
 # Hard constraint used for both dataset generation and inference-time validation.
 MAX_INTERACT_CHOICES = 5
 
+# Per-env skill registry. Each new oracle declares its tool set here so the schema
+# validator can enforce env-correct outputs without callers needing to know the env.
+ENV_SKILLS: Dict[str, Tuple[str, ...]] = {
+    "reach_to_grasp_ycb": ("INTERACT", "APPROACH", "ALIGN_YAW"),
+    "cube_stacking":      ("INTERACT", "APPROACH", "ALIGN_YAW", "STACK", "RELEASE"),
+    "pouring":            ("INTERACT", "APPROACH", "ALIGN_YAW", "GRAB", "POUR"),
+}
+
+# Pour-amount buckets surfaced to the LLM as discrete choices.
+POUR_AMOUNTS: Tuple[str, ...] = ("SMALL", "HALF", "FULL")
+
 @dataclass
 class OracleState:
     intended_obj_id: str
     selected_obj_id: Optional[str] = None
     pending_action_obj_id: Optional[str] = None
-    pending_mode: Optional[str] = None  # "APPROACH" | "ALIGN_YAW"
+    pending_mode: Optional[str] = None  # "APPROACH" | "ALIGN_YAW" | "STACK" | "GRAB" | "POUR"
     awaiting_confirmation: bool = False
     awaiting_help: bool = False
     awaiting_choice: bool = False
     awaiting_intent_gate: bool = False
     awaiting_anything_else: bool = False
     awaiting_mode_select: bool = False
+    # Pouring-specific amount sub-flow flags. None / False for envs that don't use them.
+    awaiting_amount_choice: bool = False
+    awaiting_amount_confirmation: bool = False
+    pending_amount: Optional[str] = None  # one of POUR_AMOUNTS
     last_prompt_context: Optional[Dict] = None
     # Track recent user rejections to avoid asking the exact same question in a loop.
     last_declined_obj_id: Optional[str] = None
@@ -477,12 +492,24 @@ def oracle_decide_tool(
     return _interact("CONFIRM", text, choices, context, state)
 
 
-def validate_tool_call(tool_call: Dict) -> None:
+def validate_tool_call(tool_call: Dict, *, env: Optional[str] = None) -> None:
+    """Validate a tool call. If ``env`` is given, also enforce the env's skill set.
+
+    Without ``env``, accepts the union of all registered tools (backward compatible
+    with callers that don't know the env).
+    """
     if not isinstance(tool_call, dict) or set(tool_call.keys()) != {"tool", "args"}:
         raise ValueError("Tool call must be {tool, args}")
     tool = tool_call["tool"]
     args = tool_call["args"]
-    if tool not in {"INTERACT", "APPROACH", "ALIGN_YAW"}:
+    all_known_tools = {t for skills in ENV_SKILLS.values() for t in skills}
+    if env is not None:
+        allowed = set(ENV_SKILLS.get(env, ()))
+        if not allowed:
+            raise ValueError(f"Unknown env: {env}")
+        if tool not in allowed:
+            raise ValueError(f"Tool {tool!r} not allowed in env {env!r}")
+    elif tool not in all_known_tools:
         raise ValueError(f"Invalid tool: {tool}")
     if not isinstance(args, dict):
         raise ValueError("args must be an object")
@@ -503,6 +530,16 @@ def validate_tool_call(tool_call: Dict) -> None:
             prefix = c.split(")", 1)[0]
             if not prefix.isdigit():
                 raise ValueError("INTERACT.choices must start with numbered prefixes like '1)'")
-    elif tool in {"APPROACH", "ALIGN_YAW"}:
+    elif tool in {"APPROACH", "ALIGN_YAW", "STACK", "GRAB"}:
         if set(args.keys()) != {"obj"} or not isinstance(args["obj"], str):
             raise ValueError(f"{tool} args must be {{obj}}")
+    elif tool == "RELEASE":
+        if args != {}:
+            raise ValueError("RELEASE args must be {}")
+    elif tool == "POUR":
+        if set(args.keys()) != {"obj", "amount"}:
+            raise ValueError("POUR args must be {obj, amount}")
+        if not isinstance(args["obj"], str):
+            raise ValueError("POUR.obj must be a string")
+        if args["amount"] not in POUR_AMOUNTS:
+            raise ValueError(f"POUR.amount must be one of {POUR_AMOUNTS}")
