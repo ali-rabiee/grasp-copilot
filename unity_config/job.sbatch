@@ -2,7 +2,7 @@
 #SBATCH --job-name=grasp_p1_lora
 #SBATCH --partition=gpu,uri-gpu
 #SBATCH --gpus=1
-#SBATCH --constraint=l40s|a100
+#SBATCH --constraint=l40s|a100|h100
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=96G
 #SBATCH --time=08:00:00
@@ -20,15 +20,15 @@
 #   sbatch unity_config/job.sbatch
 #
 # GPU choice:
-# - l40s|a100 is the default tradeoff: fast enough for the 3B LoRA recipe and
-#   usually easier to allocate than H100.
+# - l40s|a100|h100 asks for any of these fast-enough GPUs. This keeps queue
+#   flexibility while allowing H100 if one is available.
 # - If the queue is blocked and you are willing to use slower cards, change the
 #   constraint to vram32.
-# - If you want the fastest run and can wait longer, change it to a100|h100.
+# - If you want to avoid H100 scarcity entirely, change it back to l40s|a100.
 
 set -euo pipefail
 
-CONDA_ENV="${CONDA_ENV:-llm}"
+CONDA_ENV="${CONDA_ENV:-copilot}"
 MODEL_NAME="${MODEL_NAME:-Qwen/Qwen2.5-3B-Instruct}"
 TRAIN_PATH="${TRAIN_PATH:-data/merged_3env_v1/llm_contract_3env_rebalanced.jsonl}"
 OUTPUT_DIR="${OUTPUT_DIR:-models/qwen2_5_3b_oracle_lora}"
