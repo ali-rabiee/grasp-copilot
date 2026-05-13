@@ -21,6 +21,7 @@ class AlertReason(enum.Enum):
     POST_EXECUTION = "post_execution"
     CANDIDATE_CHANGE = "candidate_change"
     STOCHASTIC = "stochastic"
+    REPLAY = "replay"  # surfaced by ReplayRunner: each pre-collected oracle record is one alert
 
 
 @dataclass

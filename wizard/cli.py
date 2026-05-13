@@ -27,7 +27,8 @@ from .io.writer import EpisodeWriter
 def _parse_collect(args: List[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="wizard collect")
     parser.add_argument("--env", choices=list(ENVS), default="reach_to_grasp_ycb")
-    parser.add_argument("--num-episodes", type=int, default=10)
+    parser.add_argument("--num-episodes", type=int, default=10,
+                        help="(live mode only) Number of fresh schematic episodes to drive.")
     parser.add_argument("--wizard-id", required=True)
     parser.add_argument("--output", required=True,
                         help="Run directory to append into (will be created).")
@@ -37,6 +38,40 @@ def _parse_collect(args: List[str]) -> argparse.Namespace:
     parser.add_argument("--n-objects-min", type=int, default=2)
     parser.add_argument("--n-objects-max", type=int, default=6)
     parser.add_argument("--seed", type=int, default=None)
+
+    # Replay-from-real-data mode (recommended for WoZ data collection).
+    parser.add_argument(
+        "--replay-jsonl",
+        type=str,
+        default=None,
+        help="Path to a grasp_gen*.jsonl from data/. When provided, the wizard "
+             "annotates pre-collected oracle states instead of driving fresh "
+             "schematic episodes. The state shown to the wizard (memory, dialog "
+             "history, gripper history) is the oracle's real rollout context.",
+    )
+    parser.add_argument(
+        "--replay-block-only-on-interact",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="(default: on) Walk the episode in source order, auto-applying "
+             "motion records and only blocking for wizard input at INTERACT "
+             "decision points. Turn off to ask the wizard at every record.",
+    )
+    parser.add_argument(
+        "--replay-randomize",
+        action="store_true",
+        help="Shuffle EPISODES (not individual records). Records inside an "
+             "episode stay in source order — the wizard never sees mid-episode "
+             "context without its prefix.",
+    )
+    parser.add_argument("--replay-max-episodes", type=int, default=None,
+                        help="Cap the number of source episodes to annotate.")
+    parser.add_argument("--replay-skip-episodes", type=int, default=0,
+                        help="Skip the first N episodes (multi-wizard partitioning).")
+    parser.add_argument("--replay-max-records", type=int, default=None,
+                        help="Cap the total record count after the episode-level cap.")
+    parser.add_argument("--replay-skip-records", type=int, default=0,
+                        help="Skip the first N records after episode-level filtering.")
     return parser.parse_args(args)
 
 
@@ -47,6 +82,29 @@ def _cmd_collect(args: List[str]) -> None:
 
     out_dir = Path(ns.output)
     writer = EpisodeWriter(out_dir=out_dir, wizard_id=ns.wizard_id)
+
+    if ns.replay_jsonl:
+        # Replay-from-real-data mode: surface pre-collected oracle states.
+        from .replay import ReplayConfig, ReplayRunner
+        replay_cfg = ReplayConfig(
+            replay_jsonl=Path(ns.replay_jsonl),
+            env_name=ns.env,
+            wizard_id=ns.wizard_id,
+            block_only_on_interact=bool(ns.replay_block_only_on_interact),
+            randomize=bool(ns.replay_randomize),
+            seed=int(ns.seed) if ns.seed is not None else 0,
+            max_records=ns.replay_max_records,
+            skip_records=int(ns.replay_skip_records),
+            max_episodes=ns.replay_max_episodes,
+            skip_episodes=int(ns.replay_skip_episodes),
+        )
+        root = tk.Tk()
+        WizardApp(root, runner_cfg=None, writer=writer, num_episodes=1,
+                  replay_cfg=replay_cfg)
+        root.mainloop()
+        return
+
+    # Live mode: drive fresh schematic episodes.
     runner_cfg = RunnerConfig(
         env_cfg=EnvConfig(
             env_name=ns.env,
@@ -62,7 +120,7 @@ def _cmd_collect(args: List[str]) -> None:
         seed=ns.seed,
     )
     root = tk.Tk()
-    WizardApp(root, runner_cfg, writer, num_episodes=ns.num_episodes)
+    WizardApp(root, runner_cfg=runner_cfg, writer=writer, num_episodes=ns.num_episodes)
     root.mainloop()
 
 
