@@ -129,7 +129,10 @@ def sample_scene(cfg: EnvConfig, rng: random.Random) -> Tuple[List[ObjectState],
     if cfg.env_name == "cube_stacking" and objects:
         objects[0].is_held = True
 
-    pickable = [o for o in objects if not o.is_held]
+    if cfg.env_name == "pouring":
+        pickable = [o for o in objects if not o.is_held and o.kind == "cup"]
+    else:
+        pickable = [o for o in objects if not o.is_held]
     intended = rng.choice(pickable).id if pickable else objects[0].id
 
     g_cell = rng.choice([c for c in gridlib.CELLS if c not in {o.cell for o in objects}] or list(gridlib.CELLS))
