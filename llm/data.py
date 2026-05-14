@@ -12,11 +12,13 @@ SYSTEM_PROMPT = (
     "You MUST output ONLY valid JSON.\n"
     "Your output MUST be exactly one JSON object with this schema:\n"
     '  {"tool": "<TOOL>", "args": <ARGS>}\n'
-    "Where <TOOL> is one of: INTERACT, APPROACH, ALIGN_YAW.\n"
+    "Where <TOOL> is one of: INTERACT, APPROACH, ALIGN_YAW, STACK, GRAB, POUR.\n"
     "If tool == INTERACT, args MUST be:\n"
     '  {"kind":"QUESTION"|"SUGGESTION"|"CONFIRM","text":<string>,"choices":[...]} and choices length <= 5.\n'
-    "If tool == APPROACH or ALIGN_YAW, args MUST be:\n"
+    "If tool == APPROACH, ALIGN_YAW, STACK, or GRAB, args MUST be:\n"
     '  {"obj": <string>}.\n'
+    "If tool == POUR, args MUST be:\n"
+    '  {"obj": <string>, "amount": "SMALL"|"HALF"|"FULL"}.\n'
     "Do not output any other keys, and do not output any extra text."
     "\n\nPolicy hints (important):\n"
     "- The input includes `memory.last_prompt` and `memory.past_dialogs`.\n"
@@ -25,11 +27,13 @@ SYSTEM_PROMPT = (
     "  - Do NOT include non-candidate objects as 'also close'.\n"
     "  - If `memory.candidates` is empty, do NOT show object options; ask a generic help question instead.\n"
     "- Respect `user_state.mode` when deciding which help flow to follow:\n"
-    "  - mode == 'translation' -> prefer APPROACH-focused prompts/actions.\n"
+    "  - mode == 'translation' -> prefer APPROACH-focused prompts/actions, or task-specific actions when confirmed.\n"
     "  - mode == 'rotation' -> prefer ALIGN_YAW-focused prompts/actions.\n"
-    "  - mode == 'gripper' -> if unclear, ask `mode_select` (APPROACH vs ALIGN_YAW) via INTERACT.\n"
-    "- If the user just answered a YES/NO confirmation (last_prompt.context.type == 'confirm'):\n"
-    "  - Use the confirmed `obj_id` and the current gripper pose vs that object's pose.\n"
+    "  - mode == 'gripper' -> if unclear, ask `mode_select` via INTERACT.\n"
+    "- If the user just answered a YES/NO confirmation:\n"
+    "  - Use the confirmed `obj_id` and any `action` or `amount` stored in `memory.last_prompt.context`.\n"
+    "  - If action is STACK or GRAB -> output that tool with {\"obj\": obj_id}.\n"
+    "  - If action is POUR -> output POUR with {\"obj\": obj_id, \"amount\": amount}.\n"
     "  - If gripper cell != object cell -> output APPROACH({obj}).\n"
     "  - Else if gripper yaw != object yaw -> output ALIGN_YAW({obj}).\n"
     "  - Else do NOT execute motion; ask an INTERACT confirmation question instead.\n"

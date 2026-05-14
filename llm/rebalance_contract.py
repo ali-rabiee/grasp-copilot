@@ -8,6 +8,9 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 from .utils import json_loads_strict
 
 
+ACTION_TOOLS = {"APPROACH", "ALIGN_YAW", "STACK", "GRAB", "POUR", "RELEASE"}
+
+
 def _iter_jsonl(path: str) -> Iterable[Dict[str, Any]]:
     with open(path, "r", encoding="utf-8") as f:
         for line in f:
@@ -47,13 +50,13 @@ def rebalance_contract(
 
     Why this exists:
       The dataset is naturally INTERACT-heavy. That matches reality, but models then
-      often learn a "safe default" of emitting INTERACT even when a motion tool is
+      often learn a "safe default" of emitting INTERACT even when an action tool is
       correct. Repeating (or upweighting) motion rows is a simple, effective fix.
 
     This keeps the *same* examples, just changes sampling/duplication.
 
     Args:
-      motion_repeat: repeat each APPROACH/ALIGN_YAW example this many times.
+      motion_repeat: repeat each action-tool example this many times.
       interact_keep_prob: probability of keeping each INTERACT example (1.0 keeps all).
     """
     rng = random.Random(int(seed))
@@ -62,7 +65,7 @@ def rebalance_contract(
     out_rows: List[Dict[str, Any]] = []
     for r in _iter_jsonl(in_path):
         tool = _tool_from_output_str(str(r.get("output", "")))
-        if tool in {"APPROACH", "ALIGN_YAW"}:
+        if tool in ACTION_TOOLS:
             stats["kept_motion"] += 1
             rep = max(1, int(motion_repeat))
             for k in range(rep):
@@ -86,11 +89,11 @@ def rebalance_contract(
 
 
 def main(argv: Optional[List[str]] = None) -> None:
-    ap = argparse.ArgumentParser(description="Rebalance a contract JSONL to emphasize motion-tool examples.")
+    ap = argparse.ArgumentParser(description="Rebalance a contract JSONL to emphasize action-tool examples.")
     ap.add_argument("--in_contract", type=str, required=True)
     ap.add_argument("--out_contract", type=str, required=True)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--motion_repeat", type=int, default=10, help="Repeat APPROACH/ALIGN_YAW examples N times.")
+    ap.add_argument("--motion_repeat", type=int, default=10, help="Repeat action-tool examples N times.")
     ap.add_argument(
         "--interact_keep_prob",
         type=float,
@@ -111,5 +114,4 @@ def main(argv: Optional[List[str]] = None) -> None:
 
 if __name__ == "__main__":
     main()
-
 
