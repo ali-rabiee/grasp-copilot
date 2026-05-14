@@ -1,0 +1,2 @@
+model,anything_else_acc,candidate_choice_acc,confirm_acc,confirm_amount_acc,confirm_stack_acc,help_acc,no_context_acc,pitcher_acquisition_acc,anything_else_n,candidate_choice_n,confirm_n,confirm_amount_n,confirm_stack_n,help_n,no_context_n,pitcher_acquisition_n
+Oracle-LoRA-3B,1.0000,1.0000,0.7917,1.0000,0.4167,1.0000,1.0000,0.4737,15,36,24,9,12,5,30,19

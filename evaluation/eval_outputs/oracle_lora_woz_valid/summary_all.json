@@ -1,0 +1,170 @@
+{
+  "contract_jsonl": "data/woz_phase2/llm_contract_valid.jsonl",
+  "summaries": [
+    {
+      "by_context": {
+        "anything_else": {
+          "interact_choices_valid": 15,
+          "interact_kind_correct": 10,
+          "interact_n": 15,
+          "json_valid": 15,
+          "n": 15,
+          "schema_valid": 15,
+          "tool_correct": 15
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 36,
+          "interact_kind_correct": 27,
+          "interact_n": 36,
+          "json_valid": 36,
+          "n": 36,
+          "schema_valid": 36,
+          "strict_exact": 27,
+          "tool_correct": 36
+        },
+        "confirm": {
+          "interact_choices_valid": 7,
+          "interact_kind_correct": 1,
+          "interact_n": 7,
+          "json_valid": 24,
+          "motion_n": 17,
+          "motion_obj_correct": 17,
+          "motion_tool_correct": 17,
+          "n": 24,
+          "schema_valid": 24,
+          "strict_exact": 17,
+          "tool_correct": 19,
+          "tool_wrong": 5
+        },
+        "confirm_amount": {
+          "interact_choices_valid": 4,
+          "interact_kind_correct": 4,
+          "interact_n": 4,
+          "json_valid": 9,
+          "n": 9,
+          "schema_valid": 9,
+          "strict_exact": 5,
+          "tool_correct": 9
+        },
+        "confirm_stack": {
+          "interact_choices_valid": 6,
+          "interact_kind_correct": 3,
+          "interact_n": 6,
+          "json_valid": 12,
+          "n": 12,
+          "schema_valid": 12,
+          "tool_correct": 5,
+          "tool_wrong": 7
+        },
+        "help": {
+          "json_valid": 5,
+          "motion_n": 5,
+          "motion_obj_correct": 5,
+          "motion_tool_correct": 5,
+          "n": 5,
+          "schema_valid": 5,
+          "strict_exact": 5,
+          "tool_correct": 5
+        },
+        "no_context": {
+          "interact_choices_valid": 30,
+          "interact_kind_correct": 14,
+          "interact_n": 30,
+          "json_valid": 30,
+          "n": 30,
+          "schema_valid": 30,
+          "tool_correct": 30
+        },
+        "pitcher_acquisition": {
+          "interact_choices_valid": 9,
+          "interact_kind_correct": 9,
+          "interact_n": 9,
+          "json_valid": 19,
+          "n": 19,
+          "schema_valid": 19,
+          "strict_exact": 9,
+          "tool_correct": 9,
+          "tool_wrong": 10
+        }
+      },
+      "by_mode": {
+        "translation": {
+          "json_valid": 150,
+          "motion_n": 22,
+          "motion_obj_correct": 22,
+          "n": 150,
+          "schema_valid": 150,
+          "strict_exact": 63,
+          "tool_correct": 128,
+          "tool_wrong": 22
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 4,
+          "tool_correct": 4
+        },
+        "cands_1": {
+          "n": 103,
+          "tool_correct": 81,
+          "tool_wrong": 22
+        },
+        "cands_2": {
+          "n": 22,
+          "tool_correct": 22
+        },
+        "cands_3": {
+          "n": 21,
+          "tool_correct": 21
+        }
+      },
+      "interact_choices_valid_rate": 1.0,
+      "interact_kind_accuracy": 0.6355140186915887,
+      "interact_n": 107,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "mistakes_n": 22,
+      "mistakes_path": "evaluation/eval_outputs/oracle_lora_woz_valid/mistakes_Oracle-LoRA-3B.jsonl",
+      "model": {
+        "kind": "llm",
+        "model_path": "models/qwen2_5_3b_oracle_lora",
+        "name": "Oracle-LoRA-3B"
+      },
+      "motion_n": 22,
+      "motion_obj_accuracy": 1.0,
+      "motion_tool_accuracy": 1.0,
+      "n": 150,
+      "schema_errors": 0,
+      "schema_valid_rate": 1.0,
+      "strict_exact_rate": 0.42,
+      "timing": {
+        "eval_s": 161.6046223640442,
+        "examples_per_sec": 0.9281912720423142,
+        "load_s": 2.838481903076172
+      },
+      "tool_accuracy": 0.8533333333333334,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "ALIGN_YAW": 5
+        },
+        "APPROACH": {
+          "APPROACH": 17
+        },
+        "GRAB": {
+          "APPROACH": 10
+        },
+        "INTERACT": {
+          "APPROACH": 1,
+          "GRAB": 5,
+          "INTERACT": 101
+        },
+        "POUR": {
+          "POUR": 5
+        },
+        "STACK": {
+          "APPROACH": 6
+        }
+      }
+    }
+  ]
+}

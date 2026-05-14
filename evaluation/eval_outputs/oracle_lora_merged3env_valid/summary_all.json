@@ -1,0 +1,1331 @@
+{
+  "contract_jsonl": "data/merged_3env_v1/llm_contract_3env_valid_small.jsonl",
+  "summaries": [
+    {
+      "by_context": {
+        "amount_choice": {
+          "interact_choices_valid": 12,
+          "interact_kind_correct": 11,
+          "interact_n": 12,
+          "json_valid": 12,
+          "n": 12,
+          "schema_valid": 12,
+          "strict_exact": 11,
+          "tool_correct": 11,
+          "tool_wrong": 1
+        },
+        "anything_else": {
+          "interact_choices_valid": 95,
+          "interact_kind_correct": 95,
+          "interact_n": 95,
+          "json_valid": 95,
+          "n": 95,
+          "schema_valid": 95,
+          "strict_exact": 84,
+          "tool_correct": 95
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 115,
+          "interact_kind_correct": 113,
+          "interact_n": 115,
+          "json_valid": 115,
+          "n": 115,
+          "schema_valid": 115,
+          "strict_exact": 111,
+          "tool_correct": 114,
+          "tool_wrong": 1
+        },
+        "confirm": {
+          "interact_choices_valid": 77,
+          "interact_kind_correct": 66,
+          "interact_n": 77,
+          "json_valid": 143,
+          "motion_n": 66,
+          "motion_obj_correct": 63,
+          "motion_tool_correct": 59,
+          "n": 143,
+          "schema_valid": 143,
+          "strict_exact": 125,
+          "tool_correct": 127,
+          "tool_wrong": 16
+        },
+        "confirm_amount": {
+          "interact_choices_valid": 3,
+          "interact_kind_correct": 3,
+          "interact_n": 3,
+          "json_valid": 3,
+          "n": 3,
+          "schema_valid": 3,
+          "strict_exact": 3,
+          "tool_correct": 3
+        },
+        "confirm_pour": {
+          "interact_choices_valid": 29,
+          "interact_kind_correct": 28,
+          "interact_n": 29,
+          "json_valid": 29,
+          "n": 29,
+          "schema_valid": 29,
+          "strict_exact": 28,
+          "tool_correct": 28,
+          "tool_wrong": 1
+        },
+        "confirm_stack": {
+          "interact_choices_valid": 77,
+          "interact_kind_correct": 63,
+          "interact_n": 77,
+          "json_valid": 112,
+          "motion_n": 35,
+          "motion_obj_correct": 24,
+          "motion_tool_correct": 24,
+          "n": 112,
+          "schema_valid": 112,
+          "strict_exact": 87,
+          "tool_correct": 87,
+          "tool_wrong": 25
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 56,
+          "interact_kind_correct": 56,
+          "interact_n": 56,
+          "json_valid": 56,
+          "n": 56,
+          "schema_valid": 56,
+          "strict_exact": 52,
+          "tool_correct": 56
+        },
+        "intent_gate_pour": {
+          "interact_choices_valid": 5,
+          "interact_kind_correct": 5,
+          "interact_n": 5,
+          "json_valid": 5,
+          "n": 5,
+          "schema_valid": 5,
+          "strict_exact": 5,
+          "tool_correct": 5
+        },
+        "intent_gate_stack": {
+          "interact_choices_valid": 65,
+          "interact_kind_correct": 65,
+          "interact_n": 65,
+          "json_valid": 65,
+          "n": 65,
+          "schema_valid": 65,
+          "strict_exact": 61,
+          "tool_correct": 65
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 1,
+          "interact_kind_correct": 1,
+          "interact_n": 1,
+          "json_valid": 1,
+          "n": 1,
+          "schema_valid": 1,
+          "strict_exact": 1,
+          "tool_correct": 1
+        },
+        "mode_select": {
+          "interact_choices_valid": 79,
+          "interact_kind_correct": 79,
+          "interact_n": 79,
+          "json_valid": 79,
+          "n": 79,
+          "schema_valid": 79,
+          "strict_exact": 72,
+          "tool_correct": 79
+        },
+        "no_context": {
+          "interact_choices_valid": 234,
+          "interact_kind_correct": 233,
+          "interact_n": 234,
+          "json_valid": 253,
+          "motion_n": 19,
+          "motion_obj_correct": 16,
+          "motion_tool_correct": 18,
+          "n": 253,
+          "schema_valid": 253,
+          "strict_exact": 247,
+          "tool_correct": 251,
+          "tool_wrong": 2
+        },
+        "pitcher_acquisition": {
+          "interact_choices_valid": 24,
+          "interact_kind_correct": 24,
+          "interact_n": 24,
+          "json_valid": 32,
+          "motion_n": 8,
+          "motion_obj_correct": 7,
+          "motion_tool_correct": 7,
+          "n": 32,
+          "schema_valid": 32,
+          "strict_exact": 31,
+          "tool_correct": 31,
+          "tool_wrong": 1
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 64,
+          "motion_n": 1,
+          "motion_obj_correct": 1,
+          "n": 64,
+          "schema_valid": 64,
+          "strict_exact": 62,
+          "tool_correct": 64
+        },
+        "rotation": {
+          "json_valid": 221,
+          "motion_n": 18,
+          "motion_obj_correct": 15,
+          "n": 221,
+          "schema_valid": 221,
+          "strict_exact": 210,
+          "tool_correct": 213,
+          "tool_wrong": 8
+        },
+        "translation": {
+          "json_valid": 715,
+          "motion_n": 109,
+          "motion_obj_correct": 94,
+          "n": 715,
+          "schema_valid": 715,
+          "strict_exact": 646,
+          "tool_correct": 676,
+          "tool_wrong": 39
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 18,
+          "tool_correct": 18
+        },
+        "cands_1": {
+          "n": 357,
+          "tool_correct": 341,
+          "tool_wrong": 16
+        },
+        "cands_2": {
+          "n": 295,
+          "tool_correct": 278,
+          "tool_wrong": 17
+        },
+        "cands_3": {
+          "n": 191,
+          "tool_correct": 181,
+          "tool_wrong": 10
+        },
+        "cands_4": {
+          "n": 78,
+          "tool_correct": 75,
+          "tool_wrong": 3
+        },
+        "cands_5": {
+          "n": 28,
+          "tool_correct": 27,
+          "tool_wrong": 1
+        },
+        "cands_6+": {
+          "n": 33,
+          "tool_correct": 33
+        }
+      },
+      "interact_choices_valid_rate": 1.0,
+      "interact_kind_accuracy": 0.9655963302752294,
+      "interact_n": 872,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "mistakes_n": 47,
+      "mistakes_path": "evaluation/eval_outputs/oracle_lora_merged3env_valid/mistakes_Oracle-LoRA-3B.jsonl",
+      "model": {
+        "kind": "llm",
+        "model_path": "models/qwen2_5_3b_oracle_lora",
+        "name": "Oracle-LoRA-3B"
+      },
+      "motion_n": 128,
+      "motion_obj_accuracy": 0.859375,
+      "motion_tool_accuracy": 0.84375,
+      "n": 1000,
+      "schema_errors": 0,
+      "schema_valid_rate": 1.0,
+      "strict_exact_rate": 0.918,
+      "timing": {
+        "eval_s": 1236.015242099762,
+        "examples_per_sec": 0.809051511615006,
+        "load_s": 2.900782823562622
+      },
+      "tool_accuracy": 0.953,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "ALIGN_YAW": 30,
+          "APPROACH": 1,
+          "INTERACT": 2
+        },
+        "APPROACH": {
+          "ALIGN_YAW": 3,
+          "APPROACH": 78,
+          "GRAB": 3,
+          "STACK": 11
+        },
+        "INTERACT": {
+          "ALIGN_YAW": 2,
+          "APPROACH": 3,
+          "GRAB": 5,
+          "INTERACT": 845,
+          "POUR": 3,
+          "STACK": 14
+        }
+      }
+    },
+    {
+      "by_context": {
+        "amount_choice": {
+          "interact_choices_valid": 12,
+          "interact_n": 12,
+          "json_valid": 12,
+          "n": 12,
+          "schema_valid": 12,
+          "tool_correct": 3,
+          "tool_wrong": 9
+        },
+        "anything_else": {
+          "interact_choices_valid": 95,
+          "interact_n": 95,
+          "json_valid": 95,
+          "n": 95,
+          "schema_valid": 95,
+          "tool_correct": 54,
+          "tool_wrong": 41
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 115,
+          "interact_kind_correct": 23,
+          "interact_n": 115,
+          "json_valid": 115,
+          "n": 115,
+          "schema_valid": 115,
+          "strict_exact": 1,
+          "tool_correct": 95,
+          "tool_wrong": 20
+        },
+        "confirm": {
+          "interact_choices_valid": 77,
+          "interact_kind_correct": 18,
+          "interact_n": 77,
+          "json_valid": 143,
+          "motion_n": 66,
+          "motion_obj_correct": 19,
+          "motion_tool_correct": 15,
+          "n": 143,
+          "schema_valid": 143,
+          "strict_exact": 13,
+          "tool_correct": 45,
+          "tool_wrong": 98
+        },
+        "confirm_amount": {
+          "interact_choices_valid": 3,
+          "interact_n": 3,
+          "json_valid": 3,
+          "n": 3,
+          "schema_valid": 3,
+          "tool_wrong": 3
+        },
+        "confirm_pour": {
+          "interact_choices_valid": 29,
+          "interact_kind_correct": 9,
+          "interact_n": 29,
+          "json_valid": 29,
+          "n": 29,
+          "schema_valid": 29,
+          "strict_exact": 1,
+          "tool_correct": 9,
+          "tool_wrong": 20
+        },
+        "confirm_stack": {
+          "interact_choices_valid": 77,
+          "interact_kind_correct": 31,
+          "interact_n": 77,
+          "json_valid": 112,
+          "motion_n": 35,
+          "motion_obj_correct": 9,
+          "motion_tool_correct": 9,
+          "n": 112,
+          "schema_valid": 112,
+          "strict_exact": 9,
+          "tool_correct": 52,
+          "tool_wrong": 60
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 56,
+          "interact_kind_correct": 56,
+          "interact_n": 56,
+          "json_valid": 56,
+          "n": 56,
+          "schema_valid": 56,
+          "strict_exact": 14,
+          "tool_correct": 56
+        },
+        "intent_gate_pour": {
+          "interact_choices_valid": 5,
+          "interact_kind_correct": 4,
+          "interact_n": 5,
+          "json_valid": 5,
+          "n": 5,
+          "schema_valid": 5,
+          "strict_exact": 1,
+          "tool_correct": 4,
+          "tool_wrong": 1
+        },
+        "intent_gate_stack": {
+          "interact_choices_valid": 65,
+          "interact_kind_correct": 63,
+          "interact_n": 65,
+          "json_valid": 65,
+          "n": 65,
+          "schema_valid": 65,
+          "strict_exact": 6,
+          "tool_correct": 63,
+          "tool_wrong": 2
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 1,
+          "interact_kind_correct": 1,
+          "interact_n": 1,
+          "json_valid": 1,
+          "n": 1,
+          "schema_valid": 1,
+          "tool_correct": 1
+        },
+        "mode_select": {
+          "interact_choices_valid": 79,
+          "interact_kind_correct": 43,
+          "interact_n": 79,
+          "json_valid": 79,
+          "n": 79,
+          "schema_valid": 79,
+          "strict_exact": 9,
+          "tool_correct": 43,
+          "tool_wrong": 36
+        },
+        "no_context": {
+          "interact_choices_valid": 234,
+          "interact_kind_correct": 155,
+          "interact_n": 234,
+          "json_valid": 253,
+          "motion_n": 19,
+          "motion_obj_correct": 15,
+          "motion_tool_correct": 15,
+          "n": 253,
+          "schema_valid": 253,
+          "strict_exact": 14,
+          "tool_correct": 176,
+          "tool_wrong": 77
+        },
+        "pitcher_acquisition": {
+          "interact_choices_valid": 24,
+          "interact_kind_correct": 3,
+          "interact_n": 24,
+          "json_valid": 32,
+          "motion_n": 8,
+          "motion_tool_correct": 5,
+          "n": 32,
+          "schema_valid": 32,
+          "tool_correct": 15,
+          "tool_wrong": 17
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 64,
+          "motion_n": 1,
+          "n": 64,
+          "schema_valid": 64,
+          "strict_exact": 1,
+          "tool_correct": 40,
+          "tool_wrong": 24
+        },
+        "rotation": {
+          "json_valid": 221,
+          "motion_n": 18,
+          "motion_obj_correct": 10,
+          "n": 221,
+          "schema_valid": 221,
+          "strict_exact": 20,
+          "tool_correct": 154,
+          "tool_wrong": 67
+        },
+        "translation": {
+          "json_valid": 715,
+          "motion_n": 109,
+          "motion_obj_correct": 33,
+          "n": 715,
+          "schema_valid": 715,
+          "strict_exact": 47,
+          "tool_correct": 422,
+          "tool_wrong": 293
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 18,
+          "tool_correct": 13,
+          "tool_wrong": 5
+        },
+        "cands_1": {
+          "n": 357,
+          "tool_correct": 44,
+          "tool_wrong": 313
+        },
+        "cands_2": {
+          "n": 295,
+          "tool_correct": 261,
+          "tool_wrong": 34
+        },
+        "cands_3": {
+          "n": 191,
+          "tool_correct": 171,
+          "tool_wrong": 20
+        },
+        "cands_4": {
+          "n": 78,
+          "tool_correct": 74,
+          "tool_wrong": 4
+        },
+        "cands_5": {
+          "n": 28,
+          "tool_correct": 23,
+          "tool_wrong": 5
+        },
+        "cands_6+": {
+          "n": 33,
+          "tool_correct": 30,
+          "tool_wrong": 3
+        }
+      },
+      "interact_choices_valid_rate": 1.0,
+      "interact_kind_accuracy": 0.46559633027522934,
+      "interact_n": 872,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "mistakes_n": 200,
+      "mistakes_path": "evaluation/eval_outputs/oracle_lora_merged3env_valid/mistakes_H1_ask_if_ambiguous.jsonl",
+      "model": {
+        "kind": "heuristic_ask_if_ambiguous",
+        "model_path": null,
+        "name": "H1_ask_if_ambiguous"
+      },
+      "motion_n": 128,
+      "motion_obj_accuracy": 0.3359375,
+      "motion_tool_accuracy": 0.34375,
+      "n": 1000,
+      "schema_errors": 0,
+      "schema_valid_rate": 1.0,
+      "strict_exact_rate": 0.068,
+      "timing": {
+        "eval_s": 0.052077293395996094,
+        "examples_per_sec": 19202.22682073727,
+        "load_s": 0.0
+      },
+      "tool_accuracy": 0.616,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "ALIGN_YAW": 9,
+          "APPROACH": 12,
+          "INTERACT": 12
+        },
+        "APPROACH": {
+          "ALIGN_YAW": 1,
+          "APPROACH": 35,
+          "INTERACT": 59
+        },
+        "INTERACT": {
+          "ALIGN_YAW": 58,
+          "APPROACH": 242,
+          "INTERACT": 572
+        }
+      }
+    },
+    {
+      "by_context": {
+        "amount_choice": {
+          "interact_choices_valid": 12,
+          "interact_kind_correct": 6,
+          "interact_n": 12,
+          "json_valid": 12,
+          "n": 12,
+          "schema_valid": 12,
+          "strict_exact": 6,
+          "tool_correct": 12
+        },
+        "anything_else": {
+          "interact_choices_valid": 95,
+          "interact_n": 95,
+          "json_valid": 95,
+          "n": 95,
+          "schema_valid": 95,
+          "tool_correct": 95
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 115,
+          "interact_kind_correct": 39,
+          "interact_n": 115,
+          "json_valid": 115,
+          "n": 115,
+          "schema_valid": 115,
+          "strict_exact": 17,
+          "tool_correct": 115
+        },
+        "confirm": {
+          "interact_choices_valid": 77,
+          "interact_kind_correct": 38,
+          "interact_n": 77,
+          "json_valid": 143,
+          "motion_n": 66,
+          "n": 143,
+          "schema_valid": 143,
+          "strict_exact": 21,
+          "tool_correct": 77,
+          "tool_wrong": 66
+        },
+        "confirm_amount": {
+          "interact_choices_valid": 3,
+          "interact_n": 3,
+          "json_valid": 3,
+          "n": 3,
+          "schema_valid": 3,
+          "tool_correct": 3
+        },
+        "confirm_pour": {
+          "interact_choices_valid": 29,
+          "interact_kind_correct": 9,
+          "interact_n": 29,
+          "json_valid": 29,
+          "n": 29,
+          "schema_valid": 29,
+          "strict_exact": 1,
+          "tool_correct": 29
+        },
+        "confirm_stack": {
+          "interact_choices_valid": 77,
+          "interact_kind_correct": 35,
+          "interact_n": 77,
+          "json_valid": 112,
+          "motion_n": 35,
+          "n": 112,
+          "schema_valid": 112,
+          "strict_exact": 4,
+          "tool_correct": 77,
+          "tool_wrong": 35
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 56,
+          "interact_kind_correct": 56,
+          "interact_n": 56,
+          "json_valid": 56,
+          "n": 56,
+          "schema_valid": 56,
+          "strict_exact": 14,
+          "tool_correct": 56
+        },
+        "intent_gate_pour": {
+          "interact_choices_valid": 5,
+          "interact_kind_correct": 4,
+          "interact_n": 5,
+          "json_valid": 5,
+          "n": 5,
+          "schema_valid": 5,
+          "strict_exact": 1,
+          "tool_correct": 5
+        },
+        "intent_gate_stack": {
+          "interact_choices_valid": 65,
+          "interact_kind_correct": 63,
+          "interact_n": 65,
+          "json_valid": 65,
+          "n": 65,
+          "schema_valid": 65,
+          "strict_exact": 6,
+          "tool_correct": 65
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 1,
+          "interact_kind_correct": 1,
+          "interact_n": 1,
+          "json_valid": 1,
+          "n": 1,
+          "schema_valid": 1,
+          "tool_correct": 1
+        },
+        "mode_select": {
+          "interact_choices_valid": 79,
+          "interact_kind_correct": 43,
+          "interact_n": 79,
+          "json_valid": 79,
+          "n": 79,
+          "schema_valid": 79,
+          "strict_exact": 9,
+          "tool_correct": 79
+        },
+        "no_context": {
+          "interact_choices_valid": 234,
+          "interact_kind_correct": 214,
+          "interact_n": 234,
+          "json_valid": 253,
+          "motion_n": 19,
+          "n": 253,
+          "schema_valid": 253,
+          "strict_exact": 59,
+          "tool_correct": 234,
+          "tool_wrong": 19
+        },
+        "pitcher_acquisition": {
+          "interact_choices_valid": 24,
+          "interact_kind_correct": 12,
+          "interact_n": 24,
+          "json_valid": 32,
+          "motion_n": 8,
+          "n": 32,
+          "schema_valid": 32,
+          "strict_exact": 9,
+          "tool_correct": 24,
+          "tool_wrong": 8
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 64,
+          "motion_n": 1,
+          "n": 64,
+          "schema_valid": 64,
+          "strict_exact": 9,
+          "tool_correct": 63,
+          "tool_wrong": 1
+        },
+        "rotation": {
+          "json_valid": 221,
+          "motion_n": 18,
+          "n": 221,
+          "schema_valid": 221,
+          "strict_exact": 39,
+          "tool_correct": 203,
+          "tool_wrong": 18
+        },
+        "translation": {
+          "json_valid": 715,
+          "motion_n": 109,
+          "n": 715,
+          "schema_valid": 715,
+          "strict_exact": 99,
+          "tool_correct": 606,
+          "tool_wrong": 109
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 18,
+          "tool_correct": 13,
+          "tool_wrong": 5
+        },
+        "cands_1": {
+          "n": 357,
+          "tool_correct": 300,
+          "tool_wrong": 57
+        },
+        "cands_2": {
+          "n": 295,
+          "tool_correct": 261,
+          "tool_wrong": 34
+        },
+        "cands_3": {
+          "n": 191,
+          "tool_correct": 171,
+          "tool_wrong": 20
+        },
+        "cands_4": {
+          "n": 78,
+          "tool_correct": 74,
+          "tool_wrong": 4
+        },
+        "cands_5": {
+          "n": 28,
+          "tool_correct": 23,
+          "tool_wrong": 5
+        },
+        "cands_6+": {
+          "n": 33,
+          "tool_correct": 30,
+          "tool_wrong": 3
+        }
+      },
+      "interact_choices_valid_rate": 1.0,
+      "interact_kind_accuracy": 0.5963302752293578,
+      "interact_n": 872,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "mistakes_n": 128,
+      "mistakes_path": "evaluation/eval_outputs/oracle_lora_merged3env_valid/mistakes_H2_always_ask.jsonl",
+      "model": {
+        "kind": "heuristic_always_ask",
+        "model_path": null,
+        "name": "H2_always_ask"
+      },
+      "motion_n": 128,
+      "motion_obj_accuracy": 0.0,
+      "motion_tool_accuracy": 0.0,
+      "n": 1000,
+      "schema_errors": 0,
+      "schema_valid_rate": 1.0,
+      "strict_exact_rate": 0.147,
+      "timing": {
+        "eval_s": 0.05490589141845703,
+        "examples_per_sec": 18212.981779653655,
+        "load_s": 0.0
+      },
+      "tool_accuracy": 0.872,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "INTERACT": 33
+        },
+        "APPROACH": {
+          "INTERACT": 95
+        },
+        "INTERACT": {
+          "INTERACT": 872
+        }
+      }
+    },
+    {
+      "by_context": {
+        "amount_choice": {
+          "interact_choices_valid": 12,
+          "interact_n": 12,
+          "json_valid": 12,
+          "n": 12,
+          "schema_valid": 12,
+          "tool_wrong": 12
+        },
+        "anything_else": {
+          "interact_choices_valid": 95,
+          "interact_n": 95,
+          "json_valid": 95,
+          "n": 95,
+          "schema_valid": 95,
+          "tool_correct": 14,
+          "tool_wrong": 81
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 115,
+          "interact_kind_correct": 6,
+          "interact_n": 115,
+          "json_valid": 115,
+          "n": 115,
+          "schema_valid": 115,
+          "strict_exact": 1,
+          "tool_correct": 20,
+          "tool_wrong": 95
+        },
+        "confirm": {
+          "interact_choices_valid": 77,
+          "interact_kind_correct": 7,
+          "interact_n": 77,
+          "json_valid": 143,
+          "motion_n": 66,
+          "motion_obj_correct": 22,
+          "motion_tool_correct": 26,
+          "n": 143,
+          "schema_valid": 143,
+          "strict_exact": 14,
+          "tool_correct": 35,
+          "tool_wrong": 108
+        },
+        "confirm_amount": {
+          "interact_choices_valid": 3,
+          "interact_n": 3,
+          "json_valid": 3,
+          "n": 3,
+          "schema_valid": 3,
+          "tool_wrong": 3
+        },
+        "confirm_pour": {
+          "interact_choices_valid": 29,
+          "interact_kind_correct": 1,
+          "interact_n": 29,
+          "json_valid": 29,
+          "n": 29,
+          "schema_valid": 29,
+          "strict_exact": 1,
+          "tool_correct": 1,
+          "tool_wrong": 28
+        },
+        "confirm_stack": {
+          "interact_choices_valid": 77,
+          "interact_kind_correct": 3,
+          "interact_n": 77,
+          "json_valid": 112,
+          "motion_n": 35,
+          "motion_obj_correct": 14,
+          "motion_tool_correct": 31,
+          "n": 112,
+          "schema_valid": 112,
+          "strict_exact": 14,
+          "tool_correct": 34,
+          "tool_wrong": 78
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 56,
+          "interact_kind_correct": 38,
+          "interact_n": 56,
+          "json_valid": 56,
+          "n": 56,
+          "schema_valid": 56,
+          "strict_exact": 7,
+          "tool_correct": 38,
+          "tool_wrong": 18
+        },
+        "intent_gate_pour": {
+          "interact_choices_valid": 5,
+          "interact_n": 5,
+          "json_valid": 5,
+          "n": 5,
+          "schema_valid": 5,
+          "tool_wrong": 5
+        },
+        "intent_gate_stack": {
+          "interact_choices_valid": 65,
+          "interact_kind_correct": 2,
+          "interact_n": 65,
+          "json_valid": 65,
+          "n": 65,
+          "schema_valid": 65,
+          "tool_correct": 2,
+          "tool_wrong": 63
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 1,
+          "interact_n": 1,
+          "json_valid": 1,
+          "n": 1,
+          "schema_valid": 1,
+          "tool_wrong": 1
+        },
+        "mode_select": {
+          "interact_choices_valid": 79,
+          "interact_kind_correct": 7,
+          "interact_n": 79,
+          "json_valid": 79,
+          "n": 79,
+          "schema_valid": 79,
+          "strict_exact": 1,
+          "tool_correct": 7,
+          "tool_wrong": 72
+        },
+        "no_context": {
+          "interact_choices_valid": 234,
+          "interact_kind_correct": 79,
+          "interact_n": 234,
+          "json_valid": 253,
+          "motion_n": 19,
+          "motion_obj_correct": 15,
+          "motion_tool_correct": 15,
+          "n": 253,
+          "schema_valid": 253,
+          "strict_exact": 14,
+          "tool_correct": 97,
+          "tool_wrong": 156
+        },
+        "pitcher_acquisition": {
+          "interact_choices_valid": 24,
+          "interact_kind_correct": 2,
+          "interact_n": 24,
+          "json_valid": 32,
+          "motion_n": 8,
+          "motion_tool_correct": 8,
+          "n": 32,
+          "schema_valid": 32,
+          "tool_correct": 15,
+          "tool_wrong": 17
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 64,
+          "motion_n": 1,
+          "n": 64,
+          "schema_valid": 64,
+          "tool_correct": 18,
+          "tool_wrong": 46
+        },
+        "rotation": {
+          "json_valid": 221,
+          "motion_n": 18,
+          "motion_obj_correct": 10,
+          "n": 221,
+          "schema_valid": 221,
+          "strict_exact": 13,
+          "tool_correct": 50,
+          "tool_wrong": 171
+        },
+        "translation": {
+          "json_valid": 715,
+          "motion_n": 109,
+          "motion_obj_correct": 41,
+          "n": 715,
+          "schema_valid": 715,
+          "strict_exact": 39,
+          "tool_correct": 195,
+          "tool_wrong": 520
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 18,
+          "tool_correct": 13,
+          "tool_wrong": 5
+        },
+        "cands_1": {
+          "n": 357,
+          "tool_correct": 44,
+          "tool_wrong": 313
+        },
+        "cands_2": {
+          "n": 295,
+          "tool_correct": 56,
+          "tool_wrong": 239
+        },
+        "cands_3": {
+          "n": 191,
+          "tool_correct": 56,
+          "tool_wrong": 135
+        },
+        "cands_4": {
+          "n": 78,
+          "tool_correct": 43,
+          "tool_wrong": 35
+        },
+        "cands_5": {
+          "n": 28,
+          "tool_correct": 21,
+          "tool_wrong": 7
+        },
+        "cands_6+": {
+          "n": 33,
+          "tool_correct": 30,
+          "tool_wrong": 3
+        }
+      },
+      "interact_choices_valid_rate": 1.0,
+      "interact_kind_accuracy": 0.16628440366972477,
+      "interact_n": 872,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "mistakes_n": 200,
+      "mistakes_path": "evaluation/eval_outputs/oracle_lora_merged3env_valid/mistakes_SA1_predict_then_assist.jsonl",
+      "model": {
+        "kind": "heuristic_predict_then_assist",
+        "model_path": null,
+        "name": "SA1_predict_then_assist"
+      },
+      "motion_n": 128,
+      "motion_obj_accuracy": 0.3984375,
+      "motion_tool_accuracy": 0.625,
+      "n": 1000,
+      "schema_errors": 0,
+      "schema_valid_rate": 1.0,
+      "strict_exact_rate": 0.052,
+      "timing": {
+        "eval_s": 0.0592496395111084,
+        "examples_per_sec": 16877.739818358143,
+        "load_s": 0.0
+      },
+      "tool_accuracy": 0.263,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "ALIGN_YAW": 9,
+          "APPROACH": 21,
+          "INTERACT": 3
+        },
+        "APPROACH": {
+          "ALIGN_YAW": 6,
+          "APPROACH": 71,
+          "INTERACT": 18
+        },
+        "INTERACT": {
+          "ALIGN_YAW": 162,
+          "APPROACH": 527,
+          "INTERACT": 183
+        }
+      }
+    },
+    {
+      "by_context": {
+        "amount_choice": {
+          "interact_choices_valid": 12,
+          "interact_kind_correct": 1,
+          "interact_n": 12,
+          "json_valid": 12,
+          "n": 12,
+          "schema_valid": 12,
+          "strict_exact": 1,
+          "tool_correct": 3,
+          "tool_wrong": 9
+        },
+        "anything_else": {
+          "interact_choices_valid": 95,
+          "interact_n": 95,
+          "json_valid": 95,
+          "n": 95,
+          "schema_valid": 95,
+          "tool_correct": 47,
+          "tool_wrong": 48
+        },
+        "candidate_choice": {
+          "interact_choices_valid": 115,
+          "interact_kind_correct": 29,
+          "interact_n": 115,
+          "json_valid": 115,
+          "n": 115,
+          "schema_valid": 115,
+          "strict_exact": 21,
+          "tool_correct": 80,
+          "tool_wrong": 35
+        },
+        "confirm": {
+          "interact_choices_valid": 77,
+          "interact_kind_correct": 11,
+          "interact_n": 77,
+          "json_valid": 143,
+          "motion_n": 66,
+          "motion_obj_correct": 20,
+          "motion_tool_correct": 19,
+          "n": 143,
+          "schema_valid": 143,
+          "strict_exact": 15,
+          "tool_correct": 38,
+          "tool_wrong": 105
+        },
+        "confirm_amount": {
+          "interact_choices_valid": 3,
+          "interact_n": 3,
+          "json_valid": 3,
+          "n": 3,
+          "schema_valid": 3,
+          "tool_wrong": 3
+        },
+        "confirm_pour": {
+          "interact_choices_valid": 29,
+          "interact_kind_correct": 7,
+          "interact_n": 29,
+          "json_valid": 29,
+          "n": 29,
+          "schema_valid": 29,
+          "strict_exact": 1,
+          "tool_correct": 8,
+          "tool_wrong": 21
+        },
+        "confirm_stack": {
+          "interact_choices_valid": 77,
+          "interact_kind_correct": 15,
+          "interact_n": 77,
+          "json_valid": 112,
+          "motion_n": 35,
+          "motion_obj_correct": 12,
+          "motion_tool_correct": 19,
+          "n": 112,
+          "schema_valid": 112,
+          "strict_exact": 16,
+          "tool_correct": 47,
+          "tool_wrong": 65
+        },
+        "intent_gate_candidates": {
+          "interact_choices_valid": 56,
+          "interact_kind_correct": 36,
+          "interact_n": 56,
+          "json_valid": 56,
+          "n": 56,
+          "schema_valid": 56,
+          "strict_exact": 18,
+          "tool_correct": 50,
+          "tool_wrong": 6
+        },
+        "intent_gate_pour": {
+          "interact_choices_valid": 5,
+          "interact_kind_correct": 2,
+          "interact_n": 5,
+          "json_valid": 5,
+          "n": 5,
+          "schema_valid": 5,
+          "strict_exact": 1,
+          "tool_correct": 2,
+          "tool_wrong": 3
+        },
+        "intent_gate_stack": {
+          "interact_choices_valid": 65,
+          "interact_kind_correct": 20,
+          "interact_n": 65,
+          "json_valid": 65,
+          "n": 65,
+          "schema_valid": 65,
+          "strict_exact": 5,
+          "tool_correct": 44,
+          "tool_wrong": 21
+        },
+        "intent_gate_yaw": {
+          "interact_choices_valid": 1,
+          "interact_kind_correct": 1,
+          "interact_n": 1,
+          "json_valid": 1,
+          "n": 1,
+          "schema_valid": 1,
+          "tool_correct": 1
+        },
+        "mode_select": {
+          "interact_choices_valid": 79,
+          "interact_kind_correct": 30,
+          "interact_n": 79,
+          "json_valid": 79,
+          "n": 79,
+          "schema_valid": 79,
+          "strict_exact": 16,
+          "tool_correct": 35,
+          "tool_wrong": 44
+        },
+        "no_context": {
+          "interact_choices_valid": 234,
+          "interact_kind_correct": 88,
+          "interact_n": 234,
+          "json_valid": 253,
+          "motion_n": 19,
+          "motion_obj_correct": 15,
+          "motion_tool_correct": 15,
+          "n": 253,
+          "schema_valid": 253,
+          "strict_exact": 14,
+          "tool_correct": 136,
+          "tool_wrong": 117
+        },
+        "pitcher_acquisition": {
+          "interact_choices_valid": 24,
+          "interact_kind_correct": 1,
+          "interact_n": 24,
+          "json_valid": 32,
+          "motion_n": 8,
+          "motion_tool_correct": 5,
+          "n": 32,
+          "schema_valid": 32,
+          "strict_exact": 1,
+          "tool_correct": 12,
+          "tool_wrong": 20
+        }
+      },
+      "by_mode": {
+        "gripper": {
+          "json_valid": 64,
+          "motion_n": 1,
+          "n": 64,
+          "schema_valid": 64,
+          "strict_exact": 6,
+          "tool_correct": 33,
+          "tool_wrong": 31
+        },
+        "rotation": {
+          "json_valid": 221,
+          "motion_n": 18,
+          "motion_obj_correct": 10,
+          "n": 221,
+          "schema_valid": 221,
+          "strict_exact": 25,
+          "tool_correct": 124,
+          "tool_wrong": 97
+        },
+        "translation": {
+          "json_valid": 715,
+          "motion_n": 109,
+          "motion_obj_correct": 37,
+          "n": 715,
+          "schema_valid": 715,
+          "strict_exact": 78,
+          "tool_correct": 346,
+          "tool_wrong": 369
+        }
+      },
+      "by_num_candidates": {
+        "cands_0": {
+          "n": 18,
+          "tool_correct": 13,
+          "tool_wrong": 5
+        },
+        "cands_1": {
+          "n": 357,
+          "tool_correct": 44,
+          "tool_wrong": 313
+        },
+        "cands_2": {
+          "n": 295,
+          "tool_correct": 180,
+          "tool_wrong": 115
+        },
+        "cands_3": {
+          "n": 191,
+          "tool_correct": 143,
+          "tool_wrong": 48
+        },
+        "cands_4": {
+          "n": 78,
+          "tool_correct": 70,
+          "tool_wrong": 8
+        },
+        "cands_5": {
+          "n": 28,
+          "tool_correct": 23,
+          "tool_wrong": 5
+        },
+        "cands_6+": {
+          "n": 33,
+          "tool_correct": 30,
+          "tool_wrong": 3
+        }
+      },
+      "interact_choices_valid_rate": 1.0,
+      "interact_kind_accuracy": 0.2763761467889908,
+      "interact_n": 872,
+      "json_errors": 0,
+      "json_valid_rate": 1.0,
+      "mistakes_n": 200,
+      "mistakes_path": "evaluation/eval_outputs/oracle_lora_merged3env_valid/mistakes_SA2_bayesian_intent.jsonl",
+      "model": {
+        "kind": "heuristic_bayesian_intent",
+        "model_path": null,
+        "name": "SA2_bayesian_intent"
+      },
+      "motion_n": 128,
+      "motion_obj_accuracy": 0.3671875,
+      "motion_tool_accuracy": 0.453125,
+      "n": 1000,
+      "schema_errors": 0,
+      "schema_valid_rate": 1.0,
+      "strict_exact_rate": 0.109,
+      "timing": {
+        "eval_s": 0.08588099479675293,
+        "examples_per_sec": 11644.01975508799,
+        "load_s": 0.0
+      },
+      "tool_accuracy": 0.503,
+      "tool_confusion": {
+        "ALIGN_YAW": {
+          "ALIGN_YAW": 9,
+          "APPROACH": 14,
+          "INTERACT": 10
+        },
+        "APPROACH": {
+          "ALIGN_YAW": 4,
+          "APPROACH": 49,
+          "INTERACT": 42
+        },
+        "INTERACT": {
+          "ALIGN_YAW": 88,
+          "APPROACH": 339,
+          "INTERACT": 445
+        }
+      }
+    }
+  ]
+}
