@@ -1,0 +1,69 @@
+{
+  "model": {
+    "name": "Qwen2.5-3B-Oracle→WoZ-LoRA-r32",
+    "kind": "llm",
+    "model_path": "models/qwen2_5_3b_oracle_woz_lora_r32"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 476.2202627658844,
+    "examples_per_sec": 0.15749014870639996
+  },
+  "n": 75,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 1.0,
+  "json_errors": 0,
+  "schema_errors": 0,
+  "tool_accuracy": 1.0,
+  "motion_obj_accuracy": 0.0,
+  "motion_tool_accuracy": 0.0,
+  "interact_kind_accuracy": 0.4533333333333333,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.32,
+  "motion_n": 0,
+  "interact_n": 75,
+  "tool_confusion": {
+    "INTERACT": {
+      "INTERACT": 75
+    }
+  },
+  "by_context": {
+    "no_context": {
+      "n": 75,
+      "json_valid": 75,
+      "schema_valid": 75,
+      "tool_correct": 75,
+      "interact_n": 75,
+      "interact_choices_valid": 75,
+      "interact_kind_correct": 34,
+      "strict_exact": 24
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 75,
+      "json_valid": 75,
+      "schema_valid": 75,
+      "tool_correct": 75,
+      "strict_exact": 24
+    }
+  },
+  "by_num_candidates": {
+    "cands_1": {
+      "n": 45,
+      "tool_correct": 45
+    },
+    "cands_2": {
+      "n": 30,
+      "tool_correct": 30
+    }
+  },
+  "mistakes_path": "/home/ali/github/ali-rabiee/grasp-copilot/evaluation/eval_outputs/paper_benchmark/mistakes/oracle_woz_r32__ambiguous_pouring.jsonl",
+  "mistakes_n": 0,
+  "_model_safe": "oracle_woz_r32",
+  "_eval_set": "ambiguous_pouring",
+  "_env": "pouring",
+  "_flavor": "ambiguous",
+  "_group": "ablation",
+  "_display": "Qwen2.5-3B-Oracle→WoZ-LoRA-r32"
+}

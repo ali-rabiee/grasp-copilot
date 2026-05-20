@@ -1,0 +1,27 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Ablation study of the three design axes: (i) the warm-start choice for Phase-2 supervision, (ii) the LoRA rank, and (iii) one unified model vs.\ per-environment models. All numbers are tool-call accuracy (\%).}
+\label{tab:ablations}
+\begin{tabular}{lccccc}
+\toprule
+Variant & YCB & Stack & Pour & Avg-3 & Ambiguous \\
+\midrule
+\multicolumn{6}{l}{\emph{Warm-start (Phase-2 base)}} &  &  &  &  &  \\
+Qwen2.5-3B-WoZ-LoRA & 89.6 & 76.8 & 76.6 & 81.0 & \textbf{100.0} \\
+Qwen2.5-3B-Oracle-LoRA & \textbf{96.7} & 91.1 & \textbf{90.6} & 92.8 & 99.1 \\
+Qwen2.5-3B-Oracle→WoZ-LoRA & 95.2 & \textbf{94.6} & 90.5 & \textbf{93.4} & 100.0 \\
+\midrule
+\multicolumn{6}{l}{\emph{LoRA rank}} &  &  &  &  &  \\
+Qwen2.5-3B-Oracle→WoZ-LoRA & \textbf{95.2} & 94.6 & \textbf{90.5} & \textbf{93.4} & \textbf{100.0} \\
+Qwen2.5-3B-Oracle→WoZ-LoRA-r32 & 94.8 & \textbf{95.1} & 90.2 & 93.4 & 100.0 \\
+\midrule
+\multicolumn{6}{l}{\emph{Per-env vs.\ unified}} &  &  &  &  &  \\
+Qwen2.5-3B-Oracle-LoRA & \textbf{96.7} & \textbf{91.1} & 90.6 & \textbf{92.8} & 99.1 \\
+Qwen2.5-3B-Oracle-LoRA (YCB only) & 94.6 & 81.8 & 75.9 & 84.1 & \textbf{100.0} \\
+Qwen2.5-3B-Oracle-LoRA (Stack only) & 91.8 & 89.5 & 89.2 & 90.2 & 100.0 \\
+Qwen2.5-3B-Oracle-LoRA (Pour only) & 94.2 & 89.9 & \textbf{91.2} & 91.8 & 100.0 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,21 @@
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Tool-call accuracy (\%) on clean vs.\ ambiguous scenarios, macro-averaged across YCB / Stack / Pour. $\Delta$ is the absolute percentage-point change from clean to ambiguous; closer to zero is better. WoZ supervision narrows the gap that heuristic baselines suffer.}
+\label{tab:ambiguous_vs_clean}
+\begin{tabular}{lccc}
+\toprule
+Model & Clean (Avg-3) & Ambiguous (Avg-3) & $\Delta$ (pp) \\
+\midrule
+Qwen2.5-3B-Oracle-LoRA & 92.8 & 99.1 & +6.3 \\
+Qwen2.5-3B-WoZ-LoRA & 81.0 & \textbf{100.0} & +19.0 \\
+Qwen2.5-3B-Oracle→WoZ-LoRA & \textbf{93.4} & 100.0 & +6.6 \\
+\midrule
+H1 Ask-if-Ambiguous & 58.4 & 50.0 & -8.4 \\
+H2 Always-Ask & 87.3 & 100.0 & +12.7 \\
+SA1 Predict-then-Assist & 27.4 & 13.3 & -14.1 \\
+SA2 Bayesian Intent & 41.3 & 43.3 & \textbf{+2.0} \\
+\bottomrule
+\end{tabular}
+\end{table}

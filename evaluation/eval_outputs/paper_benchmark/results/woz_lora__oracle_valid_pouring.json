@@ -1,0 +1,238 @@
+{
+  "model": {
+    "name": "Qwen2.5-3B-WoZ-LoRA",
+    "kind": "llm",
+    "model_path": "models/qwen2_5_3b_woz_lora"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 7349.8294587135315,
+    "examples_per_sec": 0.17837148567382805
+  },
+  "n": 1311,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 0.9450800915331807,
+  "json_errors": 0,
+  "schema_errors": 72,
+  "tool_accuracy": 0.7658276125095347,
+  "motion_obj_accuracy": 0.10227272727272728,
+  "motion_tool_accuracy": 0.10227272727272728,
+  "interact_kind_accuracy": 0.43392857142857144,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.18306636155606407,
+  "motion_n": 88,
+  "interact_n": 1120,
+  "tool_confusion": {
+    "INTERACT": {
+      "INTERACT": 935,
+      "GRAB": 93,
+      "APPROACH": 14,
+      "INVALID_SCHEMA": 70,
+      "PIOUR": 65,
+      "PIECE": 1,
+      "POUR": 9,
+      "ALIGN_YAW": 1,
+      "PIERCE": 1,
+      "PIER": 1
+    },
+    "GRAB": {
+      "GRAB": 60,
+      "INTERACT": 5
+    },
+    "ALIGN_YAW": {
+      "INTERACT": 34,
+      "ALIGN_YAW": 2
+    },
+    "APPROACH": {
+      "GRAB": 19,
+      "INTERACT": 26,
+      "APPROACH": 7
+    },
+    "POUR": {
+      "INTERACT": 34,
+      "INVALID_SCHEMA": 2,
+      "PIOUR": 2,
+      "GRAB": 2
+    }
+  },
+  "by_context": {
+    "no_context": {
+      "n": 200,
+      "json_valid": 200,
+      "schema_valid": 200,
+      "tool_correct": 200,
+      "interact_n": 200,
+      "interact_choices_valid": 200,
+      "interact_kind_correct": 31
+    },
+    "pitcher_acquisition": {
+      "n": 188,
+      "json_valid": 188,
+      "schema_valid": 188,
+      "tool_correct": 126,
+      "strict_exact": 60,
+      "tool_wrong": 62,
+      "interact_n": 108,
+      "interact_choices_valid": 108,
+      "interact_kind_correct": 40,
+      "motion_n": 15
+    },
+    "confirm": {
+      "n": 228,
+      "json_valid": 228,
+      "schema_valid": 224,
+      "tool_wrong": 98,
+      "motion_n": 73,
+      "interact_n": 155,
+      "interact_choices_valid": 155,
+      "tool_correct": 130,
+      "interact_kind_correct": 77,
+      "strict_exact": 24,
+      "motion_obj_correct": 9,
+      "motion_tool_correct": 9,
+      "schema_invalid": 4
+    },
+    "anything_else": {
+      "n": 111,
+      "json_valid": 111,
+      "schema_valid": 109,
+      "tool_correct": 109,
+      "interact_n": 111,
+      "interact_choices_valid": 111,
+      "schema_invalid": 2,
+      "tool_wrong": 2
+    },
+    "mode_select": {
+      "n": 108,
+      "json_valid": 108,
+      "schema_valid": 105,
+      "tool_wrong": 30,
+      "interact_n": 108,
+      "interact_choices_valid": 108,
+      "tool_correct": 78,
+      "interact_kind_correct": 66,
+      "strict_exact": 14,
+      "schema_invalid": 3
+    },
+    "candidate_choice": {
+      "n": 123,
+      "json_valid": 123,
+      "schema_valid": 95,
+      "tool_correct": 86,
+      "interact_n": 123,
+      "interact_kind_correct": 70,
+      "interact_choices_valid": 123,
+      "strict_exact": 66,
+      "tool_wrong": 37,
+      "schema_invalid": 28
+    },
+    "confirm_pour": {
+      "n": 133,
+      "json_valid": 133,
+      "schema_valid": 118,
+      "tool_wrong": 20,
+      "interact_n": 133,
+      "interact_choices_valid": 133,
+      "tool_correct": 113,
+      "interact_kind_correct": 99,
+      "schema_invalid": 15,
+      "strict_exact": 8
+    },
+    "amount_choice": {
+      "n": 105,
+      "json_valid": 105,
+      "schema_valid": 93,
+      "tool_correct": 91,
+      "interact_n": 105,
+      "interact_kind_correct": 68,
+      "interact_choices_valid": 105,
+      "strict_exact": 68,
+      "schema_invalid": 12,
+      "tool_wrong": 14
+    },
+    "confirm_amount": {
+      "n": 81,
+      "json_valid": 81,
+      "schema_valid": 73,
+      "tool_correct": 37,
+      "interact_n": 43,
+      "interact_kind_correct": 34,
+      "interact_choices_valid": 43,
+      "tool_wrong": 44,
+      "schema_invalid": 8
+    },
+    "intent_gate_pour": {
+      "n": 34,
+      "json_valid": 34,
+      "schema_valid": 34,
+      "tool_correct": 34,
+      "interact_n": 34,
+      "interact_choices_valid": 34,
+      "interact_kind_correct": 1
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 915,
+      "json_valid": 915,
+      "schema_valid": 868,
+      "tool_correct": 699,
+      "strict_exact": 168,
+      "tool_wrong": 216,
+      "motion_n": 68,
+      "schema_invalid": 47,
+      "motion_obj_correct": 7
+    },
+    "gripper": {
+      "n": 110,
+      "json_valid": 110,
+      "schema_valid": 101,
+      "tool_correct": 85,
+      "tool_wrong": 25,
+      "motion_n": 8,
+      "strict_exact": 17,
+      "schema_invalid": 9,
+      "motion_obj_correct": 2
+    },
+    "rotation": {
+      "n": 286,
+      "json_valid": 286,
+      "schema_valid": 270,
+      "tool_wrong": 66,
+      "tool_correct": 220,
+      "strict_exact": 55,
+      "motion_n": 12,
+      "schema_invalid": 16
+    }
+  },
+  "by_num_candidates": {
+    "cands_1": {
+      "n": 836,
+      "tool_correct": 640,
+      "tool_wrong": 196
+    },
+    "cands_2": {
+      "n": 321,
+      "tool_wrong": 72,
+      "tool_correct": 249
+    },
+    "cands_0": {
+      "n": 96,
+      "tool_correct": 70,
+      "tool_wrong": 26
+    },
+    "cands_3": {
+      "n": 58,
+      "tool_correct": 45,
+      "tool_wrong": 13
+    }
+  },
+  "mistakes_path": "/home/ali/github/ali-rabiee/grasp-copilot/evaluation/eval_outputs/paper_benchmark/mistakes/woz_lora__oracle_valid_pouring.jsonl",
+  "mistakes_n": 200,
+  "_model_safe": "woz_lora",
+  "_eval_set": "oracle_valid_pouring",
+  "_env": "pouring",
+  "_flavor": "oracle",
+  "_group": "trained",
+  "_display": "Qwen2.5-3B-WoZ-LoRA"
+}

@@ -546,32 +546,36 @@ def _eval_one_model(
     dump_mistakes_jsonl: Optional[Path],
     max_mistakes: int,
     progress_every: int = 100,
+    preloaded: Optional[Tuple[Any, Any, "InferenceConfig"]] = None,
 ) -> Dict[str, Any]:
     set_seed(int(seed))
     m = Metrics()
     mistakes: List[Dict[str, Any]] = []
     all_predictions: List[Dict[str, Any]] = []
 
-    # Load LLM once per model
+    # Load LLM once per model (or reuse a preloaded one across multiple eval sets).
     model = tok = None
     cfg = None
     load_s = 0.0
     if spec.kind == "llm":
-        if not spec.model_path:
-            raise SystemExit(f"Model '{spec.name}' is kind=llm but has no model_path")
-        cfg = InferenceConfig(
-            model_path=str(spec.model_path),
-            use_4bit=bool(use_4bit),
-            temperature=float(temperature),
-            top_p=float(top_p),
-            max_new_tokens=int(max_new_tokens),
-            seed=int(seed),
-            deterministic=(float(temperature) == 0.0 and float(top_p) == 1.0),
-        )
-        t0 = time.time()
-        model, tok = _load_model_and_tokenizer(cfg)
-        load_s = time.time() - t0
-        print(f"[{spec.name}] Model loaded in {load_s:.1f}s")
+        if preloaded is not None:
+            model, tok, cfg = preloaded
+        else:
+            if not spec.model_path:
+                raise SystemExit(f"Model '{spec.name}' is kind=llm but has no model_path")
+            cfg = InferenceConfig(
+                model_path=str(spec.model_path),
+                use_4bit=bool(use_4bit),
+                temperature=float(temperature),
+                top_p=float(top_p),
+                max_new_tokens=int(max_new_tokens),
+                seed=int(seed),
+                deterministic=(float(temperature) == 0.0 and float(top_p) == 1.0),
+            )
+            t0 = time.time()
+            model, tok = _load_model_and_tokenizer(cfg)
+            load_s = time.time() - t0
+            print(f"[{spec.name}] Model loaded in {load_s:.1f}s")
 
     n = min(int(max_examples), len(rows)) if int(max_examples) > 0 else len(rows)
     sample = rows[:n]

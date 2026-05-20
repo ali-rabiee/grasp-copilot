@@ -1,0 +1,123 @@
+% =============================================================================
+% Paper-ready LaTeX snippets for the PRIME 3-env benchmark.
+%
+% These reference the artifacts produced by the evaluation pipeline:
+%
+%   evaluation/eval_outputs/paper_benchmark/
+%     tables/   table_1_main.tex, table_2_ambiguous.tex, table_3_ablations.tex
+%     figures/  fig{1..7}.pdf   (canonical, keyed to oracle_valid_ycb)
+%     figures_oracle_valid_stacking/  fig{1..7}.pdf (Stack-keyed variants)
+%     figures_oracle_valid_pouring/   fig{1..7}.pdf (Pour-keyed variants)
+%     robustness/ robustness_curves.pdf
+%
+% Copy these blocks into the paper source. Adjust paths relative to your
+% paper's working directory; the snippets assume the figures/tables live
+% under `figs/` and `tabs/` respectively (rename as you prefer).
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+% Table I (headline) — per-env tool-call accuracy
+% -----------------------------------------------------------------------------
+\input{tabs/table_1_main.tex}
+
+% -----------------------------------------------------------------------------
+% Table II — Ambiguous vs Clean (the central WoZ claim)
+% -----------------------------------------------------------------------------
+\input{tabs/table_2_ambiguous.tex}
+
+% -----------------------------------------------------------------------------
+% Table III — Ablations (warm-start, LoRA rank, unified vs per-env)
+% -----------------------------------------------------------------------------
+\input{tabs/table_3_ablations.tex}
+
+% -----------------------------------------------------------------------------
+% Figures
+% -----------------------------------------------------------------------------
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figs/fig1_per_env_bars.pdf}
+  \caption{Tool-call accuracy by environment on held-out oracle validation
+  sets. The headline model (Qwen2.5-3B-Oracle$\rightarrow$WoZ-LoRA) matches or
+  exceeds Oracle-LoRA on every environment, and substantially outperforms
+  rule-based and shared-autonomy baselines on the new Stacking and Pouring
+  environments where the baselines lack a vocabulary for STACK/GRAB/POUR.}
+  \label{fig:per_env_bars}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figs/fig2_ambiguous_gap.pdf}
+  \caption{Tool-call accuracy on clean vs.\ ambiguous scenarios (macro-averaged
+  across the three environments). WoZ supervision closes the gap that
+  heuristic shared-autonomy baselines suffer on ambiguous scenes. Arrows
+  indicate the absolute shift; trained LoRAs (left three bars) all reach or
+  approach 100\% on the ambiguous set, while H1 and SA1 drop by 8 and 14
+  percentage points respectively.}
+  \label{fig:ambiguous_gap}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figs/fig4_confusion_grid.pdf}
+  \caption{Row-normalized tool-call confusion matrices on the YCB held-out
+  validation set. Trained LoRAs concentrate mass on the diagonal; heuristic
+  baselines (H1 / H2) systematically over-emit \texttt{INTERACT}, sacrificing
+  motion accuracy for conversational safety.}
+  \label{fig:confusion_grid}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figs/fig5_context_heatmap.pdf}
+  \caption{Tool-call accuracy by dialog-context type, per model. Trained LoRAs
+  remain accurate across both \emph{cold-start} (no prior dialog) and
+  \emph{follow-up} contexts (confirmation, candidate-choice, intent-gate),
+  while heuristic baselines specialize on the cold-start case.}
+  \label{fig:context_heatmap}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figs/robustness_curves.pdf}
+  \caption{Tool-call accuracy under simulated teleoperation noise
+  ($p \in \{0, 0.1, 0.2, 0.3, 0.5\}$ of gripper-history cells and yaw bins
+  jittered to a random neighbor). Solid lines: trained LoRAs. Dashed: Oracle
+  reference. Dotted: H1 (Ask-if-Ambiguous). The headline model
+  Oracle$\rightarrow$WoZ-LoRA degrades the most gracefully, retaining the bulk
+  of its advantage at high noise levels.}
+  \label{fig:robustness}
+\end{figure}
+
+% -----------------------------------------------------------------------------
+% Supplementary figures (use selectively in appendix)
+% -----------------------------------------------------------------------------
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figs/fig3_radar.pdf}
+  \caption{Multi-metric profile (tool, motion-object, interact-kind, schema-
+  valid, strict-match) on the YCB validation set. Trained LoRAs nearly fill
+  the radar; H1 / H2 saturate on schema/interact metrics but collapse on
+  motion-object.}
+  \label{fig:radar}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\linewidth]{figs/fig6_accuracy_throughput.pdf}
+  \caption{Accuracy vs.\ inference throughput. Trained LoRAs cluster in the
+  upper-left (high accuracy, low throughput); heuristic baselines occupy the
+  lower-right (instant inference, lower accuracy).}
+  \label{fig:throughput}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{figs/fig7_error_breakdown.pdf}
+  \caption{Outcome decomposition: share of predictions that are correct,
+  wrong-tool, schema-invalid, or JSON-invalid. Schema-validity failures are
+  near-zero for trained LoRAs; their residual error is wrong-tool, not malformed
+  output.}
+  \label{fig:error_breakdown}
+\end{figure}

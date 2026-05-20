@@ -1,0 +1,184 @@
+{
+  "model": {
+    "name": "Qwen2.5-3B-WoZ-LoRA",
+    "kind": "llm",
+    "model_path": "models/qwen2_5_3b_woz_lora"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 4962.74977850914,
+    "examples_per_sec": 0.18880661766539522
+  },
+  "n": 937,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 1.0,
+  "json_errors": 0,
+  "schema_errors": 0,
+  "tool_accuracy": 0.768409818569904,
+  "motion_obj_accuracy": 0.0,
+  "motion_tool_accuracy": 0.0,
+  "interact_kind_accuracy": 0.3858560794044665,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.18996798292422626,
+  "motion_n": 48,
+  "interact_n": 806,
+  "tool_confusion": {
+    "INTERACT": {
+      "INTERACT": 639,
+      "STACK": 166,
+      "APPROACH": 1
+    },
+    "STACK": {
+      "STACK": 81,
+      "INTERACT": 2
+    },
+    "ALIGN_YAW": {
+      "INTERACT": 17
+    },
+    "APPROACH": {
+      "INTERACT": 21,
+      "STACK": 10
+    }
+  },
+  "by_context": {
+    "no_context": {
+      "n": 200,
+      "json_valid": 200,
+      "schema_valid": 200,
+      "tool_correct": 200,
+      "interact_n": 200,
+      "interact_choices_valid": 200,
+      "interact_kind_correct": 101
+    },
+    "confirm": {
+      "n": 112,
+      "json_valid": 112,
+      "schema_valid": 112,
+      "tool_correct": 75,
+      "interact_n": 76,
+      "interact_kind_correct": 38,
+      "interact_choices_valid": 76,
+      "tool_wrong": 37,
+      "motion_n": 36,
+      "strict_exact": 6
+    },
+    "intent_gate_stack": {
+      "n": 102,
+      "json_valid": 102,
+      "schema_valid": 102,
+      "tool_correct": 100,
+      "interact_n": 102,
+      "interact_choices_valid": 102,
+      "tool_wrong": 2,
+      "interact_kind_correct": 5
+    },
+    "candidate_choice": {
+      "n": 140,
+      "json_valid": 140,
+      "schema_valid": 140,
+      "tool_correct": 79,
+      "interact_n": 140,
+      "interact_kind_correct": 71,
+      "interact_choices_valid": 140,
+      "strict_exact": 70,
+      "tool_wrong": 61
+    },
+    "confirm_stack": {
+      "n": 199,
+      "json_valid": 199,
+      "schema_valid": 199,
+      "tool_correct": 157,
+      "interact_n": 104,
+      "interact_kind_correct": 75,
+      "interact_choices_valid": 104,
+      "strict_exact": 101,
+      "tool_wrong": 42,
+      "motion_n": 12
+    },
+    "anything_else": {
+      "n": 92,
+      "json_valid": 92,
+      "schema_valid": 92,
+      "tool_correct": 86,
+      "interact_n": 92,
+      "interact_choices_valid": 92,
+      "tool_wrong": 6,
+      "interact_kind_correct": 1
+    },
+    "mode_select": {
+      "n": 92,
+      "json_valid": 92,
+      "schema_valid": 92,
+      "tool_correct": 23,
+      "interact_n": 92,
+      "interact_kind_correct": 20,
+      "interact_choices_valid": 92,
+      "tool_wrong": 69,
+      "strict_exact": 1
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 596,
+      "json_valid": 596,
+      "schema_valid": 596,
+      "tool_correct": 471,
+      "strict_exact": 117,
+      "tool_wrong": 125,
+      "motion_n": 33
+    },
+    "rotation": {
+      "n": 269,
+      "json_valid": 269,
+      "schema_valid": 269,
+      "tool_correct": 202,
+      "strict_exact": 48,
+      "tool_wrong": 67,
+      "motion_n": 14
+    },
+    "gripper": {
+      "n": 72,
+      "json_valid": 72,
+      "schema_valid": 72,
+      "tool_correct": 47,
+      "strict_exact": 13,
+      "tool_wrong": 25,
+      "motion_n": 1
+    }
+  },
+  "by_num_candidates": {
+    "cands_1": {
+      "n": 427,
+      "tool_correct": 324,
+      "tool_wrong": 103
+    },
+    "cands_3": {
+      "n": 194,
+      "tool_correct": 149,
+      "tool_wrong": 45
+    },
+    "cands_0": {
+      "n": 4,
+      "tool_correct": 3,
+      "tool_wrong": 1
+    },
+    "cands_2": {
+      "n": 245,
+      "tool_correct": 190,
+      "tool_wrong": 55
+    },
+    "cands_4": {
+      "n": 67,
+      "tool_correct": 54,
+      "tool_wrong": 13
+    }
+  },
+  "mistakes_path": "/home/ali/github/ali-rabiee/grasp-copilot/evaluation/eval_outputs/paper_benchmark/mistakes/woz_lora__oracle_valid_stacking.jsonl",
+  "mistakes_n": 200,
+  "_model_safe": "woz_lora",
+  "_eval_set": "oracle_valid_stacking",
+  "_env": "stacking",
+  "_flavor": "oracle",
+  "_group": "trained",
+  "_display": "Qwen2.5-3B-WoZ-LoRA"
+}

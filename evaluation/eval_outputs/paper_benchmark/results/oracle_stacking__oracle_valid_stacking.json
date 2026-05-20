@@ -1,0 +1,192 @@
+{
+  "model": {
+    "name": "Qwen2.5-3B-Oracle-LoRA (Stack only)",
+    "kind": "llm",
+    "model_path": "models/qwen2_5_3b_oracle_lora_stacking"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 5925.608858823776,
+    "examples_per_sec": 0.158127210608024
+  },
+  "n": 937,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 0.9925293489861259,
+  "json_errors": 0,
+  "schema_errors": 7,
+  "tool_accuracy": 0.8954108858057631,
+  "motion_obj_accuracy": 0.6875,
+  "motion_tool_accuracy": 0.6875,
+  "interact_kind_accuracy": 0.9838709677419355,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.8281750266808965,
+  "motion_n": 48,
+  "interact_n": 806,
+  "tool_confusion": {
+    "INTERACT": {
+      "INTERACT": 806,
+      "INVALID_SCHEMA": 7
+    },
+    "STACK": {
+      "INTERACT": 40,
+      "APPROACH": 43
+    },
+    "ALIGN_YAW": {
+      "ALIGN_YAW": 15,
+      "INTERACT": 2
+    },
+    "APPROACH": {
+      "APPROACH": 18,
+      "INTERACT": 13
+    }
+  },
+  "by_context": {
+    "no_context": {
+      "n": 200,
+      "json_valid": 200,
+      "schema_valid": 200,
+      "tool_correct": 200,
+      "interact_n": 200,
+      "interact_kind_correct": 200,
+      "interact_choices_valid": 200,
+      "strict_exact": 200
+    },
+    "confirm": {
+      "n": 112,
+      "json_valid": 112,
+      "schema_valid": 112,
+      "tool_correct": 104,
+      "interact_n": 76,
+      "interact_kind_correct": 73,
+      "interact_choices_valid": 76,
+      "strict_exact": 101,
+      "motion_n": 36,
+      "motion_obj_correct": 28,
+      "motion_tool_correct": 28,
+      "tool_wrong": 8
+    },
+    "intent_gate_stack": {
+      "n": 102,
+      "json_valid": 102,
+      "schema_valid": 102,
+      "tool_correct": 102,
+      "interact_n": 102,
+      "interact_kind_correct": 102,
+      "interact_choices_valid": 102,
+      "strict_exact": 87
+    },
+    "candidate_choice": {
+      "n": 140,
+      "json_valid": 140,
+      "schema_valid": 133,
+      "tool_correct": 140,
+      "interact_n": 140,
+      "interact_kind_correct": 140,
+      "interact_choices_valid": 140,
+      "strict_exact": 133,
+      "schema_invalid": 7
+    },
+    "confirm_stack": {
+      "n": 199,
+      "json_valid": 199,
+      "schema_valid": 199,
+      "tool_correct": 109,
+      "interact_n": 104,
+      "interact_kind_correct": 94,
+      "interact_choices_valid": 104,
+      "strict_exact": 99,
+      "tool_wrong": 90,
+      "motion_n": 12,
+      "motion_obj_correct": 5,
+      "motion_tool_correct": 5
+    },
+    "anything_else": {
+      "n": 92,
+      "json_valid": 92,
+      "schema_valid": 92,
+      "tool_correct": 92,
+      "interact_n": 92,
+      "interact_kind_correct": 92,
+      "interact_choices_valid": 92,
+      "strict_exact": 92
+    },
+    "mode_select": {
+      "n": 92,
+      "json_valid": 92,
+      "schema_valid": 92,
+      "tool_correct": 92,
+      "interact_n": 92,
+      "interact_kind_correct": 92,
+      "interact_choices_valid": 92,
+      "strict_exact": 64
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 596,
+      "json_valid": 596,
+      "schema_valid": 593,
+      "tool_correct": 536,
+      "strict_exact": 495,
+      "tool_wrong": 60,
+      "motion_n": 33,
+      "motion_obj_correct": 24,
+      "schema_invalid": 3
+    },
+    "rotation": {
+      "n": 269,
+      "json_valid": 269,
+      "schema_valid": 266,
+      "tool_correct": 236,
+      "strict_exact": 223,
+      "schema_invalid": 3,
+      "tool_wrong": 33,
+      "motion_n": 14,
+      "motion_obj_correct": 9
+    },
+    "gripper": {
+      "n": 72,
+      "json_valid": 72,
+      "schema_valid": 71,
+      "tool_correct": 67,
+      "strict_exact": 58,
+      "tool_wrong": 5,
+      "motion_n": 1,
+      "schema_invalid": 1
+    }
+  },
+  "by_num_candidates": {
+    "cands_1": {
+      "n": 427,
+      "tool_correct": 362,
+      "tool_wrong": 65
+    },
+    "cands_3": {
+      "n": 194,
+      "tool_correct": 181,
+      "tool_wrong": 13
+    },
+    "cands_0": {
+      "n": 4,
+      "tool_correct": 4
+    },
+    "cands_2": {
+      "n": 245,
+      "tool_correct": 228,
+      "tool_wrong": 17
+    },
+    "cands_4": {
+      "n": 67,
+      "tool_correct": 64,
+      "tool_wrong": 3
+    }
+  },
+  "mistakes_path": "/home/ali/github/ali-rabiee/grasp-copilot/evaluation/eval_outputs/paper_benchmark/mistakes/oracle_stacking__oracle_valid_stacking.jsonl",
+  "mistakes_n": 98,
+  "_model_safe": "oracle_stacking",
+  "_eval_set": "oracle_valid_stacking",
+  "_env": "stacking",
+  "_flavor": "oracle",
+  "_group": "ablation",
+  "_display": "Qwen2.5-3B-Oracle-LoRA (Stack only)"
+}

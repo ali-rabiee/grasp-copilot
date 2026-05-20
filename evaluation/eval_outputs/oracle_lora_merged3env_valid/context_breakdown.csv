@@ -1,6 +1,0 @@
-model,amount_choice_acc,anything_else_acc,candidate_choice_acc,confirm_acc,confirm_amount_acc,confirm_pour_acc,confirm_stack_acc,intent_gate_candidates_acc,intent_gate_pour_acc,intent_gate_stack_acc,intent_gate_yaw_acc,mode_select_acc,no_context_acc,pitcher_acquisition_acc,amount_choice_n,anything_else_n,candidate_choice_n,confirm_n,confirm_amount_n,confirm_pour_n,confirm_stack_n,intent_gate_candidates_n,intent_gate_pour_n,intent_gate_stack_n,intent_gate_yaw_n,mode_select_n,no_context_n,pitcher_acquisition_n
-Oracle-LoRA-3B,0.9167,1.0000,0.9913,0.8881,1.0000,0.9655,0.7768,1.0000,1.0000,1.0000,1.0000,1.0000,0.9921,0.9688,12,95,115,143,3,29,112,56,5,65,1,79,253,32
-H1_ask_if_ambiguous,0.2500,0.5684,0.8261,0.3147,0.0000,0.3103,0.4643,1.0000,0.8000,0.9692,1.0000,0.5443,0.6957,0.4688,12,95,115,143,3,29,112,56,5,65,1,79,253,32
-H2_always_ask,1.0000,1.0000,1.0000,0.5385,1.0000,1.0000,0.6875,1.0000,1.0000,1.0000,1.0000,1.0000,0.9249,0.7500,12,95,115,143,3,29,112,56,5,65,1,79,253,32
-SA1_predict_then_assist,0.0000,0.1474,0.1739,0.2448,0.0000,0.0345,0.3036,0.6786,0.0000,0.0308,0.0000,0.0886,0.3834,0.4688,12,95,115,143,3,29,112,56,5,65,1,79,253,32
-SA2_bayesian_intent,0.2500,0.4947,0.6957,0.2657,0.0000,0.2759,0.4196,0.8929,0.4000,0.6769,1.0000,0.4430,0.5375,0.3750,12,95,115,143,3,29,112,56,5,65,1,79,253,32

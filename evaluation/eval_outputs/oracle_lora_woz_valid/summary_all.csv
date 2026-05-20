@@ -1,2 +1,0 @@
-name,kind,model_path,n,json_valid_rate,schema_valid_rate,tool_accuracy,motion_obj_accuracy,motion_tool_accuracy,interact_kind_accuracy,interact_choices_valid_rate,strict_exact_rate,motion_n,interact_n,json_errors,schema_errors,load_s,eval_s,examples_per_sec,mistakes_path,mistakes_n
-Oracle-LoRA-3B,llm,models/qwen2_5_3b_oracle_lora,150,1.0000,1.0000,0.8533,1.0000,1.0000,0.6355,1.0000,0.4200,22,107,0,0,2.8,161.6,0.93,evaluation/eval_outputs/oracle_lora_woz_valid/mistakes_Oracle-LoRA-3B.jsonl,22

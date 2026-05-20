@@ -1,0 +1,276 @@
+{
+  "total_discovered_trials": 160,
+  "valid_scenarios": 160,
+  "dropped_during_extract": [],
+  "invalid_after_extract": [],
+  "counts_by_mode": {
+    "manual": 118,
+    "assistive": 42
+  },
+  "counts_by_layout_source": {
+    "borrowed_template": 124,
+    "state_snapshot": 36
+  },
+  "counts_by_target_source": {
+    "unlabeled": 124,
+    "tool_call": 36
+  },
+  "counts_by_subject_difficulty": {
+    "s1/easy": 10,
+    "s1/hard": 5,
+    "s2/easy": 6,
+    "s2/hard": 5,
+    "s3/easy": 5,
+    "s3/hard": 16,
+    "s4/easy": 6,
+    "s4/hard": 11,
+    "s5/easy": 6,
+    "s5/hard": 6,
+    "s6/easy": 8,
+    "s6/hard": 6,
+    "s7/easy": 17,
+    "s7/hard": 18,
+    "s8/easy": 16,
+    "s8/hard": 19
+  },
+  "unlabeled_target_count": 124,
+  "hand_label_upgrades": 0,
+  "scene_templates": {
+    "s3/hard": {
+      "objects": [
+        [
+          "coffee_can",
+          "A1"
+        ],
+        [
+          "mug",
+          "A2"
+        ],
+        [
+          "cleanser",
+          "A3"
+        ],
+        [
+          "gelatin_box",
+          "B1"
+        ],
+        [
+          "rubik",
+          "B2"
+        ],
+        [
+          "meat_can",
+          "B3"
+        ]
+      ],
+      "gripper": [
+        "C2",
+        "E",
+        "HIGH"
+      ],
+      "n_source_trials": 8
+    },
+    "s4/hard": {
+      "objects": [
+        [
+          "coffee_can",
+          "A1"
+        ],
+        [
+          "mug",
+          "A2"
+        ],
+        [
+          "cleanser",
+          "A3"
+        ],
+        [
+          "gelatin_box",
+          "B1"
+        ],
+        [
+          "rubik",
+          "B2"
+        ],
+        [
+          "meat_can",
+          "B3"
+        ]
+      ],
+      "gripper": [
+        "C2",
+        "E",
+        "HIGH"
+      ],
+      "n_source_trials": 2
+    },
+    "s7/easy": {
+      "objects": [
+        [
+          "coffee_can",
+          "A1"
+        ],
+        [
+          "mug",
+          "A2"
+        ],
+        [
+          "cleanser",
+          "A3"
+        ]
+      ],
+      "gripper": [
+        "B2",
+        "E",
+        "HIGH"
+      ],
+      "n_source_trials": 6
+    },
+    "s7/hard": {
+      "objects": [
+        [
+          "coffee_can",
+          "A1"
+        ],
+        [
+          "mug",
+          "A2"
+        ],
+        [
+          "cleanser",
+          "A3"
+        ],
+        [
+          "cleanser",
+          "B1"
+        ],
+        [
+          "rubik",
+          "B2"
+        ],
+        [
+          "gelatin_box",
+          "B3"
+        ]
+      ],
+      "gripper": [
+        "B2",
+        "E",
+        "HIGH"
+      ],
+      "n_source_trials": 6
+    },
+    "s8/easy": {
+      "objects": [
+        [
+          "coffee_can",
+          "A1"
+        ],
+        [
+          "mug",
+          "A2"
+        ],
+        [
+          "cleanser",
+          "A3"
+        ]
+      ],
+      "gripper": [
+        "B2",
+        "E",
+        "HIGH"
+      ],
+      "n_source_trials": 6
+    },
+    "s8/hard": {
+      "objects": [
+        [
+          "coffee_can",
+          "A1"
+        ],
+        [
+          "mug",
+          "A2"
+        ],
+        [
+          "cleanser",
+          "A3"
+        ],
+        [
+          "meat_can",
+          "B1"
+        ],
+        [
+          "rubik",
+          "B2"
+        ],
+        [
+          "gelatin_box",
+          "B3"
+        ]
+      ],
+      "gripper": [
+        "B2",
+        "E",
+        "HIGH"
+      ],
+      "n_source_trials": 8
+    }
+  },
+  "difficulty_fallback_templates": {
+    "easy": {
+      "objects": [
+        [
+          "coffee_can",
+          "A1"
+        ],
+        [
+          "mug",
+          "A2"
+        ],
+        [
+          "cleanser",
+          "A3"
+        ]
+      ],
+      "gripper": [
+        "B2",
+        "E",
+        "HIGH"
+      ],
+      "n_source_trials": 12,
+      "notes": "pooled across s7,s8 (min support 6/12)"
+    },
+    "hard": {
+      "objects": [
+        [
+          "coffee_can",
+          "A1"
+        ],
+        [
+          "mug",
+          "A2"
+        ],
+        [
+          "cleanser",
+          "A3"
+        ],
+        [
+          "rubik",
+          "B2"
+        ],
+        [
+          "gelatin_box",
+          "B3"
+        ]
+      ],
+      "gripper": [
+        "C2",
+        "E",
+        "HIGH"
+      ],
+      "n_source_trials": 24,
+      "notes": "pooled across s3,s4,s7,s8 (min support 12/24)"
+    }
+  }
+}
