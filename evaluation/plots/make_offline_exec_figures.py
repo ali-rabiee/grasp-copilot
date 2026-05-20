@@ -14,7 +14,7 @@ Generates 8 figures from evaluation outputs:
 
 Usage:
     python make_offline_exec_figures.py \\
-        --run_dir ../eval_outputs/paper_benchmark_run001 \\
+        --run_dir ../results/paper_benchmark_run001 \\
         --out_dir . --tag paper_benchmark_run001
 """
 from __future__ import annotations
@@ -670,7 +670,7 @@ def main() -> None:
     ap.add_argument(
         "--run_dir", type=str,
         default=str(Path(__file__).resolve().parent.parent
-                    / "eval_outputs" / "paper_benchmark_run001"),
+                    / "results" / "paper_benchmark_run001"),
     )
     ap.add_argument(
         "--out_dir", type=str,

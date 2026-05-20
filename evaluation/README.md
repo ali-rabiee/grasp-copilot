@@ -13,8 +13,8 @@ paper-grade LaTeX tables and PDF figures.
 cd /home/ali/github/ali-rabiee/grasp-copilot
 conda activate llm
 
-nohup python -m evaluation.run_paper_benchmark > \
-    evaluation/eval_outputs/paper_benchmark/logs/run.log 2>&1 &
+nohup python -m evaluation.benchmarks.run_paper_benchmark > \
+    evaluation/results/paper_benchmark/logs/run.log 2>&1 &
 disown
 ```
 
@@ -30,7 +30,7 @@ python -m evaluation.plots.paper_figures         # writes PDF + PNG
 For the noise-robustness sweep (separate run):
 
 ```bash
-python -m evaluation.run_robustness_sweep --max_examples 300
+python -m evaluation.benchmarks.run_robustness_sweep --max_examples 300
 ```
 
 ---
@@ -74,7 +74,7 @@ from `data/ambiguous_eval_*/grasp_gen.jsonl` via
 ## Where things land
 
 ```
-evaluation/eval_outputs/paper_benchmark/
+evaluation/results/paper_benchmark/
 ├── logs/
 │   ├── run.log                      # main runner stdout/stderr
 │   └── heuristics.log               # heuristics-only parallel runs (optional)
@@ -133,10 +133,10 @@ the runner skips any (model, eval_set) whose JSON already exists.
 ```bash
 cd /home/ali/github/ali-rabiee/grasp-copilot
 conda activate llm
-mkdir -p evaluation/eval_outputs/paper_benchmark/logs
+mkdir -p evaluation/results/paper_benchmark/logs
 
-nohup python -m evaluation.run_paper_benchmark > \
-    evaluation/eval_outputs/paper_benchmark/logs/run.log 2>&1 &
+nohup python -m evaluation.benchmarks.run_paper_benchmark > \
+    evaluation/results/paper_benchmark/logs/run.log 2>&1 &
 disown
 ```
 
@@ -153,10 +153,10 @@ runner will resume from the cache.
 ```bash
 # Tail the human-readable lines (skip the model-loading progress bars):
 grep -aE "^# \[|tool_acc=" \
-    evaluation/eval_outputs/paper_benchmark/logs/run.log | tail -20
+    evaluation/results/paper_benchmark/logs/run.log | tail -20
 
 # Count finished cells (out of 77):
-ls evaluation/eval_outputs/paper_benchmark/results/ | wc -l
+ls evaluation/results/paper_benchmark/per_model_results/ | wc -l
 
 # Is the process still alive?
 pgrep -fa run_paper_benchmark
@@ -167,29 +167,29 @@ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
 
 ```bash
 # Just one model (everything else from cache):
-python -m evaluation.run_paper_benchmark --models oracle_woz_lora
+python -m evaluation.benchmarks.run_paper_benchmark --models oracle_woz_lora
 
 # Just one eval set across all models:
-python -m evaluation.run_paper_benchmark --eval_sets ambiguous_ycb
+python -m evaluation.benchmarks.run_paper_benchmark --eval_sets ambiguous_ycb
 
 # Heuristics only (no GPU, ~30 s):
-python -m evaluation.run_paper_benchmark --skip_trained
+python -m evaluation.benchmarks.run_paper_benchmark --skip_trained
 
 # Add the zero-shot row (downloads Qwen2.5-3B-Instruct from HF on first run):
-python -m evaluation.run_paper_benchmark --include_zero_shot --skip_trained --skip_heuristics
+python -m evaluation.benchmarks.run_paper_benchmark --include_zero_shot --skip_trained --skip_heuristics
 
 # Quick smoke check (5 examples per cell):
-python -m evaluation.run_paper_benchmark --max_examples 5 --rerun
+python -m evaluation.benchmarks.run_paper_benchmark --max_examples 5 --rerun
 
 # Force recompute even when cached:
-python -m evaluation.run_paper_benchmark --rerun
+python -m evaluation.benchmarks.run_paper_benchmark --rerun
 
 # 4-bit quantization if VRAM is tight (~50 % memory; ~1.5× slower):
-python -m evaluation.run_paper_benchmark --use_4bit
+python -m evaluation.benchmarks.run_paper_benchmark --use_4bit
 
 # Faster generation: cap output to 128 tokens (valid tool-call JSONs fit easily).
 # ~2× speedup on LoRAs that learned verbose outputs:
-python -m evaluation.run_paper_benchmark --max_new_tokens 128
+python -m evaluation.benchmarks.run_paper_benchmark --max_new_tokens 128
 ```
 
 ### 3. After (or during) the sweep — tables & figures
@@ -197,11 +197,11 @@ python -m evaluation.run_paper_benchmark --max_new_tokens 128
 ```bash
 # LaTeX + CSV (booktabs style, ready to paste):
 python -m evaluation.tables.build_paper_tables
-# → evaluation/eval_outputs/paper_benchmark/tables/
+# → evaluation/results/paper_benchmark/tables/
 
 # Figures (vector PDF + PNG preview):
 python -m evaluation.plots.paper_figures --eval_set oracle_valid_ycb
-# → evaluation/eval_outputs/paper_benchmark/figures/
+# → evaluation/results/paper_benchmark/figures/
 # Re-run with a different --eval_set to redraw the single-set figures
 # (radar / confusion / context heatmap / throughput / error breakdown)
 # focused on a different env.
@@ -215,11 +215,11 @@ or blank panels, so they're useful for spot-checking mid-run too.
 ```bash
 # (a) Pre-compute Oracle + H1 reference curves on CPU (instant; safe to run
 #     anytime, even while the main benchmark is using the GPU):
-python -m evaluation.run_robustness_sweep --baselines_only --max_examples 0
+python -m evaluation.benchmarks.run_robustness_sweep --baselines_only --max_examples 0
 
 # (b) Full LLM sweep — needs the GPU, so run after run_paper_benchmark is done:
-nohup python -m evaluation.run_robustness_sweep --max_examples 300 > \
-    evaluation/eval_outputs/paper_benchmark/robustness/logs/sweep.log 2>&1 &
+nohup python -m evaluation.benchmarks.run_robustness_sweep --max_examples 300 > \
+    evaluation/results/robustness/synthetic/logs/sweep.log 2>&1 &
 disown
 ```
 
@@ -233,7 +233,7 @@ To only plot from existing data (works with baselines alone, or baselines +
 LLM sweep):
 
 ```bash
-python -m evaluation.run_robustness_sweep --plot_only
+python -m evaluation.benchmarks.run_robustness_sweep --plot_only
 ```
 
 ### 4a. One-shot post-benchmark finisher
@@ -251,7 +251,7 @@ bash evaluation/finish_paper_run.sh --tables-only   # just rebuild outputs
 
 ```bash
 # Convert ambiguous-eval grasp_gen → contract format (only needed once):
-python -m evaluation.convert_ambiguous_to_contract
+python -m evaluation.tools.convert_ambiguous_to_contract
 
 # Regenerate per-env oracle valid sets with held-out seed (only needed once):
 grasp-collect --env reach_to_grasp_ycb --episodes 200 --seed 999 --out_dir data/oracle_valid_ycb
@@ -259,8 +259,8 @@ grasp-collect --env cube_stacking      --episodes 200 --seed 999 --out_dir data/
 grasp-collect --env pouring            --episodes 200 --seed 999 --out_dir data/oracle_valid_pouring
 
 # Then the full pipeline:
-nohup python -m evaluation.run_paper_benchmark > \
-    evaluation/eval_outputs/paper_benchmark/logs/run.log 2>&1 &
+nohup python -m evaluation.benchmarks.run_paper_benchmark > \
+    evaluation/results/paper_benchmark/logs/run.log 2>&1 &
 disown
 
 python -m evaluation.tables.build_paper_tables
@@ -309,7 +309,7 @@ editable in the final paper.
 | `INVALID_JSON` or `INVALID_SCHEMA` in confusion matrix | Inspect `mistakes/<model>__<eval_set>.jsonl` — the raw model output is dumped there. |
 | `Some parameters are on the meta device because they were offloaded to the cpu.` | GPU memory pressure. Either close other GPU users, or rerun with `--use_4bit`. |
 | Tables / figures show `--` or empty panels | Those (model, eval_set) cells haven't been computed yet. Run the benchmark for them. |
-| Need to re-evaluate a single bad cell | `python -m evaluation.run_paper_benchmark --models <safe_name> --eval_sets <eval_name> --rerun` |
+| Need to re-evaluate a single bad cell | `python -m evaluation.benchmarks.run_paper_benchmark --models <safe_name> --eval_sets <eval_name> --rerun` |
 | Want only the headline numbers, fast | `--max_examples 200 --rerun` — gives noisier but quickly-iterating numbers. |
 
 ---

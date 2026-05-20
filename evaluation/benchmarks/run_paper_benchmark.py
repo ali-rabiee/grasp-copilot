@@ -6,17 +6,17 @@ below (oracle valid × 3 envs, WoZ valid, ambiguous × 3 envs). Per-(model,
 eval_set) results are cached as JSON; re-runs skip cells that already exist
 unless --rerun is passed.
 
-Outputs land in evaluation/eval_outputs/paper_benchmark/:
+Outputs land in evaluation/results/paper_benchmark/:
     results/<model_safe>__<eval_set>.json   # one cell each
     mistakes/<model_safe>__<eval_set>.jsonl
     summary_all.csv                          # flat per-cell table
     manifest.json
 
 Usage:
-    python -m evaluation.run_paper_benchmark
-    python -m evaluation.run_paper_benchmark --models qwen2_5_3b_oracle_woz_lora
-    python -m evaluation.run_paper_benchmark --eval_sets oracle_valid_ycb,ambiguous_ycb
-    python -m evaluation.run_paper_benchmark --max_examples 50 --skip_zero_shot
+    python -m evaluation.benchmarks.run_paper_benchmark
+    python -m evaluation.benchmarks.run_paper_benchmark --models qwen2_5_3b_oracle_woz_lora
+    python -m evaluation.benchmarks.run_paper_benchmark --eval_sets oracle_valid_ycb,ambiguous_ycb
+    python -m evaluation.benchmarks.run_paper_benchmark --max_examples 50 --skip_zero_shot
 """
 
 from __future__ import annotations
@@ -33,11 +33,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 try:
-    from . import _bootstrap  # noqa: F401
+    from evaluation import _bootstrap  # noqa: F401
 except Exception:
     import _bootstrap  # type: ignore  # noqa: F401
 
-from evaluation.offline_exec_benchmark import (
+from evaluation.benchmarks.offline_exec_benchmark import (
     ModelSpec,
     _eval_one_model,
     _iter_jsonl,
@@ -346,7 +346,7 @@ def _filter(names: Optional[str], pool, attr: str):
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--out_dir", default="evaluation/eval_outputs/paper_benchmark")
+    ap.add_argument("--out_dir", default="evaluation/results/paper_benchmark")
     ap.add_argument("--models", default=None, help="Comma-separated safe_names; default = all")
     ap.add_argument("--eval_sets", default=None, help="Comma-separated names; default = all")
     ap.add_argument("--include_zero_shot", action="store_true", help="Also evaluate Qwen2.5-3B-Instruct ZS (downloads from HF)")

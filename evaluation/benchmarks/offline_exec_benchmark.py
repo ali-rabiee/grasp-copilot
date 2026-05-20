@@ -5,12 +5,12 @@ Evaluates LLM executives on contract JSONL (next tool-call prediction).
 Supports: fine-tuned models, zero-shot models, heuristic baselines.
 
 Usage:
-    python -m evaluation.offline_exec_benchmark \
+    python -m evaluation.benchmarks.offline_exec_benchmark \
         --contract_jsonl data/runs/010/llm_contract.jsonl \
         --models qwen7b_ft=models/qwen2_5_7b_instruct_ft \
         --include_heuristic \
         --include_heuristic_always_ask \
-        --out_dir evaluation/eval_outputs/benchmark_run
+        --out_dir evaluation/results/benchmark_run
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 try:
-    from . import _bootstrap  # noqa: F401
+    from evaluation import _bootstrap  # noqa: F401
 except Exception:
     import _bootstrap  # type: ignore  # noqa: F401
 
@@ -939,7 +939,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     ap.add_argument("--include_heuristic_always_ask", action="store_true", help="Include H2: always-ask baseline.")
     ap.add_argument("--include_sa_predict_then_assist", action="store_true", help="Include SA1: predict-then-assist baseline.")
     ap.add_argument("--include_sa_bayesian_intent", action="store_true", help="Include SA2: Bayesian intent inference baseline.")
-    ap.add_argument("--out_dir", type=str, default="evaluation/eval_outputs/offline_exec", help="Output directory.")
+    ap.add_argument("--out_dir", type=str, default="evaluation/results/offline_exec", help="Output directory.")
 
     ap.add_argument("--max_examples", type=int, default=0, help="Max examples (0=all).")
     ap.add_argument("--seed", type=int, default=0)

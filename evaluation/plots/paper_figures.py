@@ -32,7 +32,7 @@ from matplotlib.colors import LinearSegmentedColormap
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_BENCH_DIR = REPO_ROOT / "evaluation" / "eval_outputs" / "paper_benchmark"
+DEFAULT_BENCH_DIR = REPO_ROOT / "evaluation" / "results" / "paper_benchmark"
 
 
 # =============================================================================

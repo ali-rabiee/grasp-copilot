@@ -11,7 +11,7 @@ output} layout the offline benchmark consumes. The original id and the
 ambiguity_category are preserved so downstream tooling can group by category.
 
 Usage:
-    python -m evaluation.convert_ambiguous_to_contract \
+    python -m evaluation.tools.convert_ambiguous_to_contract \
         --in_dirs data/ambiguous_eval_reach_to_grasp_ycb \
                   data/ambiguous_eval_cube_stacking \
                   data/ambiguous_eval_pouring \
@@ -29,7 +29,7 @@ from pathlib import Path
 from typing import Iterable, List
 
 try:
-    from . import _bootstrap  # noqa: F401
+    from evaluation import _bootstrap  # noqa: F401
 except Exception:
     import _bootstrap  # type: ignore  # noqa: F401
 

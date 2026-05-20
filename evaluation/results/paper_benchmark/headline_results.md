@@ -1,6 +1,6 @@
 # PRIME 3-env benchmark — headline results
 
-Generated from `evaluation/eval_outputs/paper_benchmark/results/*.json`
+Generated from `evaluation/results/paper_benchmark/per_model_results/*.json`
 (11 systems × 7 eval sets = 77 cells, no caps).
 
 ## Models evaluated
@@ -156,5 +156,5 @@ its teacher across the entire noise sweep.
 | `robustness/sweep.csv` | Robustness sweep (in progress) |
 | `robustness/sweep_baselines.csv` | Oracle/H1 reference curves (done) |
 | `robustness/robustness_curves.{pdf,png}` | Robustness plot |
-| `PAPER_SNIPPETS.tex` | Ready-to-paste LaTeX `\input{}` blocks |
+| `paper_snippets.tex` | Ready-to-paste LaTeX `\input{}` blocks |
 | `manifest.json` | Run metadata (models, eval_sets, cell count) |

@@ -2,11 +2,11 @@
 Build conference-paper tables from paper_benchmark outputs.
 
 Reads:
-    evaluation/eval_outputs/paper_benchmark/summary_all.csv
-    evaluation/eval_outputs/paper_benchmark/results/*.json   (for richer metrics)
+    evaluation/results/paper_benchmark/summary_all.csv
+    evaluation/results/paper_benchmark/per_model_results/*.json   (for richer metrics)
 
 Writes:
-    evaluation/eval_outputs/paper_benchmark/tables/
+    evaluation/results/paper_benchmark/tables/
         table_1_main.csv / .tex             # per-env tool accuracy + macro avg
         table_2_ambiguous.csv / .tex        # ambiguous vs clean
         table_3_ablations.csv / .tex        # per-env LoRA, rank, warm-start
@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_BENCH_DIR = REPO_ROOT / "evaluation" / "eval_outputs" / "paper_benchmark"
+DEFAULT_BENCH_DIR = REPO_ROOT / "evaluation" / "results" / "paper_benchmark"
 
 
 # =============================================================================

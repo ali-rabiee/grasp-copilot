@@ -2,7 +2,7 @@
 
 This folder contains scripts to generate paper-ready figures from the files under:
 
-- `grasp-copilot/evaluation/eval_outputs/<run>/`
+- `grasp-copilot/evaluation/results/<run>/`
 
 ## Generate figures for a run
 
@@ -18,7 +18,7 @@ Example (for `paper_benchmark_run001`):
 conda activate llm
 cd /home/ali/github/ali-rabiee/grasp-copilot
 python -m evaluation.plots.make_offline_exec_figures \
-  --run_dir /home/ali/github/ali-rabiee/grasp-copilot/evaluation/eval_outputs/paper_benchmark_run001 \
+  --run_dir /home/ali/github/ali-rabiee/grasp-copilot/evaluation/results/paper_benchmark_run001 \
   --out_dir /home/ali/github/ali-rabiee/grasp-copilot/evaluation/plots \
   --tag paper_benchmark_run001
 ```

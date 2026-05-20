@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 try:
-    from . import _bootstrap  # noqa: F401
+    from evaluation import _bootstrap  # noqa: F401
 except Exception:
     import _bootstrap  # type: ignore  # noqa: F401
 
@@ -46,7 +46,7 @@ from llm.utils import json_loads_strict, set_seed
 
 from data_generator.oracle import OracleState, oracle_decide_tool
 
-from evaluation.offline_exec_benchmark import (
+from evaluation.benchmarks.offline_exec_benchmark import (
     _heuristic_ask_if_ambiguous,
     _heuristic_always_ask,
     _normalize_tool_call,
@@ -254,7 +254,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     ap.add_argument("--max_examples", type=int, default=0, help="0 = all")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--use_4bit", action="store_true")
-    ap.add_argument("--out_dir", default="evaluation/eval_outputs/robustness")
+    ap.add_argument("--out_dir", default="evaluation/results/robustness/synthetic")
     ap.add_argument("--progress_every", type=int, default=50)
     args = ap.parse_args(argv)
 

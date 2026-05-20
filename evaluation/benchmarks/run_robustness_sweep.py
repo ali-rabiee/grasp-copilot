@@ -11,8 +11,8 @@ already exist (matched on model_safe, env, noise_level). Heuristic baselines
 (Oracle, H1) are evaluated once per env and reused across models in the plot.
 
 Outputs:
-    evaluation/eval_outputs/paper_benchmark/robustness/sweep.csv
-    evaluation/eval_outputs/paper_benchmark/robustness/sweep_aggregated.json
+    evaluation/results/robustness/synthetic/sweep.csv
+    evaluation/results/robustness/synthetic/sweep_aggregated.json
 """
 
 from __future__ import annotations
@@ -28,25 +28,25 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 try:
-    from . import _bootstrap  # noqa: F401
+    from evaluation import _bootstrap  # noqa: F401
 except Exception:
     import _bootstrap  # type: ignore  # noqa: F401
 
-from evaluation.offline_exec_benchmark import (
+from evaluation.benchmarks.offline_exec_benchmark import (
     _heuristic_ask_if_ambiguous,
     _iter_jsonl,
     _normalize_tool_call,
     _parse_model_json,
     _rate,
 )
-from evaluation.robustness_benchmark import (
+from evaluation.benchmarks.robustness_benchmark import (
     PERTURBATION_REGISTRY,
     _reconstruct_oracle_state,
     _run_oracle,
     _fresh_counters,
     _score,
 )
-from evaluation.run_paper_benchmark import TRAINED_MODELS, ModelEntry, REPO_ROOT
+from evaluation.benchmarks.run_paper_benchmark import TRAINED_MODELS, ModelEntry, REPO_ROOT
 from llm.utils import json_loads_strict, set_seed
 
 
@@ -462,7 +462,7 @@ def plot_curves(out_dir: Path) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--out_dir", default="evaluation/eval_outputs/paper_benchmark/robustness")
+    ap.add_argument("--out_dir", default="evaluation/results/robustness/synthetic")
     ap.add_argument("--models", default=None, help="Comma-separated safe_names; default = all trained")
     ap.add_argument("--envs", default=None, help="Comma-separated env keys (ycb,stacking,pouring)")
     ap.add_argument("--perturbation", default=DEFAULT_PERTURBATION, choices=list(PERTURBATION_REGISTRY))

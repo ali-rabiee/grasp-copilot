@@ -21,7 +21,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
-OUT_DIR="evaluation/eval_outputs/paper_benchmark"
+OUT_DIR="evaluation/results/paper_benchmark"
 LOG_DIR="$OUT_DIR/logs"
 mkdir -p "$LOG_DIR"
 
@@ -61,7 +61,7 @@ if [ $SKIP_ZS -eq 0 ]; then
     echo "# Step 1/3: Adding zero-shot Qwen2.5-3B-Instruct reference"
     echo "############################################################"
     echo "[finish] Downloading Qwen/Qwen2.5-3B-Instruct on first hit (~7 GB)..."
-    python -m evaluation.run_paper_benchmark \
+    python -m evaluation.benchmarks.run_paper_benchmark \
         --include_zero_shot --skip_trained --skip_heuristics \
         2>&1 | tee "$LOG_DIR/zs.log"
 fi
@@ -72,7 +72,7 @@ if [ $SKIP_ROBUST -eq 0 ]; then
     echo "# Step 2/3: LLM robustness sweep (7 LoRAs × 3 envs × 5 noise)"
     echo "############################################################"
     echo "[finish] This is ~2–3 h of GPU work."
-    python -m evaluation.run_robustness_sweep \
+    python -m evaluation.benchmarks.run_robustness_sweep \
         --max_examples 300 \
         2>&1 | tee "$LOG_DIR/robustness.log"
 fi
@@ -102,7 +102,7 @@ python -m evaluation.plots.paper_figures \
     --eval_set oracle_valid_ycb 2>&1 | tee -a "$LOG_DIR/figures.log"
 
 # Plot robustness curves (no-op if no sweep was run).
-python -m evaluation.run_robustness_sweep --plot_only \
+python -m evaluation.benchmarks.run_robustness_sweep --plot_only \
     2>&1 | tee -a "$LOG_DIR/figures.log"
 
 echo ""

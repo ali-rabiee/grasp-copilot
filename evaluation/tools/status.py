@@ -2,8 +2,8 @@
 Quick status snapshot of the paper benchmark run.
 
 Usage:
-    python -m evaluation.status
-    python -m evaluation.status --watch         # refresh every 30 s
+    python -m evaluation.tools.status
+    python -m evaluation.tools.status --watch         # refresh every 30 s
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-BENCH_DIR = REPO_ROOT / "evaluation" / "eval_outputs" / "paper_benchmark"
+BENCH_DIR = REPO_ROOT / "evaluation" / "results" / "paper_benchmark"
 
 MODEL_ORDER = [
     "oracle_lora",
