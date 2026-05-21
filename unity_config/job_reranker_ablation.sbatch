@@ -46,7 +46,7 @@
 #   PRIOR           uniform | motion_weighted            (default: uniform)
 #   MODES           subset of "manual prime"             (default: "prime")
 #   N_SEEDS         rollouts per (scenario, mode, cond)  (default: 5)
-#   MAX_TICKS       hard cap on rollout length           (default: 2000)
+#   MAX_TICKS       hard cap on rollout length           (default: 500)
 #   CONDITIONS      space-separated noise conditions     (default: all 6)
 #   MAX_SCENARIOS   0 = all scenarios                    (default: 0)
 #   CONDA_ENV       conda env name                       (default: copilot)
@@ -69,7 +69,7 @@ RERANK_TOP_P="${RERANK_TOP_P:-0.95}"
 PRIOR="${PRIOR:-uniform}"
 MODES="${MODES:-prime}"
 N_SEEDS="${N_SEEDS:-5}"
-MAX_TICKS="${MAX_TICKS:-2000}"
+MAX_TICKS="${MAX_TICKS:-500}"
 CONDITIONS="${CONDITIONS:-clean dir_low dir_high sel_low sel_high compound_mid}"
 MAX_SCENARIOS="${MAX_SCENARIOS:-0}"
 RERANK_SEED="${RERANK_SEED:-0}"

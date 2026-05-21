@@ -94,6 +94,7 @@ def _free_hf() -> None:
 def _build_inner_hf_backend(model, tok, cfg) -> Callable[[Dict[str, Any]], Optional[Dict[str, Any]]]:
     from llm.inference import _build_messages, _generate_once
     from evaluation.benchmarks.offline_exec_benchmark import _parse_model_json
+    from llm.reranker.candidates import truncate_past_dialogs
 
     instruction = (
         "Given the robot observation and dialog context, infer the user's intent and "
@@ -102,7 +103,12 @@ def _build_inner_hf_backend(model, tok, cfg) -> Callable[[Dict[str, Any]], Optio
     )
 
     def backend(input_dict: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        prompt = f"{instruction}\n\nInput:\n{json.dumps(input_dict, ensure_ascii=False)}"
+        # Cap past_dialogs in the prompt — mirrors the noise-sweep runaway
+        # fix (commit eeb8ee2): without truncation, dialog loops grow the
+        # prompt past 32k context and the model decodes nonsense for the
+        # full max_new_tokens budget, turning each call into minutes.
+        truncated = truncate_past_dialogs(input_dict)
+        prompt = f"{instruction}\n\nInput:\n{json.dumps(truncated, ensure_ascii=False)}"
         try:
             raw = _generate_once(model, tok, _build_messages(prompt), cfg)
             pred_obj, _ = _parse_model_json(raw)

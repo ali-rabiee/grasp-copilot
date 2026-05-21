@@ -23,6 +23,28 @@ class CandidateQuestion:
     sample_idx: int
 
 
+# Mirrors the noise-sweep runaway fix (commit eeb8ee2): cap past_dialogs in
+# every LLM-bound prompt at 12 turns so the prompt never balloons past the
+# model's 32k context window during a dialog loop. Used by both the inner
+# backend (run_reranker_sweep._build_inner_hf_backend) AND the K-sample
+# candidate generation below — both build prompts from input_dict, so both
+# need the truncation.
+MAX_PAST_DIALOGS = 12
+
+
+def truncate_past_dialogs(input_dict: Dict[str, Any], max_dialogs: int = MAX_PAST_DIALOGS) -> Dict[str, Any]:
+    mem = input_dict.get("memory")
+    if not isinstance(mem, dict):
+        return input_dict
+    dialogs = mem.get("past_dialogs")
+    if not isinstance(dialogs, list) or len(dialogs) <= max_dialogs:
+        return input_dict
+    out = dict(input_dict)
+    out["memory"] = dict(mem)
+    out["memory"]["past_dialogs"] = list(dialogs)[-max_dialogs:]
+    return out
+
+
 def _parse_first_interact(raw: str) -> Optional[Dict]:
     """Parse raw model output; return the first dict whose top-level tool=="INTERACT"."""
     try:
@@ -128,7 +150,8 @@ def generate_candidates(
         "emit exactly one tool call. Output ONLY the tool call JSON with keys tool and args. "
         "If the tool is INTERACT, you must output at most 5 choices total."
     )
-    prompt = f"{instruction}\n\nInput:\n{json.dumps(input_dict, ensure_ascii=False)}"
+    truncated_input = truncate_past_dialogs(input_dict)
+    prompt = f"{instruction}\n\nInput:\n{json.dumps(truncated_input, ensure_ascii=False)}"
     messages = _build_messages(prompt)
 
     # Per-sample seed so multiple workers/processes don't collide.
