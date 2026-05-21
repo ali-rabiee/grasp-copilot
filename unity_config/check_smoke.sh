@@ -207,12 +207,19 @@ if [ ${#LOGS[@]} -eq 0 ]; then
     _warn "no slurm log matching '${LOG_PATTERN}' (ok if you ran locally without --output)"
 else
     LOG="${LOGS[-1]}"
-    bad=$(grep -E "Traceback|CUDA out of memory|ModuleNotFoundError|FileNotFoundError|Killed|RuntimeError|FATAL" "$LOG" | head -5 || true)
+    bad=$(grep -E "Traceback|CUDA out of memory|ModuleNotFoundError|FileNotFoundError|Killed|RuntimeError|FATAL|No space left|CANCELLED|DUE TO TIME LIMIT|slurmstepd: error|oom-kill|ERROR conda" "$LOG" | head -10 || true)
     if [ -n "$bad" ]; then
-        _check "log contains error-looking lines (showing first 5):"
+        _check "log contains error-looking lines (showing first 10):"
         echo "$bad" | sed 's/^/        /'
     else
-        _ok "log clean (no Traceback / OOM / Killed / FATAL)"
+        _ok "log clean (no Traceback / OOM / TIMEOUT / CANCELLED)"
+    fi
+
+    # Show last lines so the user can eyeball how far the job got.
+    last=$(tail -5 "$LOG" 2>/dev/null || true)
+    if [ -n "$last" ]; then
+        echo "        — last 5 log lines —"
+        echo "$last" | sed 's/^/        /'
     fi
 fi
 echo
