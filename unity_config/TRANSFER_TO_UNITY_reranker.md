@@ -185,33 +185,115 @@ scenario-sweep IG in the main body is the headline number.
 
 ---
 
-## 4. After all three sbatch finish: the analysis pass
+## 4. Post-GPU analysis (two independent steps)
 
-CPU-only, ~5 min. Run on Unity (or pull results to dev and run locally —
-either works, the analysis is small).
+There are **two analyses**, each producing one part of the paper. They
+are independent — order doesn't matter, but step 4A *requires* all
+three GPU jobs from §3b/c/d to have finished first. Step 4B can be run
+anytime.
+
+```
+GPU jobs (§3b, §3c, §3d) ───► ALL three must FINISH ───► Step 4A (scenarios)
+                                                             │
+contracts (no GPU, no dep)  ─────────────────────────────► Step 4B (contracts)
+```
+
+### 4A. Scenarios analysis (depends on the 3 GPU jobs finishing)
+
+Verify all three jobs are done:
+
+```bash
+squeue -u $USER                              # should be empty / no rerank_sweep
+ls evaluation/results/reranker/ablation/     # should show 3 cell dirs
+```
+
+Then submit the single CPU-only analysis sbatch (~5 min):
 
 ```bash
 sbatch unity_config/job_ig_analysis.sbatch
 ```
 
-This produces:
+Produces (under `evaluation/results/reranker/`):
 
 ```
-evaluation/results/reranker/
-├── ig_analysis/
-│   ├── per_question.csv          # all dialogs × 4 selectors
-│   ├── summary.json              # aggregate IG per selector + by kind
-│   ├── ig_distribution.pdf       # paper figure: histogram per selector
-│   ├── ig_distribution.png
-│   ├── ig_by_kind.pdf            # facet: QUESTION / CONFIRM / SUGGESTION
-│   └── ig_by_kind.png
-└── tables/
-    ├── table_reranker_ablation.{csv,tex}   # headline ablation table
-    └── table_ig_summary.{csv,tex}          # per-selector IG summary
+ig_analysis/
+├── per_question.csv          # all dialogs × 4 selectors
+├── summary.json              # aggregate IG per selector + by-kind
+├── ig_distribution.{pdf,png} # paper Fig 8 — histogram per selector
+└── ig_by_kind.{pdf,png}      # facet by QUESTION / CONFIRM / SUGGESTION
+tables/
+├── table_reranker_ablation.{csv,tex}   # headline Table 3
+└── table_ig_summary.{csv,tex}          # per-selector IG summary
 ```
 
-The two `.tex` files use booktabs and are ready to paste into
-`paper_snippets.tex` next to the existing PRIME tables.
+### 4B. Contracts appendix (no GPU, no dependencies, run anytime)
+
+```bash
+conda activate copilot
+python -m evaluation.reranker.analyze_ig_contracts
+```
+
+Produces (under `evaluation/results/reranker/`):
+
+```
+ig_analysis_contracts/
+├── per_question_contracts.csv
+├── summary_contracts.json
+├── appendix_ig_contracts.csv
+└── appendix_ig_contracts.tex     # appendix sensitivity table
+```
+
+You can run 4B **right now while the GPU jobs are still going** — it
+reads contracts only, never touches the sweep outputs.
+
+### What to expect from each analysis
+
+**Step 4A (scenarios) console output:**
+```
+[analyze_ig] N dialogs across 3 cells
+  selector=chosen      n= NNN  mean_IG=X.XXX bits  median=...  frac≥0.5=0.YY
+  selector=info_gain   n= NNN  mean_IG=X.XXX bits  ...
+  selector=no_rerank   n= NNN  mean_IG=X.XXX bits  ...
+  selector=random      n= NNN  mean_IG=X.XXX bits  ...
+[plot_ig] wrote .../ig_distribution.pdf / .png
+[plot_ig] wrote .../ig_by_kind.pdf / .png
+[tables] wrote .../table_reranker_ablation.csv
+[tables] wrote .../table_reranker_ablation.tex
+[tables] wrote .../table_ig_summary.csv
+[tables] wrote .../table_ig_summary.tex
+```
+
+Healthy ranges (based on the smoke result of mean_IG=0.873):
+
+| Metric | Expected | What it tells you |
+|---|---|---|
+| `selector=chosen mean_IG` | **≥ 0.5 bits** | Validation gate from the brief is met |
+| `selector=info_gain mean_IG` | ≥ chosen | The reranker's pick is at least as good as what the policy chose |
+| `selector=no_rerank mean_IG` | likely ≥ 0.5 | The WoZ policy already asks informative questions |
+| `selector=random mean_IG` | < chosen | Random selection is worse than what was picked — confirms reranker has lift |
+| `frac_ge_0p5` for chosen | ≥ 0.6 | Majority of questions clear the gate |
+| Number of dialog cells | 3 | All 3 sbatch cells contributed |
+
+**Step 4B (contracts) console output:**
+```
+[contracts] woz_valid: scored 107 INTERACT rows from llm_contract_valid.jsonl
+[contracts] oracle_valid_ycb: scored 486 INTERACT rows ...
+[contracts] oracle_valid_stacking: scored 806 INTERACT rows ...
+[contracts] oracle_valid_pouring: scored 1120 INTERACT rows ...
+  WoZ valid           n= 107  mean_IG=0.428  frac≥0.5=0.364
+  Oracle YCB          n= 486  mean_IG=0.416  frac≥0.5=0.298
+  Oracle Stack        n= 806  mean_IG=0.240  frac≥0.5=0.212
+  Oracle Pour         n=1120  mean_IG=0.073  frac≥0.5=0.070
+  POOLED              n=2519  mean_IG=0.207  frac≥0.5=0.172
+```
+
+These numbers are **expected to be lower** than the scenario numbers
+because oracle contracts contain many `intent_gate` / `mode_select`
+INTERACTs that score IG=0 by construction. The contracts table is a
+*lower bound*; the scenario table is the headline.
+
+The two `.tex` files from 4A and the one from 4B drop straight into
+`paper_snippets.tex` — no manual editing.
 
 ---
 
@@ -219,18 +301,19 @@ The two `.tex` files use booktabs and are ready to paste into
 
 ```
 evaluation/results/reranker/
-├── ablation/
+├── ablation/                       # produced by §3 GPU jobs
 │   ├── oracle_woz_lora__info_gain/
-│   │   ├── rollouts.csv          (~9,600 rows per cell)
+│   │   ├── rollouts.csv            (~9,600 rows per cell)
 │   │   ├── by_condition.csv
-│   │   ├── dialogs.jsonl         (per-INTERACT IG records)
+│   │   ├── dialogs.jsonl           (per-INTERACT IG records)
 │   │   └── sweep_meta.json
 │   ├── oracle_woz_lora__none/
 │   │   └── (same files)
 │   └── oracle_lora__info_gain/
 │       └── (same files)
-├── ig_analysis/                   # produced by job_ig_analysis.sbatch
-└── tables/                        # likewise
+├── ig_analysis/                    # produced by §4A (job_ig_analysis.sbatch)
+├── ig_analysis_contracts/          # produced by §4B (analyze_ig_contracts)
+└── tables/                         # produced by §4A
 ```
 
 Per-job slurm logs land in `logs/slurm/rerank_sweep_<cell>__<job_id>.log`.
@@ -320,10 +403,11 @@ MODEL_KEY=oracle_woz_lora MODEL_PATH=models/qwen2_5_3b_oracle_woz_lora \
 MODEL_KEY=oracle_lora     MODEL_PATH=models/qwen2_5_3b_oracle_lora \
     RERANK_MODE=info_gain sbatch unity_config/job_reranker_ablation.sbatch
 
-# 4. AFTER all three complete: build tables + figures
+# 4A. AFTER all three GPU jobs complete: build scenario tables + figures
+#     (verify first: `squeue -u $USER` should be empty)
 sbatch unity_config/job_ig_analysis.sbatch
 
-# 4b. (anywhere, anytime) Contract IG appendix table — CPU only, ~30 s
+# 4B. (anywhere, anytime — even while GPU jobs are running) — contracts appendix
 python -m evaluation.reranker.analyze_ig_contracts
 
 # 5. PULL results back to dev
