@@ -11,8 +11,8 @@ already exist (matched on model_safe, env, noise_level). Heuristic baselines
 (Oracle, H1) are evaluated once per env and reused across models in the plot.
 
 Outputs:
-    evaluation/results/robustness/synthetic/sweep.csv
-    evaluation/results/robustness/synthetic/sweep_aggregated.json
+    evaluation/results/robustness/perception_noise/sweep.csv
+    evaluation/results/robustness/perception_noise/sweep_aggregated.json
 """
 
 from __future__ import annotations
@@ -462,7 +462,7 @@ def plot_curves(out_dir: Path) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--out_dir", default="evaluation/results/robustness/synthetic")
+    ap.add_argument("--out_dir", default="evaluation/results/robustness/perception_noise")
     ap.add_argument("--models", default=None, help="Comma-separated safe_names; default = all trained")
     ap.add_argument("--envs", default=None, help="Comma-separated env keys (ycb,stacking,pouring)")
     ap.add_argument("--perturbation", default=DEFAULT_PERTURBATION, choices=list(PERTURBATION_REGISTRY))

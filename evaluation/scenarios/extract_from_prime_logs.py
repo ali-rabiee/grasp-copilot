@@ -20,7 +20,7 @@ rows present in the CSV are upgraded to `hand_label`.
 CLI:
     python -m evaluation.scenarios.extract_from_prime_logs \\
         --logs_root PRIME_LOGS \\
-        --out_dir evaluation/results/robustness/real_data_scenarios \\
+        --out_dir evaluation/results/robustness/user_input_noise/scenarios \\
         [--hand_labels evaluation/scenarios/manual_targets.csv]
 """
 
@@ -386,7 +386,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     ap.add_argument("--logs_root", default="PRIME_LOGS", help="Root of the PRIME_LOGS directory")
     ap.add_argument(
         "--out_dir",
-        default="evaluation/results/robustness/real_data_scenarios",
+        default="evaluation/results/robustness/user_input_noise/scenarios",
         help="Output directory for scenarios.jsonl + summary",
     )
     ap.add_argument(

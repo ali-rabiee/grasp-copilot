@@ -1,0 +1,16 @@
+# Per-rollout records can get large (~1 MB per 10k rollouts) and are
+# fully recomputable from the sweep runner — ignore them to keep the
+# repo small.
+user_input_noise/sweeps/*/rollouts.csv
+user_input_noise/sweeps/*/*/rollouts.csv
+
+# Slurm / stdout logs from sweep runs — not interesting once a run finishes.
+user_input_noise/sweeps/**/logs/
+user_input_noise/sweeps/**/*.log
+
+# Keep:
+#   - scenarios/*.jsonl              (the corpus — small, important)
+#   - sweeps/*/by_condition.csv      (paper-ready aggregations)
+#   - sweeps/*/sweep_meta.json       (run config records)
+#   - perception_noise/sweep*.csv    (existing tiny CSVs)
+#   - perception_noise/*.png/.pdf    (existing figures)

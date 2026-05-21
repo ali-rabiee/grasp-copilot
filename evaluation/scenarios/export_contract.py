@@ -6,18 +6,18 @@ already reads.
 Usage:
     # Export every scenario, with empty `output` (inference-only):
     python -m evaluation.scenarios.export_contract \\
-        --scenarios evaluation/results/robustness/real_data_scenarios/scenarios.jsonl \\
-        --out evaluation/results/robustness/real_data_scenarios/scenarios_contract.jsonl
+        --scenarios evaluation/results/robustness/user_input_noise/scenarios/scenarios.jsonl \\
+        --out evaluation/results/robustness/user_input_noise/scenarios/scenarios_contract.jsonl
 
     # Export only labeled scenarios + fill `output` with the heuristic oracle:
     python -m evaluation.scenarios.export_contract \\
-        --scenarios evaluation/results/robustness/real_data_scenarios/scenarios.labeled.jsonl \\
-        --out evaluation/results/robustness/real_data_scenarios/scenarios_contract.jsonl \\
+        --scenarios evaluation/results/robustness/user_input_noise/scenarios/scenarios.labeled.jsonl \\
+        --out evaluation/results/robustness/user_input_noise/scenarios/scenarios_contract.jsonl \\
         --skip_unlabeled --with_oracle_output
 
     # Then it's directly consumable by:
     python -m evaluation.benchmarks.offline_exec_benchmark \\
-        --contract_jsonl evaluation/results/robustness/real_data_scenarios/scenarios_contract.jsonl \\
+        --contract_jsonl evaluation/results/robustness/user_input_noise/scenarios/scenarios_contract.jsonl \\
         --models "Qwen7B-FT=models/qwen2_5_7b_instruct_ft"
 """
 

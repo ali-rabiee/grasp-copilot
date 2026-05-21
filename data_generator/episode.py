@@ -185,6 +185,140 @@ class Episode:
         else:
             raise ValueError(f"Unknown tool: {tool}")
 
+    # ── scenario-seeded + target-agnostic stepping (noise-robustness rollouts) ──
+
+    @classmethod
+    def from_scenario(cls, scenario, rng) -> "Episode":
+        """Construct an Episode from a Scenario record without random sampling.
+
+        Used by the noise-robustness rollout driver (`evaluation/rollouts/`).
+        Skips `__init__` (which is random-sampling-based and target-aware) and
+        instead builds an Episode whose state mirrors the scenario's initial
+        conditions exactly:
+
+          * objects, gripper pose, target object come from the scenario
+          * gripper_hist is seeded with 6 copies of the initial pose (signals
+            "no motion yet" — matches the convention in `evaluation/scenarios/
+            adapters.scenario_to_input_dict`)
+          * gripper_closed starts False
+          * episode_id is the scenario_id, T is left as a soft horizon for the
+            caller to override
+
+        Accepts either a dataclass `Scenario` object or a plain dict with the
+        same field names.
+        """
+        ep = cls.__new__(cls)
+        ep.rng = rng
+
+        def _attr(obj, name, default=None):
+            if hasattr(obj, name):
+                return getattr(obj, name)
+            if isinstance(obj, dict):
+                return obj.get(name, default)
+            return default
+
+        ep.episode_id = _attr(scenario, "scenario_id", 0)
+        ep.T = 200   # soft horizon for the rollout caller to cap
+
+        ep.objects = []
+        for o in _attr(scenario, "objects", []) or []:
+            ep.objects.append(
+                Obj(
+                    id=_attr(o, "id"),
+                    label=_attr(o, "label"),
+                    cell=_attr(o, "cell"),
+                    yaw=_attr(o, "yaw"),
+                    is_held=bool(_attr(o, "is_held", False)),
+                )
+            )
+
+        target = _attr(scenario, "target_obj_id", None)
+        ep.intended_obj_id = target if target is not None else (ep.objects[0].id if ep.objects else "")
+
+        g = _attr(scenario, "gripper_init")
+        init_pose = Pose(
+            cell=_attr(g, "cell"),
+            yaw=_attr(g, "yaw"),
+            z=_attr(g, "z", "HIGH"),
+        )
+        ep.gripper_hist = [init_pose for _ in range(6)]
+
+        ep.gripper_closed = False
+        return ep
+
+    def step_user_command(self, axis: str, direction: int, mode: str) -> None:
+        """Apply one target-agnostic user velocity tick to the gripper state.
+
+        Mirrors the per-tick GUI commands recorded in PRIME_LOGS gui_events:
+        the user pushes a joystick / head-array key, and the gripper moves
+        one discrete step. Boundary moves are clamped (real teleop just
+        doesn't move past the workspace edge).
+
+        Conventions:
+          mode="translation":
+              axis="x" → column (cells …1, …2, …3); +1 increases column
+              axis="y" → row (A…, B…, C…);          +1 increases row
+              axis="z" → height bin;                 +1 goes HIGH-ward
+          mode="rotation":
+              axis is ignored (we have a single 8-bin yaw ring);
+              +1 walks one yaw bin clockwise per `yaw.move_toward` semantics
+          mode="gripper":
+              toggles `gripper_closed`; direction is ignored.
+        """
+        if direction not in (-1, 1) and mode != "gripper":
+            raise ValueError(f"direction must be -1 or +1 (got {direction!r})")
+
+        cur = self.gripper_hist[-1]
+        new_cell, new_yaw, new_z = cur.cell, cur.yaw, cur.z
+
+        if mode == "translation":
+            if axis == "x":
+                new_cell = _step_cell(cur.cell, drow=0, dcol=direction)
+            elif axis == "y":
+                new_cell = _step_cell(cur.cell, drow=direction, dcol=0)
+            elif axis == "z":
+                new_z = _step_z(cur.z, direction)
+            else:
+                raise ValueError(f"unknown translation axis {axis!r}")
+        elif mode == "rotation":
+            new_yaw = _step_yaw(cur.yaw, direction)
+        elif mode == "gripper":
+            self.gripper_closed = not getattr(self, "gripper_closed", False)
+            # gripper toggle doesn't change pose — no history push.
+            return
+        else:
+            raise ValueError(f"unknown mode {mode!r}")
+
+        self._push_gripper(Pose(cell=new_cell, yaw=new_yaw, z=new_z))
+
+
+# ── helpers for step_user_command (kept module-private) ────────────────────
+
+
+def _step_cell(cell: str, drow: int, dcol: int) -> str:
+    """Move one grid step; clamp at boundaries."""
+    c = grid.Cell.from_label(cell)
+    nr = max(0, min(2, c.r + drow))
+    nc = max(0, min(2, c.c + dcol))
+    return grid.Cell(nr, nc).to_label()
+
+
+def _step_z(z: str, direction: int) -> str:
+    """+1 → toward HIGH; -1 → toward LOW. Clamp at endpoints."""
+    idx = Z_BINS.index(z)
+    if direction > 0:
+        idx = max(0, idx - 1)   # HIGH is at index 0, so + goes toward 0
+    else:
+        idx = min(len(Z_BINS) - 1, idx + 1)
+    return Z_BINS[idx]
+
+
+def _step_yaw(yaw: str, direction: int) -> str:
+    """One bin step on the 8-bin yaw ring (no clamping; wraps around)."""
+    bins = yawlib.YAW_BINS
+    idx = bins.index(yaw)
+    return bins[(idx + (1 if direction > 0 else -1)) % len(bins)]
+
 
 def write_jsonl(path: str, records: Sequence[Dict]) -> None:
     with open(path, "w", encoding="utf-8") as f:

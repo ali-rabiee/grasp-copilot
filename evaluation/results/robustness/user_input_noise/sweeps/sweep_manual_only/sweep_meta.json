@@ -1,0 +1,30 @@
+{
+  "config": {
+    "scenarios": "evaluation/results/robustness/real_data_scenarios/scenarios.labeled.jsonl",
+    "out_dir": "evaluation/results/robustness/sweep_manual_only",
+    "modes": [
+      "manual"
+    ],
+    "backend": "manual",
+    "model_path": null,
+    "conditions": [
+      "clean",
+      "dir_low",
+      "dir_high",
+      "sel_low",
+      "sel_high",
+      "compound_mid"
+    ],
+    "n_seeds": 5,
+    "max_ticks": 2000,
+    "workers": 4,
+    "max_scenarios": 0,
+    "no_priors": false,
+    "progress_every": 200
+  },
+  "n_scenarios": 160,
+  "total_rollouts": 4800,
+  "elapsed_sec": 2.6,
+  "rollouts_csv": "evaluation/results/robustness/sweep_manual_only/rollouts.csv",
+  "by_condition_csv": "evaluation/results/robustness/sweep_manual_only/by_condition.csv"
+}

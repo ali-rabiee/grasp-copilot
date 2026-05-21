@@ -5,14 +5,14 @@ Two CLI verbs:
 
     # Generate a pre-populated CSV stub from the current scenarios.jsonl.
     python -m evaluation.scenarios.label_targets stub \\
-        --scenarios evaluation/results/robustness/real_data_scenarios/scenarios.jsonl \\
+        --scenarios evaluation/results/robustness/user_input_noise/scenarios/scenarios.jsonl \\
         --out evaluation/scenarios/manual_targets.csv
 
     # Merge a human-edited CSV back into scenarios.jsonl.
     python -m evaluation.scenarios.label_targets merge \\
-        --scenarios evaluation/results/robustness/real_data_scenarios/scenarios.jsonl \\
+        --scenarios evaluation/results/robustness/user_input_noise/scenarios/scenarios.jsonl \\
         --csv evaluation/scenarios/manual_targets.csv \\
-        --out evaluation/results/robustness/real_data_scenarios/scenarios.labeled.jsonl
+        --out evaluation/results/robustness/user_input_noise/scenarios/scenarios.labeled.jsonl
 
 The CSV is the source of truth for `target_obj_id` (and, optionally, for the
 whole object layout when the borrowed template is wrong). Provenance gets

@@ -254,7 +254,7 @@ def main(argv: Optional[List[str]] = None) -> None:
     ap.add_argument("--max_examples", type=int, default=0, help="0 = all")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--use_4bit", action="store_true")
-    ap.add_argument("--out_dir", default="evaluation/results/robustness/synthetic")
+    ap.add_argument("--out_dir", default="evaluation/results/robustness/perception_noise")
     ap.add_argument("--progress_every", type=int, default=50)
     args = ap.parse_args(argv)
 

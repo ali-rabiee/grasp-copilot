@@ -219,7 +219,7 @@ python -m evaluation.benchmarks.run_robustness_sweep --baselines_only --max_exam
 
 # (b) Full LLM sweep — needs the GPU, so run after run_paper_benchmark is done:
 nohup python -m evaluation.benchmarks.run_robustness_sweep --max_examples 300 > \
-    evaluation/results/robustness/synthetic/logs/sweep.log 2>&1 &
+    evaluation/results/robustness/perception_noise/logs/sweep.log 2>&1 &
 disown
 ```
 
