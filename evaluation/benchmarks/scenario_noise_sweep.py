@@ -343,8 +343,29 @@ def _build_hf_backend(model_path: Optional[str]):
         "If the tool is INTERACT, you must output at most 5 choices total."
     )
 
+    # Cap past_dialogs in the LLM prompt — mirrors training-time truncation
+    # in llm/data.py (max_past_dialogs=12) and, critically, stops the prompt
+    # from growing past the model's 32k context window when a dialog-loop
+    # accumulates many turns. Without this, runaway loops cause prompts >
+    # 32k and the model decodes nonsense for the full max_new_tokens budget,
+    # turning each LLM call from <1s into minutes.
+    MAX_PAST_DIALOGS = 12
+
+    def _truncate_for_prompt(d: Dict[str, Any]) -> Dict[str, Any]:
+        mem = d.get("memory")
+        if not isinstance(mem, dict):
+            return d
+        dialogs = mem.get("past_dialogs")
+        if not isinstance(dialogs, list) or len(dialogs) <= MAX_PAST_DIALOGS:
+            return d
+        out = dict(d)
+        out["memory"] = dict(mem)
+        out["memory"]["past_dialogs"] = list(dialogs)[-MAX_PAST_DIALOGS:]
+        return out
+
     def backend(input_dict: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        prompt = f"{instruction}\n\nInput:\n{json.dumps(input_dict, ensure_ascii=False)}"
+        truncated = _truncate_for_prompt(input_dict)
+        prompt = f"{instruction}\n\nInput:\n{json.dumps(truncated, ensure_ascii=False)}"
         try:
             raw = generate_once(model, tok, build_messages(prompt), cfg)
             pred_obj, _ = _parse_model_json(raw)

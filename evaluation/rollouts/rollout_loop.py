@@ -208,13 +208,25 @@ def run_rollout(
         else:
             tool_call = None
 
+        if not isinstance(tool_call, dict):
+            tool_call = None
         if tool_call is not None:
             tool = tool_call.get("tool")
             if tool == "INTERACT":
-                args = tool_call.get("args", {}) or {}
-                choices = list(args.get("choices") or [])
-                prompt_text = args.get("text", "")
-                kind = args.get("kind", "QUESTION")
+                # Defensive parsing: malformed model outputs may give scalars
+                # where the contract expects a list. Drop anything we can't
+                # coerce; treat as no-op tool call.
+                raw_args = tool_call.get("args")
+                args = raw_args if isinstance(raw_args, dict) else {}
+                raw_choices = args.get("choices")
+                if isinstance(raw_choices, (list, tuple)):
+                    choices = [str(c) for c in raw_choices]
+                else:
+                    choices = []
+                raw_text = args.get("text", "")
+                prompt_text = raw_text if isinstance(raw_text, str) else str(raw_text)
+                raw_kind = args.get("kind", "QUESTION")
+                kind = raw_kind if isinstance(raw_kind, str) else "QUESTION"
 
                 # Scripted user answers; selection noise may flip the answer.
                 reply_idx, target_in_options = user.answer_prompt(tool_call, sim)

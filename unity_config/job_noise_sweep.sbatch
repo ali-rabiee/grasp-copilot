@@ -45,7 +45,7 @@
 #                                                                (required when BACKEND=heuristic)
 #   MODES          space-separated subset of "manual prime"      (default: "manual prime")
 #   N_SEEDS        rollouts per (scenario, mode, condition)      (default: 5)
-#   MAX_TICKS      hard cap on rollout length                    (default: 2000)
+#   MAX_TICKS      hard cap on rollout length                    (default: 500)
 #   CONDITIONS     space-separated noise conditions              (default: all 6)
 #   WORKERS        parallel processes for CPU backends           (default: 1; ignored for hf_ft)
 #   CONDA_ENV      conda env name                                (default: copilot)
@@ -63,7 +63,7 @@ MODEL_PATH="${MODEL_PATH:-}"
 HEURISTIC="${HEURISTIC:-}"
 MODES="${MODES:-manual prime}"
 N_SEEDS="${N_SEEDS:-5}"
-MAX_TICKS="${MAX_TICKS:-2000}"
+MAX_TICKS="${MAX_TICKS:-500}"
 CONDITIONS="${CONDITIONS:-clean dir_low dir_high sel_low sel_high compound_mid}"
 WORKERS="${WORKERS:-1}"
 
