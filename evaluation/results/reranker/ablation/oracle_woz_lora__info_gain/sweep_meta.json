@@ -1,0 +1,45 @@
+{
+  "model_key": "oracle_woz_lora",
+  "model_path": "models/qwen2_5_3b_oracle_woz_lora",
+  "config": {
+    "scenarios": "evaluation/results/robustness/user_input_noise/scenarios/scenarios.labeled.jsonl",
+    "out_dir": "evaluation/results/reranker/ablation/oracle_woz_lora__info_gain",
+    "modes": [
+      "prime"
+    ],
+    "backend": "hf_ft",
+    "model_paths": [
+      "oracle_woz_lora=models/qwen2_5_3b_oracle_woz_lora"
+    ],
+    "heuristic": null,
+    "conditions": [
+      "clean"
+    ],
+    "n_seeds": 1,
+    "max_ticks": 2000,
+    "max_scenarios": 5,
+    "no_priors": false,
+    "progress_every": 100,
+    "rerank_mode": "info_gain",
+    "k_candidates": 5,
+    "rerank_temperature": 0.7,
+    "rerank_top_p": 0.95,
+    "prior": "uniform",
+    "rerank_seed": 0,
+    "dialog_log": "evaluation/results/reranker/ablation/oracle_woz_lora__info_gain/dialogs.jsonl"
+  },
+  "rerank": {
+    "mode": "info_gain",
+    "k": 5,
+    "temperature": 0.7,
+    "top_p": 0.95,
+    "prior": "uniform",
+    "seed": 0
+  },
+  "n_scenarios": 5,
+  "total_rollouts": 5,
+  "elapsed_sec": 1530.0,
+  "rollouts_csv": "evaluation/results/reranker/ablation/oracle_woz_lora__info_gain/rollouts.csv",
+  "by_condition_csv": "evaluation/results/reranker/ablation/oracle_woz_lora__info_gain/by_condition.csv",
+  "dialog_log": "evaluation/results/reranker/ablation/oracle_woz_lora__info_gain/dialogs.jsonl"
+}

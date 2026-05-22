@@ -1,0 +1,33 @@
+{
+  "model_key": "-",
+  "model_path": null,
+  "config": {
+    "scenarios": "evaluation/results/robustness/user_input_noise/scenarios/scenarios.labeled.jsonl",
+    "out_dir": "evaluation/results/robustness/user_input_noise/sweeps/manual",
+    "modes": [
+      "manual"
+    ],
+    "backend": "manual",
+    "model_paths": [],
+    "heuristic": null,
+    "conditions": [
+      "clean",
+      "dir_low",
+      "dir_high",
+      "sel_low",
+      "sel_high",
+      "compound_mid"
+    ],
+    "n_seeds": 5,
+    "max_ticks": 2000,
+    "workers": 1,
+    "max_scenarios": 0,
+    "no_priors": false,
+    "progress_every": 100
+  },
+  "n_scenarios": 160,
+  "total_rollouts": 4800,
+  "elapsed_sec": 13.2,
+  "rollouts_csv": "evaluation/results/robustness/user_input_noise/sweeps/manual/rollouts.csv",
+  "by_condition_csv": "evaluation/results/robustness/user_input_noise/sweeps/manual/by_condition.csv"
+}

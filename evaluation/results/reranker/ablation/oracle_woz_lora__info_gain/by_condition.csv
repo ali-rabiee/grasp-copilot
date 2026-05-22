@@ -1,0 +1,2 @@
+mode,condition,difficulty,n_rollouts,success_rate,mean_completion_time_sec,std_completion_time_sec,mean_total_inputs,std_total_inputs,mean_interactions,mean_dropped_inputs,mean_direction_reversals,mean_motion_tool_calls,target_filtered_out_rate,max_ticks_rate
+prime,clean,easy,5,0.8,7.985,2.828,14,1.15,11.4,0,0,393.2,1,0.2
