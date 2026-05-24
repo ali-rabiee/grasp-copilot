@@ -70,7 +70,8 @@ def make_reranked_backend(
             if dialog_log is not None:
                 snap = PruneSnapshot.from_memory(input_dict.get("memory") or {})
                 intent = infer_pruning_intent(raw, snap.candidates, input_dict.get("objects") or [])
-                n_ch = len((raw.get("args") or {}).get("choices") or [])
+                _raw_ch = (raw.get("args") or {}).get("choices")
+                n_ch = len(_raw_ch) if isinstance(_raw_ch, (list, tuple)) else 0
                 ig, h_b, h_a, per_r = information_gain_bits(
                     intent, n_ch, snap,
                     prior=config.prior,
@@ -113,7 +114,8 @@ def make_reranked_backend(
         per_reply_all = []
         for c in cands:
             intent = infer_pruning_intent(c.tool_call, snap.candidates, objects)
-            n_ch = len((c.tool_call.get("args") or {}).get("choices") or [])
+            _raw_ch = (c.tool_call.get("args") or {}).get("choices")
+            n_ch = len(_raw_ch) if isinstance(_raw_ch, (list, tuple)) else 0
             ig, h_b, h_a, per_r = information_gain_bits(
                 intent, n_ch, snap,
                 prior=config.prior,

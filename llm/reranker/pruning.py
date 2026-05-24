@@ -156,7 +156,8 @@ def infer_pruning_intent(
         return PruneIntent(kind="noop")
     args = tool_call.get("args") or {}
     text = str(args.get("text") or "")
-    choices = list(args.get("choices") or [])
+    _raw_choices = args.get("choices")
+    choices = list(_raw_choices) if isinstance(_raw_choices, (list, tuple)) else []
     if not choices:
         return PruneIntent(kind="noop")
 
