@@ -1,0 +1,164 @@
+{
+  "model": {
+    "name": "H2 Always-Ask",
+    "kind": "heuristic_always_ask",
+    "model_path": null
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 0.007847785949707031,
+    "examples_per_sec": 19113.67116296026
+  },
+  "n": 150,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 1.0,
+  "json_errors": 0,
+  "schema_errors": 0,
+  "tool_accuracy": 0.7133333333333334,
+  "motion_obj_accuracy": 0.0,
+  "motion_tool_accuracy": 0.0,
+  "interact_kind_accuracy": 0.719626168224299,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.3,
+  "motion_n": 22,
+  "interact_n": 107,
+  "tool_confusion": {
+    "INTERACT": {
+      "INTERACT": 107
+    },
+    "POUR": {
+      "INTERACT": 5
+    },
+    "STACK": {
+      "INTERACT": 6
+    },
+    "APPROACH": {
+      "INTERACT": 17
+    },
+    "GRAB": {
+      "INTERACT": 10
+    },
+    "ALIGN_YAW": {
+      "INTERACT": 5
+    }
+  },
+  "by_context": {
+    "candidate_choice": {
+      "n": 36,
+      "json_valid": 36,
+      "schema_valid": 36,
+      "tool_correct": 36,
+      "interact_n": 36,
+      "interact_kind_correct": 29,
+      "interact_choices_valid": 36,
+      "strict_exact": 25
+    },
+    "confirm": {
+      "n": 24,
+      "json_valid": 24,
+      "schema_valid": 24,
+      "tool_correct": 7,
+      "interact_n": 7,
+      "interact_choices_valid": 7,
+      "tool_wrong": 17,
+      "motion_n": 17,
+      "interact_kind_correct": 1
+    },
+    "confirm_amount": {
+      "n": 9,
+      "json_valid": 9,
+      "schema_valid": 9,
+      "tool_wrong": 5,
+      "tool_correct": 4,
+      "interact_n": 4,
+      "interact_kind_correct": 4,
+      "interact_choices_valid": 4
+    },
+    "no_context": {
+      "n": 30,
+      "json_valid": 30,
+      "schema_valid": 30,
+      "tool_correct": 30,
+      "interact_n": 30,
+      "interact_kind_correct": 27,
+      "interact_choices_valid": 30,
+      "strict_exact": 10
+    },
+    "confirm_stack": {
+      "n": 12,
+      "json_valid": 12,
+      "schema_valid": 12,
+      "tool_correct": 6,
+      "interact_n": 6,
+      "interact_choices_valid": 6,
+      "tool_wrong": 6,
+      "interact_kind_correct": 3
+    },
+    "pitcher_acquisition": {
+      "n": 19,
+      "json_valid": 19,
+      "schema_valid": 19,
+      "tool_wrong": 10,
+      "tool_correct": 9,
+      "interact_n": 9,
+      "interact_kind_correct": 8,
+      "interact_choices_valid": 9,
+      "strict_exact": 8
+    },
+    "anything_else": {
+      "n": 15,
+      "json_valid": 15,
+      "schema_valid": 15,
+      "tool_correct": 15,
+      "interact_n": 15,
+      "interact_choices_valid": 15,
+      "interact_kind_correct": 5,
+      "strict_exact": 2
+    },
+    "help": {
+      "n": 5,
+      "json_valid": 5,
+      "schema_valid": 5,
+      "tool_wrong": 5,
+      "motion_n": 5
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 150,
+      "json_valid": 150,
+      "schema_valid": 150,
+      "tool_correct": 107,
+      "strict_exact": 45,
+      "tool_wrong": 43,
+      "motion_n": 22
+    }
+  },
+  "by_num_candidates": {
+    "cands_1": {
+      "n": 103,
+      "tool_correct": 60,
+      "tool_wrong": 43
+    },
+    "cands_2": {
+      "n": 22,
+      "tool_correct": 22
+    },
+    "cands_0": {
+      "n": 4,
+      "tool_correct": 4
+    },
+    "cands_3": {
+      "n": 21,
+      "tool_correct": 21
+    }
+  },
+  "mistakes_path": "/home/ali/github/ali-rabiee/grasp-copilot/evaluation/eval_outputs/paper_benchmark/mistakes/h2_always_ask__woz_valid.jsonl",
+  "mistakes_n": 43,
+  "_model_safe": "h2_always_ask",
+  "_eval_set": "woz_valid",
+  "_env": "mixed",
+  "_flavor": "woz",
+  "_group": "baseline",
+  "_display": "H2 Always-Ask"
+}

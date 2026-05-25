@@ -1,13 +1,6 @@
 {
   "models": [
     {
-      "safe_name": "oracle_lora",
-      "display": "Qwen2.5-3B-Oracle-LoRA",
-      "kind": "llm",
-      "model_path": "models/qwen2_5_3b_oracle_lora",
-      "group": "trained"
-    },
-    {
       "safe_name": "woz_lora",
       "display": "Qwen2.5-3B-WoZ-LoRA",
       "kind": "llm",
@@ -20,62 +13,6 @@
       "kind": "llm",
       "model_path": "models/qwen2_5_3b_oracle_woz_lora",
       "group": "trained"
-    },
-    {
-      "safe_name": "oracle_woz_r32",
-      "display": "Qwen2.5-3B-Oracle→WoZ-LoRA-r32",
-      "kind": "llm",
-      "model_path": "models/qwen2_5_3b_oracle_woz_lora_r32",
-      "group": "ablation"
-    },
-    {
-      "safe_name": "oracle_ycb",
-      "display": "Qwen2.5-3B-Oracle-LoRA (YCB only)",
-      "kind": "llm",
-      "model_path": "models/qwen2_5_3b_oracle_lora_ycb",
-      "group": "ablation"
-    },
-    {
-      "safe_name": "oracle_stacking",
-      "display": "Qwen2.5-3B-Oracle-LoRA (Stack only)",
-      "kind": "llm",
-      "model_path": "models/qwen2_5_3b_oracle_lora_stacking",
-      "group": "ablation"
-    },
-    {
-      "safe_name": "oracle_pouring",
-      "display": "Qwen2.5-3B-Oracle-LoRA (Pour only)",
-      "kind": "llm",
-      "model_path": "models/qwen2_5_3b_oracle_lora_pouring",
-      "group": "ablation"
-    },
-    {
-      "safe_name": "h1_ask_if_amb",
-      "display": "H1 Ask-if-Ambiguous",
-      "kind": "heuristic_ask_if_ambiguous",
-      "model_path": null,
-      "group": "baseline"
-    },
-    {
-      "safe_name": "h2_always_ask",
-      "display": "H2 Always-Ask",
-      "kind": "heuristic_always_ask",
-      "model_path": null,
-      "group": "baseline"
-    },
-    {
-      "safe_name": "sa1_pred_assist",
-      "display": "SA1 Predict-then-Assist",
-      "kind": "heuristic_predict_then_assist",
-      "model_path": null,
-      "group": "baseline"
-    },
-    {
-      "safe_name": "sa2_bayes_intent",
-      "display": "SA2 Bayesian Intent",
-      "kind": "heuristic_bayesian_intent",
-      "model_path": null,
-      "group": "baseline"
     }
   ],
   "eval_sets": [
@@ -129,5 +66,5 @@
       "display": "Ambiguous Pour"
     }
   ],
-  "n_cells": 77
+  "n_cells": 14
 }

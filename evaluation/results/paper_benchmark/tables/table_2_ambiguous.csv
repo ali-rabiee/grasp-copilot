@@ -1,7 +1,7 @@
 Model,Clean_Avg3,Ambiguous_Avg3,Delta_pp
 Qwen2.5-3B-Oracle-LoRA,92.8,99.1,+6.3
-Qwen2.5-3B-WoZ-LoRA,81.0,100.0,+19.0
-Qwen2.5-3B-Oracle→WoZ-LoRA,93.4,100.0,+6.6
+Qwen2.5-3B-WoZ-LoRA,79.2,96.9,+17.7
+Qwen2.5-3B-Oracle→WoZ-LoRA,93.9,100.0,+6.1
 H1 Ask-if-Ambiguous,58.4,50.0,-8.4
 H2 Always-Ask,87.3,100.0,+12.7
 SA1 Predict-then-Assist,27.4,13.3,-14.1

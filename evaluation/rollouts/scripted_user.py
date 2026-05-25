@@ -282,7 +282,10 @@ class ScriptedUser:
         running under selection noise.
         """
         args = interact_call.get("args", {}) or {}
-        choices: List[str] = list(args.get("choices") or [])
+        _raw_choices = args.get("choices")
+        choices: List[str] = (
+            [str(c) for c in _raw_choices] if isinstance(_raw_choices, (list, tuple)) else []
+        )
         if not choices:
             return (0, False)
 

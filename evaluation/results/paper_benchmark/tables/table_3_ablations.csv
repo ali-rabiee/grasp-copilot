@@ -1,10 +1,10 @@
 Variant,YCB,Stack,Pour,Avg3,Ambiguous_Avg3
 # Warm-start (Phase-2 base),,,,,
-Qwen2.5-3B-WoZ-LoRA,89.6,76.8,76.6,81.0,100.0
+Qwen2.5-3B-WoZ-LoRA,90.0,77.2,70.3,79.2,96.9
 Qwen2.5-3B-Oracle-LoRA,96.7,91.1,90.6,92.8,99.1
-Qwen2.5-3B-Oracle→WoZ-LoRA,95.2,94.6,90.5,93.4,100.0
+Qwen2.5-3B-Oracle→WoZ-LoRA,93.1,95.6,93.1,93.9,100.0
 # LoRA rank,,,,,
-Qwen2.5-3B-Oracle→WoZ-LoRA,95.2,94.6,90.5,93.4,100.0
+Qwen2.5-3B-Oracle→WoZ-LoRA,93.1,95.6,93.1,93.9,100.0
 Qwen2.5-3B-Oracle→WoZ-LoRA-r32,94.8,95.1,90.2,93.4,100.0
 # Per-env vs. unified,,,,,
 Qwen2.5-3B-Oracle-LoRA,96.7,91.1,90.6,92.8,99.1

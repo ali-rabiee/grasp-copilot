@@ -1,0 +1,170 @@
+{
+  "model": {
+    "name": "Qwen2.5-3B-Oracle→WoZ-LoRA",
+    "kind": "llm",
+    "model_path": "models/qwen2_5_3b_oracle_woz_lora"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 83.04163837432861,
+    "examples_per_sec": 1.8063227428611381
+  },
+  "n": 150,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 0.98,
+  "json_errors": 0,
+  "schema_errors": 3,
+  "tool_accuracy": 1.0,
+  "motion_obj_accuracy": 1.0,
+  "motion_tool_accuracy": 1.0,
+  "interact_kind_accuracy": 0.7757009345794392,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.7666666666666667,
+  "motion_n": 22,
+  "interact_n": 107,
+  "tool_confusion": {
+    "INTERACT": {
+      "INTERACT": 107
+    },
+    "POUR": {
+      "INVALID_SCHEMA": 3,
+      "POUR": 5
+    },
+    "STACK": {
+      "STACK": 6
+    },
+    "APPROACH": {
+      "APPROACH": 17
+    },
+    "GRAB": {
+      "GRAB": 10
+    },
+    "ALIGN_YAW": {
+      "ALIGN_YAW": 5
+    }
+  },
+  "by_context": {
+    "candidate_choice": {
+      "n": 36,
+      "json_valid": 36,
+      "schema_valid": 36,
+      "tool_correct": 36,
+      "interact_n": 36,
+      "interact_kind_correct": 36,
+      "interact_choices_valid": 36,
+      "strict_exact": 36
+    },
+    "confirm": {
+      "n": 24,
+      "json_valid": 24,
+      "schema_valid": 24,
+      "tool_correct": 24,
+      "interact_n": 7,
+      "interact_choices_valid": 7,
+      "motion_n": 17,
+      "motion_obj_correct": 17,
+      "motion_tool_correct": 17,
+      "strict_exact": 18,
+      "interact_kind_correct": 1
+    },
+    "confirm_amount": {
+      "n": 9,
+      "json_valid": 9,
+      "schema_invalid": 3,
+      "tool_correct": 9,
+      "schema_valid": 6,
+      "interact_n": 4,
+      "interact_kind_correct": 4,
+      "interact_choices_valid": 4,
+      "strict_exact": 2
+    },
+    "no_context": {
+      "n": 30,
+      "json_valid": 30,
+      "schema_valid": 30,
+      "tool_correct": 30,
+      "interact_n": 30,
+      "interact_kind_correct": 27,
+      "interact_choices_valid": 30,
+      "strict_exact": 27
+    },
+    "confirm_stack": {
+      "n": 12,
+      "json_valid": 12,
+      "schema_valid": 12,
+      "tool_correct": 12,
+      "interact_n": 6,
+      "interact_kind_correct": 6,
+      "interact_choices_valid": 6,
+      "strict_exact": 12
+    },
+    "pitcher_acquisition": {
+      "n": 19,
+      "json_valid": 19,
+      "schema_valid": 19,
+      "tool_correct": 19,
+      "strict_exact": 11,
+      "interact_n": 9,
+      "interact_choices_valid": 9,
+      "interact_kind_correct": 1
+    },
+    "anything_else": {
+      "n": 15,
+      "json_valid": 15,
+      "schema_valid": 15,
+      "tool_correct": 15,
+      "interact_n": 15,
+      "interact_choices_valid": 15,
+      "interact_kind_correct": 8,
+      "strict_exact": 4
+    },
+    "help": {
+      "n": 5,
+      "json_valid": 5,
+      "schema_valid": 5,
+      "tool_correct": 5,
+      "motion_n": 5,
+      "motion_obj_correct": 5,
+      "motion_tool_correct": 5,
+      "strict_exact": 5
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 150,
+      "json_valid": 150,
+      "schema_valid": 147,
+      "tool_correct": 150,
+      "strict_exact": 115,
+      "schema_invalid": 3,
+      "motion_n": 22,
+      "motion_obj_correct": 22
+    }
+  },
+  "by_num_candidates": {
+    "cands_1": {
+      "n": 103,
+      "tool_correct": 103
+    },
+    "cands_2": {
+      "n": 22,
+      "tool_correct": 22
+    },
+    "cands_0": {
+      "n": 4,
+      "tool_correct": 4
+    },
+    "cands_3": {
+      "n": 21,
+      "tool_correct": 21
+    }
+  },
+  "mistakes_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/evaluation/results/paper_benchmark/mistakes/oracle_woz_lora__woz_valid.jsonl",
+  "mistakes_n": 0,
+  "_model_safe": "oracle_woz_lora",
+  "_eval_set": "woz_valid",
+  "_env": "mixed",
+  "_flavor": "woz",
+  "_group": "trained",
+  "_display": "Qwen2.5-3B-Oracle→WoZ-LoRA"
+}

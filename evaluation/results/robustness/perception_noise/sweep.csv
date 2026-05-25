@@ -104,3 +104,33 @@ oracle_pouring,Qwen2.5-3B-Oracle-LoRA (Pour only),pouring,user_input,0.10,300,93
 oracle_pouring,Qwen2.5-3B-Oracle-LoRA (Pour only),pouring,user_input,0.20,300,92.67,87.00,80.00,281.5
 oracle_pouring,Qwen2.5-3B-Oracle-LoRA (Pour only),pouring,user_input,0.30,300,93.00,87.00,86.67,282.9
 oracle_pouring,Qwen2.5-3B-Oracle-LoRA (Pour only),pouring,user_input,0.50,300,92.67,84.67,80.00,281.1
+woz_lora,Qwen2.5-3B-WoZ-LoRA,ycb,user_input,0.00,300,86.33,14.00,19.23,209.8
+woz_lora,Qwen2.5-3B-WoZ-LoRA,ycb,user_input,0.10,300,87.00,14.00,19.23,209.7
+woz_lora,Qwen2.5-3B-WoZ-LoRA,ycb,user_input,0.20,300,87.33,13.67,19.23,208.5
+woz_lora,Qwen2.5-3B-WoZ-LoRA,ycb,user_input,0.30,300,87.00,14.00,23.08,207.2
+woz_lora,Qwen2.5-3B-WoZ-LoRA,ycb,user_input,0.50,300,88.67,14.00,19.23,209.8
+woz_lora,Qwen2.5-3B-WoZ-LoRA,stacking,user_input,0.00,300,72.00,20.67,5.88,153.7
+woz_lora,Qwen2.5-3B-WoZ-LoRA,stacking,user_input,0.10,300,71.67,20.00,5.88,154.1
+woz_lora,Qwen2.5-3B-WoZ-LoRA,stacking,user_input,0.20,300,71.00,18.33,0.00,155.1
+woz_lora,Qwen2.5-3B-WoZ-LoRA,stacking,user_input,0.30,300,72.67,19.67,0.00,155.6
+woz_lora,Qwen2.5-3B-WoZ-LoRA,stacking,user_input,0.50,300,71.00,19.00,0.00,153.0
+woz_lora,Qwen2.5-3B-WoZ-LoRA,pouring,user_input,0.00,300,76.33,12.67,0.00,168.0
+woz_lora,Qwen2.5-3B-WoZ-LoRA,pouring,user_input,0.10,300,76.00,12.67,0.00,167.2
+woz_lora,Qwen2.5-3B-WoZ-LoRA,pouring,user_input,0.20,300,76.67,12.33,0.00,166.6
+woz_lora,Qwen2.5-3B-WoZ-LoRA,pouring,user_input,0.30,300,75.67,13.33,6.67,167.3
+woz_lora,Qwen2.5-3B-WoZ-LoRA,pouring,user_input,0.50,300,76.33,14.00,0.00,169.7
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,ycb,user_input,0.00,300,94.33,29.00,61.54,220.0
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,ycb,user_input,0.10,300,94.00,28.33,61.54,219.1
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,ycb,user_input,0.20,300,94.67,29.33,61.54,220.0
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,ycb,user_input,0.30,300,94.00,29.00,65.38,220.7
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,ycb,user_input,0.50,300,94.33,29.33,61.54,221.4
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,stacking,user_input,0.00,300,95.00,57.33,29.41,189.0
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,stacking,user_input,0.10,300,94.67,57.33,29.41,190.4
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,stacking,user_input,0.20,300,94.00,56.67,23.53,189.1
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,stacking,user_input,0.30,300,94.67,56.67,17.65,189.9
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,stacking,user_input,0.50,300,95.00,56.33,35.29,190.2
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,pouring,user_input,0.00,300,92.67,53.67,60.00,177.6
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,pouring,user_input,0.10,300,93.33,55.33,60.00,177.0
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,pouring,user_input,0.20,300,92.33,53.00,53.33,177.7
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,pouring,user_input,0.30,300,92.33,51.67,53.33,177.4
+oracle_woz_lora,Qwen2.5-3B-Oracle→WoZ-LoRA,pouring,user_input,0.50,300,91.67,53.00,60.00,178.8

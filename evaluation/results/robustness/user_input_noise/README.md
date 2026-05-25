@@ -11,9 +11,10 @@ This is the experiment that defends the paper's central claim
 ```
 user_input_noise/
 ├── README.md            ← you are here
-├── scenarios/           160 real-user scenarios (corpus, committed to repo)
+├── scenarios/           141 real-user scenarios (corpus, committed to repo)
 │   ├── scenarios.jsonl           ← extractor output (raw, with 124 unlabeled targets)
-│   ├── scenarios.labeled.jsonl   ← 160/160 labeled (36 auto + 124 video-verified)
+│   ├── scenarios.labeled.jsonl   ← 141/141 labeled eval corpus (authoritative)
+│   ├── scenarios.labeled.legacy_160.jsonl  ← full PRIME_LOGS extract (archived)
 │   ├── scenarios_contract.jsonl  ← same scenarios in contract-JSONL format
 │   └── scenarios_summary.json    ← counts, provenance, scene templates
 └── sweeps/              per-run sweep outputs (NOT committed — recomputable)
@@ -55,11 +56,12 @@ real user-study trial  ──► extract scenario (initial layout + target + pri
 
 ## What's in `scenarios/`
 
-160 scenarios extracted from `PRIME_LOGS/{manual,assistive}/s1..s8/{easy,hard}/`:
+141 scenarios extracted from `PRIME_LOGS/{manual,assistive}/s1..s8/{easy,hard}/`
+(19 manual-easy trials excluded; see `scenarios.labeled.legacy_160.jsonl`):
 
 | Field | Value |
 |---|---|
-| `n_scenarios` | 160 |
+| `n_scenarios` | 141 |
 | `target_label_source: tool_call` | 36 (auto-derived from last APPROACH/ALIGN_YAW target_object_id in the trial) |
 | `target_label_source: hand_label` | 124 (video-verified by Ali) |
 | `layout_source: state_snapshot` | 36 (real layouts from assistive trials' tool_calls.jsonl) |

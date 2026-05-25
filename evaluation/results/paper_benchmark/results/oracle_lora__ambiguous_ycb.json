@@ -1,0 +1,77 @@
+{
+  "model": {
+    "name": "Qwen2.5-3B-Oracle-LoRA",
+    "kind": "llm",
+    "model_path": "models/qwen2_5_3b_oracle_lora"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 108.8262767791748,
+    "examples_per_sec": 0.689171790303793
+  },
+  "n": 75,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 1.0,
+  "json_errors": 0,
+  "schema_errors": 0,
+  "tool_accuracy": 0.9733333333333334,
+  "motion_obj_accuracy": 0.0,
+  "motion_tool_accuracy": 0.0,
+  "interact_kind_accuracy": 0.9733333333333334,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.37333333333333335,
+  "motion_n": 0,
+  "interact_n": 75,
+  "tool_confusion": {
+    "INTERACT": {
+      "INTERACT": 73,
+      "APPROACH": 2
+    }
+  },
+  "by_context": {
+    "no_context": {
+      "n": 75,
+      "json_valid": 75,
+      "schema_valid": 75,
+      "tool_correct": 73,
+      "interact_n": 75,
+      "interact_kind_correct": 73,
+      "interact_choices_valid": 75,
+      "strict_exact": 28,
+      "tool_wrong": 2
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 75,
+      "json_valid": 75,
+      "schema_valid": 75,
+      "tool_correct": 73,
+      "strict_exact": 28,
+      "tool_wrong": 2
+    }
+  },
+  "by_num_candidates": {
+    "cands_3": {
+      "n": 15,
+      "tool_correct": 15
+    },
+    "cands_1": {
+      "n": 30,
+      "tool_correct": 28,
+      "tool_wrong": 2
+    },
+    "cands_2": {
+      "n": 30,
+      "tool_correct": 30
+    }
+  },
+  "mistakes_path": "/home/ali/github/ali-rabiee/grasp-copilot/evaluation/eval_outputs/paper_benchmark/mistakes/oracle_lora__ambiguous_ycb.jsonl",
+  "mistakes_n": 2,
+  "_model_safe": "oracle_lora",
+  "_eval_set": "ambiguous_ycb",
+  "_env": "ycb",
+  "_flavor": "ambiguous",
+  "_group": "trained",
+  "_display": "Qwen2.5-3B-Oracle-LoRA"
+}

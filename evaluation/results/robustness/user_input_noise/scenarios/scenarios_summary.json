@@ -1,25 +1,24 @@
 {
   "total_discovered_trials": 160,
-  "valid_scenarios": 160,
+  "valid_scenarios": 141,
   "dropped_during_extract": [],
   "invalid_after_extract": [],
   "counts_by_mode": {
-    "manual": 118,
+    "manual": 99,
     "assistive": 42
   },
   "counts_by_layout_source": {
-    "borrowed_template": 124,
+    "borrowed_template": 105,
     "state_snapshot": 36
   },
   "counts_by_target_source": {
-    "unlabeled": 124,
+    "hand_label": 105,
     "tool_call": 36
   },
   "counts_by_subject_difficulty": {
-    "s1/easy": 10,
-    "s1/hard": 5,
-    "s2/easy": 6,
-    "s2/hard": 5,
+    "s1/easy": 4,
+    "s2/easy": 2,
+    "s2/hard": 1,
     "s3/easy": 5,
     "s3/hard": 16,
     "s4/easy": 6,
@@ -272,5 +271,7 @@
       "n_source_trials": 24,
       "notes": "pooled across s3,s4,s7,s8 (min support 12/24)"
     }
-  }
+  },
+  "excluded_from_eval_corpus": 19,
+  "excluded_reason": "19 manual easy trials removed from eval corpus (legacy 160 in scenarios.labeled.legacy_160.jsonl)"
 }

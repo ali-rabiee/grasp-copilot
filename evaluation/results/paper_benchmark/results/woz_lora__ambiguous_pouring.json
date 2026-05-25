@@ -1,0 +1,78 @@
+{
+  "model": {
+    "name": "Qwen2.5-3B-WoZ-LoRA",
+    "kind": "llm",
+    "model_path": "models/qwen2_5_3b_woz_lora"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 91.65605688095093,
+    "examples_per_sec": 0.8182765280576608
+  },
+  "n": 75,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 0.9866666666666667,
+  "json_errors": 0,
+  "schema_errors": 1,
+  "tool_accuracy": 0.9066666666666666,
+  "motion_obj_accuracy": 0.0,
+  "motion_tool_accuracy": 0.0,
+  "interact_kind_accuracy": 0.4,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.2,
+  "motion_n": 0,
+  "interact_n": 75,
+  "tool_confusion": {
+    "INTERACT": {
+      "INTERACT": 68,
+      "GRAB": 5,
+      "POUR": 1,
+      "INVALID_SCHEMA": 1,
+      "PIOUR": 1
+    }
+  },
+  "by_context": {
+    "no_context": {
+      "n": 75,
+      "json_valid": 75,
+      "schema_valid": 74,
+      "tool_correct": 68,
+      "interact_n": 75,
+      "interact_kind_correct": 30,
+      "interact_choices_valid": 75,
+      "strict_exact": 15,
+      "tool_wrong": 7,
+      "schema_invalid": 1
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 75,
+      "json_valid": 75,
+      "schema_valid": 74,
+      "tool_correct": 68,
+      "strict_exact": 15,
+      "tool_wrong": 7,
+      "schema_invalid": 1
+    }
+  },
+  "by_num_candidates": {
+    "cands_1": {
+      "n": 45,
+      "tool_correct": 38,
+      "tool_wrong": 7
+    },
+    "cands_2": {
+      "n": 30,
+      "tool_correct": 30
+    }
+  },
+  "mistakes_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/evaluation/results/paper_benchmark/mistakes/woz_lora__ambiguous_pouring.jsonl",
+  "mistakes_n": 7,
+  "_model_safe": "woz_lora",
+  "_eval_set": "ambiguous_pouring",
+  "_env": "pouring",
+  "_flavor": "ambiguous",
+  "_group": "trained",
+  "_display": "Qwen2.5-3B-WoZ-LoRA"
+}

@@ -1,0 +1,13 @@
+mode,condition,difficulty,n_rollouts,success_rate,mean_completion_time_sec,std_completion_time_sec,mean_total_inputs,std_total_inputs,mean_interactions,mean_dropped_inputs,mean_direction_reversals,mean_motion_tool_calls,target_filtered_out_rate,max_ticks_rate
+prime,clean,easy,128,1.0,10.898,15.082,12.95,7.39,4.61,0,0.69,2.05,1,0
+prime,clean,hard,154,0.7013,14.025,11.318,13.12,9.38,37.04,0,0.49,122,1,0.2987
+prime,compound_mid,easy,128,0.9766,23.224,22.319,15.44,13.78,12.34,0.59,0.89,15.11,1,0.0234
+prime,compound_mid,hard,154,0.8442,28.14,30.81,19.22,17.34,20.21,1.03,0.89,77.27,1,0.1558
+prime,dir_high,easy,128,1.0,12.521,15.33,17.58,18.06,4.61,0,0.89,2.05,1,0
+prime,dir_high,hard,154,0.6948,15.551,11.921,18.1,16.53,37.01,0,0.73,124.92,1,0.3052
+prime,dir_low,easy,128,1.0,11.69,15.132,14.65,8.84,4.61,0,0.77,2.05,1,0
+prime,dir_low,hard,154,0.6948,14.399,11.43,14.5,9.5,37.01,0,0.53,124.91,1,0.3052
+prime,sel_high,easy,128,0.9609,16.611,15.952,13.98,9.25,12.14,0,0.7,21.73,1,0.0391
+prime,sel_high,hard,154,0.7727,16.1,28.155,16.52,12.94,19.19,0,0.68,106.53,1,0.2273
+prime,sel_low,easy,128,0.9844,17.903,17.552,12.83,8.82,10.54,0,0.67,12.11,1,0.0156
+prime,sel_low,hard,154,0.8312,17.253,20.301,15.98,12.89,14.89,0,0.64,85.32,1,0.1688
