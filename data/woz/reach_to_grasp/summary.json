@@ -1,0 +1,21 @@
+{
+  "environment": "reach_to_grasp_ycb",
+  "name": "woz_reach_to_grasp_consistent_small",
+  "rows": {
+    "train": 200,
+    "valid": 34
+  },
+  "source_dir": "data/woz_consistent_small",
+  "tool_distribution": {
+    "train": {
+      "ALIGN_YAW": 20,
+      "APPROACH": 40,
+      "INTERACT": 140
+    },
+    "valid": {
+      "ALIGN_YAW": 3,
+      "APPROACH": 7,
+      "INTERACT": 24
+    }
+  }
+}

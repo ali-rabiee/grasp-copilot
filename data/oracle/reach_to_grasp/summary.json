@@ -1,0 +1,21 @@
+{
+  "environment": "reach_to_grasp_ycb",
+  "name": "oracle_reach_to_grasp_consistent_small",
+  "rows": {
+    "train": 1000,
+    "valid": 102
+  },
+  "source_dir": "data/oracle_consistent_small",
+  "tool_distribution": {
+    "train": {
+      "ALIGN_YAW": 100,
+      "APPROACH": 200,
+      "INTERACT": 700
+    },
+    "valid": {
+      "ALIGN_YAW": 9,
+      "APPROACH": 21,
+      "INTERACT": 72
+    }
+  }
+}

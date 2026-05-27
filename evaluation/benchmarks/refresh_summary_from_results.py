@@ -13,6 +13,7 @@ from evaluation.benchmarks.run_paper_benchmark import (
     HEURISTIC_MODELS,
     TRAINED_MODELS,
     ZERO_SHOT_MODEL,
+    ZERO_SHOT_STRONG_MODEL,
     EvalSet,
     ModelEntry,
     _write_manifest,
@@ -20,7 +21,7 @@ from evaluation.benchmarks.run_paper_benchmark import (
 
 
 def _known_models() -> Dict[str, ModelEntry]:
-    models = list(TRAINED_MODELS) + [ZERO_SHOT_MODEL] + list(HEURISTIC_MODELS)
+    models = list(TRAINED_MODELS) + [ZERO_SHOT_MODEL, ZERO_SHOT_STRONG_MODEL] + list(HEURISTIC_MODELS)
     return {m.safe_name: m for m in models}
 
 

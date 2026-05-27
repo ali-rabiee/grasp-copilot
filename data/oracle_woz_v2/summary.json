@@ -1,0 +1,139 @@
+{
+  "name": "oracle_woz_v2",
+  "seed": 23,
+  "source": {
+    "oracle_train": "data/oracle/all/llm_contract_train.jsonl",
+    "oracle_valid": "data/oracle/all/llm_contract_valid.jsonl",
+    "oracle_motion_repeat": 1,
+    "oracle_interact_keep_prob": 1.0,
+    "woz_train": "data/woz/all/llm_contract_train.jsonl",
+    "woz_valid": "data/woz/all/llm_contract_valid.jsonl",
+    "woz_motion_repeat": 3,
+    "woz_interact_keep_prob": 1.0
+  },
+  "train": {
+    "rows": 3920,
+    "tools": {
+      "ALIGN_YAW": 160,
+      "APPROACH": 320,
+      "GRAB": 320,
+      "INTERACT": 2640,
+      "POUR": 160,
+      "STACK": 320
+    },
+    "contexts": {
+      "amount_choice": {
+        "INTERACT": 68
+      },
+      "anything_else": {
+        "INTERACT": 302
+      },
+      "candidate_choice": {
+        "INTERACT": 512
+      },
+      "confirm": {
+        "ALIGN_YAW": 73,
+        "APPROACH": 257,
+        "INTERACT": 245
+      },
+      "confirm_amount": {
+        "INTERACT": 40,
+        "POUR": 160
+      },
+      "confirm_pour": {
+        "INTERACT": 90
+      },
+      "confirm_stack": {
+        "INTERACT": 128,
+        "STACK": 320
+      },
+      "help": {
+        "ALIGN_YAW": 61,
+        "INTERACT": 1
+      },
+      "intent_gate_candidates": {
+        "INTERACT": 114
+      },
+      "intent_gate_pour": {
+        "INTERACT": 18
+      },
+      "intent_gate_stack": {
+        "INTERACT": 111
+      },
+      "mode_select": {
+        "INTERACT": 228
+      },
+      "none": {
+        "ALIGN_YAW": 26,
+        "APPROACH": 63,
+        "INTERACT": 671
+      },
+      "pitcher_acquisition": {
+        "GRAB": 320,
+        "INTERACT": 112
+      }
+    }
+  },
+  "valid": {
+    "rows": 400,
+    "tools": {
+      "ALIGN_YAW": 12,
+      "APPROACH": 28,
+      "GRAB": 28,
+      "INTERACT": 292,
+      "POUR": 12,
+      "STACK": 28
+    },
+    "contexts": {
+      "amount_choice": {
+        "INTERACT": 4
+      },
+      "anything_else": {
+        "INTERACT": 36
+      },
+      "candidate_choice": {
+        "INTERACT": 50
+      },
+      "confirm": {
+        "ALIGN_YAW": 6,
+        "APPROACH": 21,
+        "INTERACT": 30
+      },
+      "confirm_amount": {
+        "INTERACT": 4,
+        "POUR": 12
+      },
+      "confirm_pour": {
+        "INTERACT": 6
+      },
+      "confirm_stack": {
+        "INTERACT": 20,
+        "STACK": 28
+      },
+      "help": {
+        "ALIGN_YAW": 3
+      },
+      "intent_gate_candidates": {
+        "INTERACT": 12
+      },
+      "intent_gate_pour": {
+        "INTERACT": 3
+      },
+      "intent_gate_stack": {
+        "INTERACT": 7
+      },
+      "mode_select": {
+        "INTERACT": 27
+      },
+      "none": {
+        "ALIGN_YAW": 3,
+        "APPROACH": 7,
+        "INTERACT": 70
+      },
+      "pitcher_acquisition": {
+        "GRAB": 28,
+        "INTERACT": 23
+      }
+    }
+  }
+}

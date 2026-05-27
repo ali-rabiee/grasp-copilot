@@ -105,6 +105,14 @@ ZERO_SHOT_MODEL = ModelEntry(
     group="zero_shot",
 )
 
+ZERO_SHOT_STRONG_MODEL = ModelEntry(
+    safe_name="qwen7b_zs",
+    display="Qwen2.5-7B-Instruct (ZS)",
+    kind="llm",
+    model_path="Qwen/Qwen2.5-7B-Instruct",
+    group="zero_shot",
+)
+
 HEURISTIC_MODELS: List[ModelEntry] = [
     ModelEntry("h1_ask_if_amb",     "H1 Ask-if-Ambiguous",   "heuristic_ask_if_ambiguous",   None, "baseline"),
     ModelEntry("h2_always_ask",     "H2 Always-Ask",         "heuristic_always_ask",         None, "baseline"),
@@ -354,6 +362,7 @@ def main() -> None:
     ap.add_argument("--models", default=None, help="Comma-separated safe_names; default = all")
     ap.add_argument("--eval_sets", default=None, help="Comma-separated names; default = all")
     ap.add_argument("--include_zero_shot", action="store_true", help="Also evaluate Qwen2.5-3B-Instruct ZS (downloads from HF)")
+    ap.add_argument("--include_zero_shot_strong", action="store_true", help="Also evaluate Qwen2.5-7B-Instruct ZS (downloads ~15GB from HF; consider --use_4bit on small GPUs)")
     ap.add_argument("--skip_trained", action="store_true")
     ap.add_argument("--skip_heuristics", action="store_true")
     ap.add_argument("--max_examples", type=int, default=0)
@@ -377,6 +386,8 @@ def main() -> None:
         selected.extend(TRAINED_MODELS)
     if args.include_zero_shot:
         selected.append(ZERO_SHOT_MODEL)
+    if args.include_zero_shot_strong:
+        selected.append(ZERO_SHOT_STRONG_MODEL)
     if not args.skip_heuristics:
         selected.extend(HEURISTIC_MODELS)
 

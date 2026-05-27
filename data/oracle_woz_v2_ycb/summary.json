@@ -1,0 +1,85 @@
+{
+  "name": "oracle_woz_v2_ycb",
+  "seed": 31,
+  "source": {
+    "oracle_train": "data/oracle/reach_to_grasp/llm_contract_train.jsonl",
+    "oracle_valid": "data/oracle/reach_to_grasp/llm_contract_valid.jsonl",
+    "oracle_motion_repeat": 1,
+    "oracle_interact_keep_prob": 1.0,
+    "woz_train": "data/woz/reach_to_grasp/llm_contract_train.jsonl",
+    "woz_valid": "data/woz/reach_to_grasp/llm_contract_valid.jsonl",
+    "woz_motion_repeat": 3,
+    "woz_interact_keep_prob": 1.0
+  },
+  "train": {
+    "rows": 1320,
+    "tools": {
+      "ALIGN_YAW": 160,
+      "APPROACH": 320,
+      "INTERACT": 840
+    },
+    "contexts": {
+      "anything_else": {
+        "INTERACT": 69
+      },
+      "candidate_choice": {
+        "INTERACT": 191
+      },
+      "confirm": {
+        "ALIGN_YAW": 73,
+        "APPROACH": 257,
+        "INTERACT": 115
+      },
+      "help": {
+        "ALIGN_YAW": 61,
+        "INTERACT": 1
+      },
+      "intent_gate_candidates": {
+        "INTERACT": 114
+      },
+      "mode_select": {
+        "INTERACT": 64
+      },
+      "none": {
+        "ALIGN_YAW": 26,
+        "APPROACH": 63,
+        "INTERACT": 286
+      }
+    }
+  },
+  "valid": {
+    "rows": 136,
+    "tools": {
+      "ALIGN_YAW": 12,
+      "APPROACH": 28,
+      "INTERACT": 96
+    },
+    "contexts": {
+      "anything_else": {
+        "INTERACT": 10
+      },
+      "candidate_choice": {
+        "INTERACT": 19
+      },
+      "confirm": {
+        "ALIGN_YAW": 6,
+        "APPROACH": 21,
+        "INTERACT": 18
+      },
+      "help": {
+        "ALIGN_YAW": 3
+      },
+      "intent_gate_candidates": {
+        "INTERACT": 12
+      },
+      "mode_select": {
+        "INTERACT": 8
+      },
+      "none": {
+        "ALIGN_YAW": 3,
+        "APPROACH": 7,
+        "INTERACT": 29
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "environment": "cube_stacking",
+  "name": "woz_stacking_consistent_small",
+  "rows": {
+    "train": 200,
+    "valid": 33
+  },
+  "source_dir": "data/woz_consistent_small",
+  "tool_distribution": {
+    "train": {
+      "INTERACT": 160,
+      "STACK": 40
+    },
+    "valid": {
+      "INTERACT": 26,
+      "STACK": 7
+    }
+  }
+}

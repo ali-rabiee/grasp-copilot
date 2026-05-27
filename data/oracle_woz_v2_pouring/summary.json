@@ -1,0 +1,98 @@
+{
+  "name": "oracle_woz_v2_pouring",
+  "seed": 41,
+  "source": {
+    "oracle_train": "data/oracle/pouring/llm_contract_train.jsonl",
+    "oracle_valid": "data/oracle/pouring/llm_contract_valid.jsonl",
+    "oracle_motion_repeat": 1,
+    "oracle_interact_keep_prob": 1.0,
+    "woz_train": "data/woz/pouring/llm_contract_train.jsonl",
+    "woz_valid": "data/woz/pouring/llm_contract_valid.jsonl",
+    "woz_motion_repeat": 3,
+    "woz_interact_keep_prob": 1.0
+  },
+  "train": {
+    "rows": 1320,
+    "tools": {
+      "GRAB": 320,
+      "INTERACT": 840,
+      "POUR": 160
+    },
+    "contexts": {
+      "amount_choice": {
+        "INTERACT": 68
+      },
+      "anything_else": {
+        "INTERACT": 99
+      },
+      "candidate_choice": {
+        "INTERACT": 116
+      },
+      "confirm": {
+        "INTERACT": 75
+      },
+      "confirm_amount": {
+        "INTERACT": 40,
+        "POUR": 160
+      },
+      "confirm_pour": {
+        "INTERACT": 90
+      },
+      "intent_gate_pour": {
+        "INTERACT": 18
+      },
+      "mode_select": {
+        "INTERACT": 63
+      },
+      "none": {
+        "INTERACT": 159
+      },
+      "pitcher_acquisition": {
+        "GRAB": 320,
+        "INTERACT": 112
+      }
+    }
+  },
+  "valid": {
+    "rows": 132,
+    "tools": {
+      "GRAB": 28,
+      "INTERACT": 92,
+      "POUR": 12
+    },
+    "contexts": {
+      "amount_choice": {
+        "INTERACT": 4
+      },
+      "anything_else": {
+        "INTERACT": 11
+      },
+      "candidate_choice": {
+        "INTERACT": 12
+      },
+      "confirm": {
+        "INTERACT": 5
+      },
+      "confirm_amount": {
+        "INTERACT": 4,
+        "POUR": 12
+      },
+      "confirm_pour": {
+        "INTERACT": 6
+      },
+      "intent_gate_pour": {
+        "INTERACT": 3
+      },
+      "mode_select": {
+        "INTERACT": 9
+      },
+      "none": {
+        "INTERACT": 15
+      },
+      "pitcher_acquisition": {
+        "GRAB": 28,
+        "INTERACT": 23
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "all_tools": {
+    "ALIGN_YAW": 23,
+    "APPROACH": 47,
+    "GRAB": 47,
+    "INTERACT": 513,
+    "POUR": 23,
+    "STACK": 47
+  },
+  "dialog_shapes": {
+    "content,role": 2518
+  },
+  "env_distribution": {
+    "train": {
+      "cube_stacking": 200,
+      "pouring": 200,
+      "reach_to_grasp_ycb": 200
+    },
+    "valid": {
+      "cube_stacking": 33,
+      "pouring": 33,
+      "reach_to_grasp_ycb": 34
+    }
+  },
+  "mode_distribution": {
+    "train": {
+      "translation": 600
+    },
+    "valid": {
+      "translation": 100
+    }
+  },
+  "name": "woz_consistent_small",
+  "object_shapes": {
+    "cell,fill,id,is_held,kind,label,stacked_on,top_of_stack,yaw": 2811
+  },
+  "rows": {
+    "train": 600,
+    "valid": 100
+  },
+  "source": "data/woz_phase2/llm_contract_all.jsonl",
+  "tool_distribution": {
+    "train": {
+      "ALIGN_YAW": 20,
+      "APPROACH": 40,
+      "GRAB": 40,
+      "INTERACT": 440,
+      "POUR": 20,
+      "STACK": 40
+    },
+    "valid": {
+      "ALIGN_YAW": 3,
+      "APPROACH": 7,
+      "GRAB": 7,
+      "INTERACT": 73,
+      "POUR": 3,
+      "STACK": 7
+    }
+  }
+}

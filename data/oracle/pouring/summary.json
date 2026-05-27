@@ -1,0 +1,21 @@
+{
+  "environment": "pouring",
+  "name": "oracle_pouring_consistent_small",
+  "rows": {
+    "train": 1000,
+    "valid": 99
+  },
+  "source_dir": "data/oracle_consistent_small",
+  "tool_distribution": {
+    "train": {
+      "GRAB": 200,
+      "INTERACT": 700,
+      "POUR": 100
+    },
+    "valid": {
+      "GRAB": 21,
+      "INTERACT": 69,
+      "POUR": 9
+    }
+  }
+}

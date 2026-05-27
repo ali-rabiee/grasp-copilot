@@ -1,0 +1,21 @@
+{
+  "environment": "pouring",
+  "name": "woz_pouring_consistent_small",
+  "rows": {
+    "train": 200,
+    "valid": 33
+  },
+  "source_dir": "data/woz_consistent_small",
+  "tool_distribution": {
+    "train": {
+      "GRAB": 40,
+      "INTERACT": 140,
+      "POUR": 20
+    },
+    "valid": {
+      "GRAB": 7,
+      "INTERACT": 23,
+      "POUR": 3
+    }
+  }
+}

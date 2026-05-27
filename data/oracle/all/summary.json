@@ -1,0 +1,241 @@
+{
+  "all_tools": {
+    "ALIGN_YAW": 109,
+    "APPROACH": 221,
+    "GRAB": 221,
+    "INTERACT": 2419,
+    "POUR": 109,
+    "STACK": 221
+  },
+  "dialog_shapes": {
+    "content,role": 17730
+  },
+  "env_distribution": {
+    "train": {
+      "cube_stacking": 1000,
+      "pouring": 1000,
+      "reach_to_grasp_ycb": 1000
+    },
+    "valid": {
+      "cube_stacking": 99,
+      "pouring": 99,
+      "reach_to_grasp_ycb": 102
+    }
+  },
+  "mode_distribution": {
+    "train": {
+      "translation": 3000
+    },
+    "valid": {
+      "translation": 300
+    }
+  },
+  "name": "oracle_consistent_small",
+  "object_shapes": {
+    "cell,fill,id,is_held,kind,label,stacked_on,top_of_stack,yaw": 14090
+  },
+  "rows": {
+    "train": 3000,
+    "valid": 300
+  },
+  "source": {
+    "episodes_per_env": 2500,
+    "generator": "data_generator.generate_dataset.generate",
+    "seed": 7,
+    "stats_by_env": {
+      "cube_stacking": {
+        "tool_distribution": {
+          "ALIGN_YAW": 103,
+          "APPROACH": 433,
+          "INTERACT": 10881,
+          "RELEASE": 0,
+          "STACK": 979
+        },
+        "user_reply_distribution": {
+          "user_replies_by_context": {
+            "anything_else": {
+              "NO": 1353,
+              "YES": 1393
+            },
+            "candidate_choice": {
+              "BLUE_CUBE": 314,
+              "GREEN_CUBE": 366,
+              "NONE OF THEM": 401,
+              "PURPLE_CUBE": 321,
+              "RED_CUBE": 338,
+              "YELLOW_CUBE": 336
+            },
+            "confirm": {
+              "NO": 384,
+              "YES": 377
+            },
+            "confirm_stack": {
+              "NO": 1232,
+              "YES": 1195
+            },
+            "intent_gate_stack": {
+              "NO": 768,
+              "YES": 744
+            },
+            "mode_select": {
+              "APPROACH": 383,
+              "STACK": 976
+            }
+          },
+          "user_replies_mode_align_yaw": 0,
+          "user_replies_mode_approach": 383,
+          "user_replies_mode_grab": 0,
+          "user_replies_mode_pour": 0,
+          "user_replies_mode_stack": 0,
+          "user_replies_no": 3737,
+          "user_replies_none_of_them": 401,
+          "user_replies_total": 10881,
+          "user_replies_yes": 3709,
+          "user_silent_steps": 0
+        }
+      },
+      "pouring": {
+        "tool_distribution": {
+          "ALIGN_YAW": 417,
+          "APPROACH": 643,
+          "GRAB": 783,
+          "INTERACT": 14696,
+          "POUR": 512
+        },
+        "user_reply_distribution": {
+          "user_replies_by_context": {
+            "amount_choice": {
+              "FULL": 380,
+              "HALF": 358,
+              "NONE \u2014 DON'T POUR": 256,
+              "SMALL": 359
+            },
+            "anything_else": {
+              "NO": 1614,
+              "YES": 1692
+            },
+            "candidate_choice": {
+              "CUP_A": 257,
+              "CUP_B": 279,
+              "CUP_C": 306,
+              "MUG_A": 290,
+              "MUG_B": 321,
+              "NONE OF THEM": 331
+            },
+            "confirm": {
+              "NO": 898,
+              "YES": 902
+            },
+            "confirm_amount": {
+              "NO": 502,
+              "YES": 542
+            },
+            "confirm_pour": {
+              "NO": 848,
+              "YES": 902
+            },
+            "intent_gate_pour": {
+              "NO": 227,
+              "YES": 201
+            },
+            "mode_select": {
+              "APPROACH": 651,
+              "GRAB": 364,
+              "POUR": 625
+            },
+            "pitcher_acquisition": {
+              "NO": 805,
+              "YES": 786
+            }
+          },
+          "user_replies_mode_align_yaw": 0,
+          "user_replies_mode_approach": 651,
+          "user_replies_mode_grab": 0,
+          "user_replies_mode_pour": 0,
+          "user_replies_mode_stack": 0,
+          "user_replies_no": 4894,
+          "user_replies_none_of_them": 331,
+          "user_replies_total": 14696,
+          "user_replies_yes": 5025,
+          "user_silent_steps": 0
+        }
+      },
+      "reach_to_grasp_ycb": {
+        "tool_distribution": {
+          "ALIGN_YAW": 443,
+          "APPROACH": 360,
+          "INTERACT": 6239
+        },
+        "user_reply_distribution": {
+          "user_replies_by_context": {
+            "anything_else": {
+              "NO": 566,
+              "YES": 605
+            },
+            "candidate_choice": {
+              "BLEACH_CLEANSER": 97,
+              "GELATIN_BOX": 86,
+              "MASTER_CHEF_CAN": 91,
+              "MUG": 99,
+              "MUSTARD_BOTTLE": 99,
+              "NONE OF THEM": 238,
+              "POTTED_MEAT_CAN": 97,
+              "PUDDING_BOX": 85,
+              "SUGAR_BOX": 84,
+              "TOMATO_SOUP_CAN": 80,
+              "TUNA_FISH_CAN": 80
+            },
+            "confirm": {
+              "NO": 571,
+              "YES": 631
+            },
+            "help": {
+              "NO": 1,
+              "YES": 1
+            },
+            "intent_gate_candidates": {
+              "NO": 1066,
+              "YES": 1044
+            },
+            "intent_gate_yaw": {
+              "NO": 13,
+              "YES": 11
+            },
+            "mode_select": {
+              "ALIGN_YAW": 334,
+              "APPROACH": 260
+            }
+          },
+          "user_replies_mode_align_yaw": 334,
+          "user_replies_mode_approach": 260,
+          "user_replies_mode_grab": 0,
+          "user_replies_mode_pour": 0,
+          "user_replies_mode_stack": 0,
+          "user_replies_no": 2217,
+          "user_replies_none_of_them": 238,
+          "user_replies_total": 6239,
+          "user_replies_yes": 2292,
+          "user_silent_steps": 0
+        }
+      }
+    }
+  },
+  "tool_distribution": {
+    "train": {
+      "ALIGN_YAW": 100,
+      "APPROACH": 200,
+      "GRAB": 200,
+      "INTERACT": 2200,
+      "POUR": 100,
+      "STACK": 200
+    },
+    "valid": {
+      "ALIGN_YAW": 9,
+      "APPROACH": 21,
+      "GRAB": 21,
+      "INTERACT": 219,
+      "POUR": 9,
+      "STACK": 21
+    }
+  }
+}

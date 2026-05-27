@@ -1,0 +1,19 @@
+{
+  "environment": "cube_stacking",
+  "name": "oracle_stacking_consistent_small",
+  "rows": {
+    "train": 1000,
+    "valid": 99
+  },
+  "source_dir": "data/oracle_consistent_small",
+  "tool_distribution": {
+    "train": {
+      "INTERACT": 800,
+      "STACK": 200
+    },
+    "valid": {
+      "INTERACT": 78,
+      "STACK": 21
+    }
+  }
+}

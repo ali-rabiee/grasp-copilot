@@ -13,8 +13,6 @@ wandb/
 *.egg-info/
 build/
 dist/
-PRIME_LOGS/
-data/
 plans/
 results_v2/
 unity_config/

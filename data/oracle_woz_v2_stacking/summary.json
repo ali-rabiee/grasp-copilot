@@ -1,0 +1,76 @@
+{
+  "name": "oracle_woz_v2_stacking",
+  "seed": 37,
+  "source": {
+    "oracle_train": "data/oracle/stacking/llm_contract_train.jsonl",
+    "oracle_valid": "data/oracle/stacking/llm_contract_valid.jsonl",
+    "oracle_motion_repeat": 1,
+    "oracle_interact_keep_prob": 1.0,
+    "woz_train": "data/woz/stacking/llm_contract_train.jsonl",
+    "woz_valid": "data/woz/stacking/llm_contract_valid.jsonl",
+    "woz_motion_repeat": 3,
+    "woz_interact_keep_prob": 1.0
+  },
+  "train": {
+    "rows": 1280,
+    "tools": {
+      "INTERACT": 960,
+      "STACK": 320
+    },
+    "contexts": {
+      "anything_else": {
+        "INTERACT": 134
+      },
+      "candidate_choice": {
+        "INTERACT": 205
+      },
+      "confirm": {
+        "INTERACT": 55
+      },
+      "confirm_stack": {
+        "INTERACT": 128,
+        "STACK": 320
+      },
+      "intent_gate_stack": {
+        "INTERACT": 111
+      },
+      "mode_select": {
+        "INTERACT": 101
+      },
+      "none": {
+        "INTERACT": 226
+      }
+    }
+  },
+  "valid": {
+    "rows": 132,
+    "tools": {
+      "INTERACT": 104,
+      "STACK": 28
+    },
+    "contexts": {
+      "anything_else": {
+        "INTERACT": 15
+      },
+      "candidate_choice": {
+        "INTERACT": 19
+      },
+      "confirm": {
+        "INTERACT": 7
+      },
+      "confirm_stack": {
+        "INTERACT": 20,
+        "STACK": 28
+      },
+      "intent_gate_stack": {
+        "INTERACT": 7
+      },
+      "mode_select": {
+        "INTERACT": 10
+      },
+      "none": {
+        "INTERACT": 26
+      }
+    }
+  }
+}
