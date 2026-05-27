@@ -1,0 +1,198 @@
+{
+  "model": {
+    "name": "Qwen2.5-7B-Instruct (ZS)",
+    "kind": "llm",
+    "model_path": "Qwen/Qwen2.5-7B-Instruct"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 542.070389509201,
+    "examples_per_sec": 1.7285578001196014
+  },
+  "n": 937,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 0.96051227321238,
+  "json_errors": 0,
+  "schema_errors": 37,
+  "tool_accuracy": 0.2529348986125934,
+  "motion_obj_accuracy": 0.7083333333333334,
+  "motion_tool_accuracy": 0.75,
+  "interact_kind_accuracy": 0.0794044665012407,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.09071504802561366,
+  "motion_n": 48,
+  "interact_n": 806,
+  "tool_confusion": {
+    "INTERACT": {
+      "APPROACH": 310,
+      "STACK": 197,
+      "ALIGN_YAW": 155,
+      "INVALID_SCHEMA": 37,
+      "INTERACT": 133,
+      "GRAB": 11
+    },
+    "STACK": {
+      "STACK": 68,
+      "ALIGN_YAW": 11,
+      "APPROACH": 4
+    },
+    "ALIGN_YAW": {
+      "ALIGN_YAW": 17
+    },
+    "APPROACH": {
+      "APPROACH": 19,
+      "STACK": 10,
+      "ALIGN_YAW": 2
+    }
+  },
+  "by_context": {
+    "no_context": {
+      "n": 200,
+      "json_valid": 200,
+      "schema_valid": 164,
+      "tool_wrong": 164,
+      "interact_n": 200,
+      "interact_choices_valid": 200,
+      "schema_invalid": 36,
+      "tool_correct": 36,
+      "interact_kind_correct": 22
+    },
+    "confirm": {
+      "n": 112,
+      "json_valid": 112,
+      "schema_valid": 112,
+      "tool_wrong": 68,
+      "interact_n": 76,
+      "interact_choices_valid": 76,
+      "tool_correct": 44,
+      "motion_n": 36,
+      "motion_obj_correct": 32,
+      "motion_tool_correct": 36,
+      "strict_exact": 38,
+      "interact_kind_correct": 8
+    },
+    "intent_gate_stack": {
+      "n": 102,
+      "json_valid": 102,
+      "schema_valid": 102,
+      "tool_wrong": 99,
+      "interact_n": 102,
+      "interact_choices_valid": 102,
+      "tool_correct": 3,
+      "interact_kind_correct": 3,
+      "strict_exact": 2
+    },
+    "candidate_choice": {
+      "n": 140,
+      "json_valid": 140,
+      "schema_valid": 139,
+      "tool_wrong": 112,
+      "interact_n": 140,
+      "interact_choices_valid": 140,
+      "tool_correct": 28,
+      "interact_kind_correct": 18,
+      "schema_invalid": 1
+    },
+    "confirm_stack": {
+      "n": 199,
+      "json_valid": 199,
+      "schema_valid": 199,
+      "tool_wrong": 118,
+      "interact_n": 104,
+      "interact_choices_valid": 104,
+      "tool_correct": 81,
+      "strict_exact": 45,
+      "motion_n": 12,
+      "interact_kind_correct": 12,
+      "motion_obj_correct": 2
+    },
+    "anything_else": {
+      "n": 92,
+      "json_valid": 92,
+      "schema_valid": 92,
+      "tool_wrong": 48,
+      "interact_n": 92,
+      "interact_choices_valid": 92,
+      "tool_correct": 44
+    },
+    "mode_select": {
+      "n": 92,
+      "json_valid": 92,
+      "schema_valid": 92,
+      "tool_wrong": 91,
+      "interact_n": 92,
+      "interact_choices_valid": 92,
+      "tool_correct": 1,
+      "interact_kind_correct": 1
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 596,
+      "json_valid": 596,
+      "schema_valid": 571,
+      "tool_wrong": 451,
+      "tool_correct": 145,
+      "strict_exact": 59,
+      "schema_invalid": 25,
+      "motion_n": 33,
+      "motion_obj_correct": 22
+    },
+    "rotation": {
+      "n": 269,
+      "json_valid": 269,
+      "schema_valid": 268,
+      "tool_wrong": 220,
+      "tool_correct": 49,
+      "motion_n": 14,
+      "motion_obj_correct": 12,
+      "strict_exact": 17,
+      "schema_invalid": 1
+    },
+    "gripper": {
+      "n": 72,
+      "json_valid": 72,
+      "schema_invalid": 11,
+      "tool_correct": 43,
+      "schema_valid": 61,
+      "tool_wrong": 29,
+      "strict_exact": 9,
+      "motion_n": 1
+    }
+  },
+  "by_num_candidates": {
+    "cands_1": {
+      "n": 427,
+      "tool_wrong": 314,
+      "tool_correct": 113
+    },
+    "cands_3": {
+      "n": 194,
+      "tool_wrong": 151,
+      "tool_correct": 43
+    },
+    "cands_0": {
+      "n": 4,
+      "tool_wrong": 3,
+      "tool_correct": 1
+    },
+    "cands_2": {
+      "n": 245,
+      "tool_wrong": 176,
+      "tool_correct": 69
+    },
+    "cands_4": {
+      "n": 67,
+      "tool_wrong": 56,
+      "tool_correct": 11
+    }
+  },
+  "mistakes_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/evaluation/results/paper_benchmark/mistakes/qwen7b_zs__oracle_valid_stacking.jsonl",
+  "mistakes_n": 200,
+  "_model_safe": "qwen7b_zs",
+  "_eval_set": "oracle_valid_stacking",
+  "_env": "stacking",
+  "_flavor": "oracle",
+  "_group": "zero_shot",
+  "_display": "Qwen2.5-7B-Instruct (ZS)"
+}

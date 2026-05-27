@@ -356,10 +356,50 @@ def _filter(names: Optional[str], pool, attr: str):
     return [p for p in pool if getattr(p, attr) in keys]
 
 
+def _apply_model_path_overrides(models: List[ModelEntry], overrides_arg: Optional[str]) -> List[ModelEntry]:
+    if not overrides_arg:
+        return models
+
+    overrides: Dict[str, str] = {}
+    for item in overrides_arg.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        if "=" not in item:
+            raise SystemExit(f"Invalid --model_path_overrides item: {item!r}; expected safe_name=path_or_hf_id")
+        key, value = item.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if not key or not value:
+            raise SystemExit(f"Invalid --model_path_overrides item: {item!r}; expected safe_name=path_or_hf_id")
+        overrides[key] = value
+
+    updated: List[ModelEntry] = []
+    for model in models:
+        if model.safe_name in overrides:
+            updated.append(
+                ModelEntry(
+                    safe_name=model.safe_name,
+                    display=model.display,
+                    kind=model.kind,
+                    model_path=overrides[model.safe_name],
+                    group=model.group,
+                )
+            )
+        else:
+            updated.append(model)
+    return updated
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out_dir", default="evaluation/results/paper_benchmark")
     ap.add_argument("--models", default=None, help="Comma-separated safe_names; default = all")
+    ap.add_argument(
+        "--model_path_overrides",
+        default=None,
+        help="Comma-separated safe_name=path_or_hf_id mappings. Useful for loading trained models from Hugging Face.",
+    )
     ap.add_argument("--eval_sets", default=None, help="Comma-separated names; default = all")
     ap.add_argument("--include_zero_shot", action="store_true", help="Also evaluate Qwen2.5-3B-Instruct ZS (downloads from HF)")
     ap.add_argument("--include_zero_shot_strong", action="store_true", help="Also evaluate Qwen2.5-7B-Instruct ZS (downloads ~15GB from HF; consider --use_4bit on small GPUs)")
@@ -394,6 +434,7 @@ def main() -> None:
     if args.models:
         keys = {n.strip() for n in args.models.split(",") if n.strip()}
         selected = [m for m in selected if m.safe_name in keys]
+    selected = _apply_model_path_overrides(selected, args.model_path_overrides)
 
     eval_sets = _filter(args.eval_sets, EVAL_SETS, "name")
 

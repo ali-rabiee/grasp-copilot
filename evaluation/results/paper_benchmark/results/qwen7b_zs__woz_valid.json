@@ -1,0 +1,182 @@
+{
+  "model": {
+    "name": "Qwen2.5-7B-Instruct (ZS)",
+    "kind": "llm",
+    "model_path": "Qwen/Qwen2.5-7B-Instruct"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 88.3822112083435,
+    "examples_per_sec": 1.697174102675535
+  },
+  "n": 150,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 0.9533333333333334,
+  "json_errors": 0,
+  "schema_errors": 7,
+  "tool_accuracy": 0.36,
+  "motion_obj_accuracy": 0.9545454545454546,
+  "motion_tool_accuracy": 0.9545454545454546,
+  "interact_kind_accuracy": 0.14018691588785046,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.19333333333333333,
+  "motion_n": 22,
+  "interact_n": 107,
+  "tool_confusion": {
+    "INTERACT": {
+      "INTERACT": 22,
+      "APPROACH": 58,
+      "STACK": 18,
+      "GRAB": 8,
+      "POUR": 1,
+      "INVALID_SCHEMA": 7
+    },
+    "POUR": {
+      "POUR": 5
+    },
+    "STACK": {
+      "STACK": 6
+    },
+    "APPROACH": {
+      "APPROACH": 17
+    },
+    "GRAB": {
+      "APPROACH": 10
+    },
+    "ALIGN_YAW": {
+      "ALIGN_YAW": 4,
+      "APPROACH": 1
+    }
+  },
+  "by_context": {
+    "candidate_choice": {
+      "n": 36,
+      "json_valid": 36,
+      "schema_valid": 35,
+      "tool_correct": 8,
+      "interact_n": 36,
+      "interact_choices_valid": 36,
+      "tool_wrong": 28,
+      "schema_invalid": 1,
+      "interact_kind_correct": 2
+    },
+    "confirm": {
+      "n": 24,
+      "json_valid": 24,
+      "schema_valid": 24,
+      "tool_wrong": 6,
+      "interact_n": 7,
+      "interact_choices_valid": 7,
+      "tool_correct": 18,
+      "motion_n": 17,
+      "motion_obj_correct": 16,
+      "motion_tool_correct": 17,
+      "strict_exact": 16,
+      "interact_kind_correct": 1
+    },
+    "confirm_amount": {
+      "n": 9,
+      "json_valid": 9,
+      "schema_valid": 9,
+      "tool_correct": 8,
+      "strict_exact": 5,
+      "tool_wrong": 1,
+      "interact_n": 4,
+      "interact_choices_valid": 4,
+      "interact_kind_correct": 3
+    },
+    "no_context": {
+      "n": 30,
+      "json_valid": 30,
+      "schema_valid": 24,
+      "tool_wrong": 24,
+      "interact_n": 30,
+      "interact_choices_valid": 30,
+      "schema_invalid": 6,
+      "tool_correct": 6,
+      "interact_kind_correct": 5
+    },
+    "confirm_stack": {
+      "n": 12,
+      "json_valid": 12,
+      "schema_valid": 12,
+      "tool_wrong": 6,
+      "interact_n": 6,
+      "interact_choices_valid": 6,
+      "tool_correct": 6,
+      "strict_exact": 4
+    },
+    "pitcher_acquisition": {
+      "n": 19,
+      "json_valid": 19,
+      "schema_valid": 19,
+      "tool_wrong": 19,
+      "interact_n": 9,
+      "interact_choices_valid": 9
+    },
+    "anything_else": {
+      "n": 15,
+      "json_valid": 15,
+      "schema_valid": 15,
+      "tool_wrong": 11,
+      "interact_n": 15,
+      "interact_choices_valid": 15,
+      "tool_correct": 4,
+      "interact_kind_correct": 4
+    },
+    "help": {
+      "n": 5,
+      "json_valid": 5,
+      "schema_valid": 5,
+      "tool_correct": 4,
+      "motion_n": 5,
+      "motion_obj_correct": 5,
+      "motion_tool_correct": 4,
+      "strict_exact": 4,
+      "tool_wrong": 1
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 150,
+      "json_valid": 150,
+      "schema_valid": 143,
+      "tool_correct": 54,
+      "tool_wrong": 96,
+      "strict_exact": 29,
+      "motion_n": 22,
+      "motion_obj_correct": 21,
+      "schema_invalid": 7
+    }
+  },
+  "by_num_candidates": {
+    "cands_1": {
+      "n": 103,
+      "tool_correct": 39,
+      "tool_wrong": 64
+    },
+    "cands_2": {
+      "n": 22,
+      "tool_wrong": 20,
+      "tool_correct": 2
+    },
+    "cands_0": {
+      "n": 4,
+      "tool_wrong": 1,
+      "tool_correct": 3
+    },
+    "cands_3": {
+      "n": 21,
+      "tool_wrong": 11,
+      "tool_correct": 10
+    }
+  },
+  "mistakes_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/evaluation/results/paper_benchmark/mistakes/qwen7b_zs__woz_valid.jsonl",
+  "mistakes_n": 96,
+  "_model_safe": "qwen7b_zs",
+  "_eval_set": "woz_valid",
+  "_env": "mixed",
+  "_flavor": "woz",
+  "_group": "zero_shot",
+  "_display": "Qwen2.5-7B-Instruct (ZS)"
+}

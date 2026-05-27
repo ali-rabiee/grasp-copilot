@@ -1,0 +1,231 @@
+{
+  "model": {
+    "name": "Qwen2.5-7B-Instruct (ZS)",
+    "kind": "llm",
+    "model_path": "Qwen/Qwen2.5-7B-Instruct"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 776.8999173641205,
+    "examples_per_sec": 1.6874760451101392
+  },
+  "n": 1311,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 0.9740655987795576,
+  "json_errors": 0,
+  "schema_errors": 34,
+  "tool_accuracy": 0.2418001525553013,
+  "motion_obj_accuracy": 0.7613636363636364,
+  "motion_tool_accuracy": 0.7954545454545454,
+  "interact_kind_accuracy": 0.06785714285714285,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.15179252479023647,
+  "motion_n": 88,
+  "interact_n": 1120,
+  "tool_confusion": {
+    "INTERACT": {
+      "APPROACH": 496,
+      "ALIGN_YAW": 143,
+      "INTERACT": 145,
+      "GRAB": 58,
+      "POUR": 278,
+      "INVALID_SCHEMA": 34
+    },
+    "GRAB": {
+      "GRAB": 64,
+      "APPROACH": 1
+    },
+    "ALIGN_YAW": {
+      "ALIGN_YAW": 33,
+      "GRAB": 3
+    },
+    "APPROACH": {
+      "GRAB": 15,
+      "APPROACH": 37
+    },
+    "POUR": {
+      "POUR": 38
+    }
+  },
+  "by_context": {
+    "no_context": {
+      "n": 200,
+      "json_valid": 200,
+      "schema_valid": 184,
+      "tool_wrong": 184,
+      "interact_n": 200,
+      "interact_choices_valid": 200,
+      "schema_invalid": 16,
+      "tool_correct": 16,
+      "interact_kind_correct": 6
+    },
+    "pitcher_acquisition": {
+      "n": 188,
+      "json_valid": 188,
+      "schema_valid": 187,
+      "tool_correct": 77,
+      "strict_exact": 77,
+      "tool_wrong": 111,
+      "interact_n": 108,
+      "interact_choices_valid": 108,
+      "motion_n": 15,
+      "interact_kind_correct": 13,
+      "schema_invalid": 1
+    },
+    "confirm": {
+      "n": 228,
+      "json_valid": 228,
+      "schema_valid": 228,
+      "tool_correct": 91,
+      "motion_n": 73,
+      "motion_obj_correct": 67,
+      "motion_tool_correct": 70,
+      "strict_exact": 86,
+      "tool_wrong": 137,
+      "interact_n": 155,
+      "interact_choices_valid": 155,
+      "interact_kind_correct": 19
+    },
+    "anything_else": {
+      "n": 111,
+      "json_valid": 111,
+      "schema_valid": 109,
+      "tool_wrong": 66,
+      "interact_n": 111,
+      "interact_choices_valid": 111,
+      "tool_correct": 45,
+      "schema_invalid": 2
+    },
+    "mode_select": {
+      "n": 108,
+      "json_valid": 108,
+      "schema_valid": 104,
+      "tool_wrong": 104,
+      "interact_n": 108,
+      "interact_choices_valid": 108,
+      "tool_correct": 4,
+      "interact_kind_correct": 4,
+      "schema_invalid": 4
+    },
+    "candidate_choice": {
+      "n": 123,
+      "json_valid": 123,
+      "schema_valid": 118,
+      "tool_wrong": 100,
+      "interact_n": 123,
+      "interact_choices_valid": 123,
+      "tool_correct": 23,
+      "interact_kind_correct": 17,
+      "schema_invalid": 5
+    },
+    "confirm_pour": {
+      "n": 133,
+      "json_valid": 133,
+      "schema_valid": 129,
+      "tool_wrong": 123,
+      "interact_n": 133,
+      "interact_choices_valid": 133,
+      "tool_correct": 10,
+      "interact_kind_correct": 5,
+      "strict_exact": 4,
+      "schema_invalid": 4
+    },
+    "amount_choice": {
+      "n": 105,
+      "json_valid": 105,
+      "schema_valid": 103,
+      "tool_wrong": 94,
+      "interact_n": 105,
+      "interact_choices_valid": 105,
+      "tool_correct": 11,
+      "interact_kind_correct": 10,
+      "schema_invalid": 2
+    },
+    "confirm_amount": {
+      "n": 81,
+      "json_valid": 81,
+      "schema_valid": 81,
+      "tool_wrong": 43,
+      "interact_n": 43,
+      "interact_choices_valid": 43,
+      "tool_correct": 38,
+      "strict_exact": 30
+    },
+    "intent_gate_pour": {
+      "n": 34,
+      "json_valid": 34,
+      "schema_valid": 34,
+      "tool_wrong": 32,
+      "interact_n": 34,
+      "interact_choices_valid": 34,
+      "tool_correct": 2,
+      "interact_kind_correct": 2,
+      "strict_exact": 2
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 915,
+      "json_valid": 915,
+      "schema_valid": 897,
+      "tool_wrong": 701,
+      "tool_correct": 214,
+      "strict_exact": 156,
+      "motion_n": 68,
+      "motion_obj_correct": 50,
+      "schema_invalid": 18
+    },
+    "gripper": {
+      "n": 110,
+      "json_valid": 110,
+      "schema_valid": 96,
+      "tool_wrong": 53,
+      "tool_correct": 57,
+      "motion_n": 8,
+      "motion_obj_correct": 7,
+      "strict_exact": 26,
+      "schema_invalid": 14
+    },
+    "rotation": {
+      "n": 286,
+      "json_valid": 286,
+      "schema_valid": 284,
+      "tool_wrong": 240,
+      "tool_correct": 46,
+      "motion_n": 12,
+      "motion_obj_correct": 10,
+      "strict_exact": 17,
+      "schema_invalid": 2
+    }
+  },
+  "by_num_candidates": {
+    "cands_1": {
+      "n": 836,
+      "tool_wrong": 626,
+      "tool_correct": 210
+    },
+    "cands_2": {
+      "n": 321,
+      "tool_wrong": 247,
+      "tool_correct": 74
+    },
+    "cands_0": {
+      "n": 96,
+      "tool_wrong": 76,
+      "tool_correct": 20
+    },
+    "cands_3": {
+      "n": 58,
+      "tool_wrong": 45,
+      "tool_correct": 13
+    }
+  },
+  "mistakes_path": "/home/ali_rabiee_uri_edu/ali/grasp-copilot/evaluation/results/paper_benchmark/mistakes/qwen7b_zs__oracle_valid_pouring.jsonl",
+  "mistakes_n": 200,
+  "_model_safe": "qwen7b_zs",
+  "_eval_set": "oracle_valid_pouring",
+  "_env": "pouring",
+  "_flavor": "oracle",
+  "_group": "zero_shot",
+  "_display": "Qwen2.5-7B-Instruct (ZS)"
+}

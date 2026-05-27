@@ -206,11 +206,33 @@ directories when they contain `config.json`, tokenizer files, and
 
 ```bash
 conda activate llm
-huggingface-cli login
+hf auth login
+# Older installs also support:
+# huggingface-cli login
 python grasp-copilot/scripts/hf_model_store.py list --source-root /media/ali/USB/old
 python grasp-copilot/scripts/hf_model_store.py upload \
   --source-root /media/ali/USB/old \
   --namespace YOUR_HF_USERNAME_OR_ORG
+```
+
+The current uploaded repos are:
+
+- `alirb97/grasp-copilot-qwen2_5_3b_oracle_lora`
+- `alirb97/grasp-copilot-qwen2_5_3b_oracle_lora_pouring`
+- `alirb97/grasp-copilot-qwen2_5_3b_oracle_lora_stacking`
+- `alirb97/grasp-copilot-qwen2_5_3b_oracle_lora_ycb`
+- `alirb97/grasp-copilot-qwen2_5_3b_oracle_woz_lora`
+- `alirb97/grasp-copilot-qwen2_5_3b_oracle_woz_lora_r32`
+
+These repos are private unless they are changed to public on Hugging Face. A
+different machine or collaborator can load them if they first authenticate with
+a Hugging Face token that has access:
+
+```bash
+conda activate llm
+hf auth login
+# Older installs also support:
+# huggingface-cli login
 ```
 
 Upload only one model:
@@ -236,8 +258,24 @@ You can also load a Hub repo id directly anywhere this project accepts
 
 ```bash
 grasp-infer \
-  --model_path YOUR_HF_USERNAME_OR_ORG/grasp-copilot-qwen2_5_3b_oracle_woz_lora \
+  --model_path alirb97/grasp-copilot-qwen2_5_3b_oracle_woz_lora \
   --prompt 'Return {"tool":"INTERACT","args":{"kind":"QUESTION","text":"ok?","choices":["yes","no"]}}'
+```
+
+The first full inference run downloads the model weights, about 5.8 GB per
+repo, into the Hugging Face cache.
+
+Lightweight verification without downloading all weight shards:
+
+```bash
+python - <<'PY'
+from transformers import AutoConfig, AutoTokenizer
+
+repo = "alirb97/grasp-copilot-qwen2_5_3b_oracle_woz_lora"
+cfg = AutoConfig.from_pretrained(repo, trust_remote_code=True)
+tok = AutoTokenizer.from_pretrained(repo, trust_remote_code=True, use_fast=True)
+print(cfg.model_type, tok.__class__.__name__, len(tok))
+PY
 ```
 
 ## Demos
