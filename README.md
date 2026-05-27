@@ -1,6 +1,8 @@
 # grasp-copilot
 a copilot llm for suggesting grasp assistives.
 
+For a complete end-to-end guide to data generation, dataset preparation, model training, evaluation, inference, and model storage, see [`README_DATA_TRAINING.md`](README_DATA_TRAINING.md).
+
 ## Installation
 
 This project assumes a Conda environment named **`llm`** (no venv).
@@ -262,5 +264,3 @@ HF backend:
 conda activate llm
 python grasp-copilot/scripts/gui_assist_demo.py --backend hf --model_path grasp-copilot/models/qwen2_5_3b_instruct_ft_001
 ```
-
-```bash
