@@ -183,16 +183,21 @@ def fig2_ambiguous_gap(cells: List[Dict[str, Any]], out_dir: Path) -> None:
     if not targets:
         return
 
-    def macro_avg(model: str, flavor_prefix: str) -> float:
+    def macro_avg(model: str, flavor_prefix: str) -> Optional[float]:
         vals = []
         for env in ENV_ORDER:
             cell = idx.get((model, f"{flavor_prefix}_{env}"))
             if cell:
                 vals.append(cell.get("tool_accuracy", 0))
-        return float(np.mean(vals)) * 100 if vals else 0.0
+        return float(np.mean(vals)) * 100 if vals else None
 
     clean = [macro_avg(m, "oracle_valid") for m in targets]
     amb = [macro_avg(m, "ambiguous") for m in targets]
+    if not any(v is not None for v in amb):
+        print("[fig2] no ambiguous eval cells found; skipping ambiguous-gap figure")
+        return
+    clean = [0.0 if v is None else v for v in clean]
+    amb = [0.0 if v is None else v for v in amb]
 
     fig, ax = plt.subplots(figsize=(8.5, 4.2))
     x = np.arange(len(targets))

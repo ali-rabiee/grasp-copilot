@@ -13,7 +13,9 @@
 # Tests whether the headline r=16 adapter is under-capacity
 # (claim #4 in plans/training_woz_envs.md §6 / §3.4).
 #
-# Prepare WoZ data first; see plans/training_woz_envs.md §3.2.
+# Default data layout:
+#   data/woz/all/llm_contract_train.jsonl
+#   data/woz/all/llm_contract_valid.jsonl
 #
 # Default submit (from grasp-copilot repo root):
 #   sbatch unity_config/job_woz_r32.sbatch
@@ -23,8 +25,8 @@ set -euo pipefail
 CONDA_ENV="${CONDA_ENV:-copilot}"
 # Phase-1 merged oracle LoRA, same base as the headline job (§3.4).
 MODEL_NAME="${MODEL_NAME:-models/qwen2_5_3b_oracle_lora}"
-WOZ_OUT_DIR="${WOZ_OUT_DIR:-data/woz_phase2}"
-TRAIN_PATH="${TRAIN_PATH:-$WOZ_OUT_DIR/llm_contract_train_rebalanced.jsonl}"
+WOZ_OUT_DIR="${WOZ_OUT_DIR:-data/woz/all}"
+TRAIN_PATH="${TRAIN_PATH:-$WOZ_OUT_DIR/llm_contract_train.jsonl}"
 VALID_PATH="${VALID_PATH:-$WOZ_OUT_DIR/llm_contract_valid.jsonl}"
 OUTPUT_DIR="${OUTPUT_DIR:-models/qwen2_5_3b_oracle_woz_lora_r32}"
 
@@ -53,6 +55,11 @@ if [ ! -f "scripts/train_sft_lora.py" ]; then
     exit 2
 fi
 
+if [ "${MODEL_NAME#models/}" != "$MODEL_NAME" ] && [ ! -d "$MODEL_NAME" ]; then
+    echo "Local model directory not found: $MODEL_NAME"
+    echo "Train or transfer the merged Phase-1 oracle model first."
+    exit 2
+fi
 if [ -d "$MODEL_NAME" ] && [ ! -f "$MODEL_NAME/config.json" ]; then
     echo "Local model directory is missing config.json: $MODEL_NAME"
     exit 2
@@ -73,12 +80,13 @@ fi
 
 if [ ! -f "$TRAIN_PATH" ]; then
     echo "Training file not found: $TRAIN_PATH"
-    echo "Prepare WoZ phase-2 data first; see plans/training_woz_envs.md."
+    echo "Expected the new data layout under data/woz/{all,pouring,reach_to_grasp,stacking}/."
     exit 2
 fi
 if [ "${DISABLE_EVAL:-1}" != "1" ] && [ "${DISABLE_EVAL:-1}" != "true" ]; then
     if [ ! -f "$VALID_PATH" ]; then
         echo "Validation file not found: $VALID_PATH"
+        echo "Expected the new data layout under data/woz/{all,pouring,reach_to_grasp,stacking}/."
         exit 2
     fi
 fi

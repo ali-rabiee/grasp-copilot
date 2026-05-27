@@ -11,14 +11,15 @@
 # User-input-noise robustness sweep
 # (see evaluation/results/robustness/user_input_noise/README.md).
 #
-# Each submission runs the (160 scenarios × 6 conditions × N seeds) matrix
+# Each submission runs the (141 scenarios x 6 conditions x N seeds) matrix
 # for ONE model or backend. Submit one job per model; jobs can run in
 # parallel on different Unity nodes.
 #
 # Examples (from grasp-copilot repo root):
 #
 #   # Headline LLM:
-#   MODEL_KEY=oracle_woz_lora MODEL_PATH=models/qwen2_5_3b_oracle_woz_lora \
+#   MODEL_KEY=oracle_woz_v2 \
+#   MODEL_PATH=models/v2/qwen2_5_3b_oracle_woz_v2 \
 #       sbatch unity_config/job_noise_sweep.sbatch
 #
 #   # Warm-start ablation:

@@ -196,6 +196,48 @@ grasp-eval \
   --dump_mistakes_jsonl grasp-copilot/eval_outputs/eval_001_mistakes.jsonl
 ```
 
+## Hugging Face model storage
+
+The model directories in `/media/ali/USB/old` are merged Hugging Face model
+directories when they contain `config.json`, tokenizer files, and
+`model*.safetensors`. Upload them to private Hugging Face Hub repos:
+
+```bash
+conda activate llm
+huggingface-cli login
+python grasp-copilot/scripts/hf_model_store.py list --source-root /media/ali/USB/old
+python grasp-copilot/scripts/hf_model_store.py upload \
+  --source-root /media/ali/USB/old \
+  --namespace YOUR_HF_USERNAME_OR_ORG
+```
+
+Upload only one model:
+
+```bash
+python grasp-copilot/scripts/hf_model_store.py upload \
+  --source-root /media/ali/USB/old \
+  --model qwen2_5_3b_oracle_woz_lora \
+  --repo-id YOUR_HF_USERNAME_OR_ORG/grasp-copilot-qwen2_5_3b_oracle_woz_lora
+```
+
+Retrieve it later into this repo:
+
+```bash
+python grasp-copilot/scripts/hf_model_store.py download \
+  --repo-id YOUR_HF_USERNAME_OR_ORG/grasp-copilot-qwen2_5_3b_oracle_woz_lora \
+  --target-dir grasp-copilot/models \
+  --local-name qwen2_5_3b_oracle_woz_lora
+```
+
+You can also load a Hub repo id directly anywhere this project accepts
+`--model_path`:
+
+```bash
+grasp-infer \
+  --model_path YOUR_HF_USERNAME_OR_ORG/grasp-copilot-qwen2_5_3b_oracle_woz_lora \
+  --prompt 'Return {"tool":"INTERACT","args":{"kind":"QUESTION","text":"ok?","choices":["yes","no"]}}'
+```
+
 ## Demos
 
 ### JSON-only inference (CLI)

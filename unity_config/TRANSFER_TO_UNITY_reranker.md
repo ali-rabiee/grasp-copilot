@@ -154,8 +154,9 @@ true online random control.
 ## 3f. Contract IG analysis (CPU-only, runs anywhere)
 
 Sensitivity check for the appendix: measure IG of every INTERACT in the
-held-out contract eval sets (`data/woz_phase2/llm_contract_valid.jsonl`
-plus the three `data/oracle_valid_*` sets). No GPU, no model load, no
+held-out contract eval sets (`data/woz/all/llm_contract_valid.jsonl`
+plus the three `data/oracle/{pouring,reach_to_grasp,stacking}/llm_contract_valid.jsonl`
+sets). No GPU, no model load, no
 sweep — just reads the contracts and applies the same pruning + entropy
 modules. Finishes in ~30 seconds.
 

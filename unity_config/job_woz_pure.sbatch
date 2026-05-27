@@ -16,7 +16,9 @@
 # Identical to unity_config/job.sbatch except MODEL_NAME points at the HF
 # hub base model, not the merged Phase-1 oracle checkpoint.
 #
-# Prepare WoZ data first; see plans/training_woz_envs.md §3.2.
+# Default data layout:
+#   data/woz/all/llm_contract_train.jsonl
+#   data/woz/all/llm_contract_valid.jsonl
 #
 # Default submit (from grasp-copilot repo root):
 #   sbatch unity_config/job_woz_pure.sbatch
@@ -26,8 +28,8 @@ set -euo pipefail
 CONDA_ENV="${CONDA_ENV:-copilot}"
 # Pure WoZ: base Qwen, no oracle warm-start (plans/training_woz_envs.md §3.3).
 MODEL_NAME="${MODEL_NAME:-Qwen/Qwen2.5-3B-Instruct}"
-WOZ_OUT_DIR="${WOZ_OUT_DIR:-data/woz_phase2}"
-TRAIN_PATH="${TRAIN_PATH:-$WOZ_OUT_DIR/llm_contract_train_rebalanced.jsonl}"
+WOZ_OUT_DIR="${WOZ_OUT_DIR:-data/woz/all}"
+TRAIN_PATH="${TRAIN_PATH:-$WOZ_OUT_DIR/llm_contract_train.jsonl}"
 VALID_PATH="${VALID_PATH:-$WOZ_OUT_DIR/llm_contract_valid.jsonl}"
 OUTPUT_DIR="${OUTPUT_DIR:-models/qwen2_5_3b_woz_lora}"
 
@@ -75,12 +77,13 @@ fi
 
 if [ ! -f "$TRAIN_PATH" ]; then
     echo "Training file not found: $TRAIN_PATH"
-    echo "Prepare WoZ phase-2 data first; see plans/training_woz_envs.md."
+    echo "Expected the new data layout under data/woz/{all,pouring,reach_to_grasp,stacking}/."
     exit 2
 fi
 if [ "${DISABLE_EVAL:-1}" != "1" ] && [ "${DISABLE_EVAL:-1}" != "true" ]; then
     if [ ! -f "$VALID_PATH" ]; then
         echo "Validation file not found: $VALID_PATH"
+        echo "Expected the new data layout under data/woz/{all,pouring,reach_to_grasp,stacking}/."
         exit 2
     fi
 fi

@@ -1,0 +1,193 @@
+{
+  "model": {
+    "name": "Qwen2.5-3B-Instruct (ZS)",
+    "kind": "llm",
+    "model_path": "Qwen/Qwen2.5-3B-Instruct"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 448.12819361686707,
+    "examples_per_sec": 1.2005493241962142
+  },
+  "n": 538,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 0.8996282527881041,
+  "json_errors": 0,
+  "schema_errors": 54,
+  "tool_accuracy": 0.2843866171003718,
+  "motion_obj_accuracy": 0.4807692307692308,
+  "motion_tool_accuracy": 0.8076923076923077,
+  "interact_kind_accuracy": 0.04938271604938271,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.048327137546468404,
+  "motion_n": 52,
+  "interact_n": 486,
+  "tool_confusion": {
+    "INTERACT": {
+      "APPROACH": 204,
+      "INVALID_SCHEMA": 54,
+      "INTERACT": 111,
+      "ALIGN_YAW": 162,
+      "GRAB": 7,
+      "STACK": 2
+    },
+    "APPROACH": {
+      "APPROACH": 24
+    },
+    "ALIGN_YAW": {
+      "ALIGN_YAW": 18,
+      "APPROACH": 8,
+      "STACK": 1,
+      "GRAB": 1
+    }
+  },
+  "by_context": {
+    "no_context": {
+      "n": 203,
+      "json_valid": 203,
+      "schema_valid": 203,
+      "tool_wrong": 191,
+      "interact_n": 188,
+      "interact_choices_valid": 188,
+      "tool_correct": 12,
+      "motion_n": 15,
+      "motion_obj_correct": 13,
+      "motion_tool_correct": 12,
+      "strict_exact": 11
+    },
+    "intent_gate_candidates": {
+      "n": 74,
+      "json_valid": 74,
+      "schema_invalid": 30,
+      "tool_correct": 41,
+      "interact_n": 74,
+      "interact_choices_valid": 74,
+      "schema_valid": 44,
+      "tool_wrong": 33,
+      "interact_kind_correct": 1,
+      "strict_exact": 1
+    },
+    "candidate_choice": {
+      "n": 81,
+      "json_valid": 81,
+      "schema_invalid": 16,
+      "tool_correct": 18,
+      "interact_n": 81,
+      "interact_kind_correct": 7,
+      "interact_choices_valid": 81,
+      "schema_valid": 65,
+      "tool_wrong": 63
+    },
+    "confirm": {
+      "n": 85,
+      "json_valid": 85,
+      "schema_valid": 84,
+      "tool_correct": 45,
+      "motion_n": 37,
+      "motion_obj_correct": 12,
+      "motion_tool_correct": 30,
+      "strict_exact": 14,
+      "interact_n": 48,
+      "interact_choices_valid": 48,
+      "tool_wrong": 40,
+      "schema_invalid": 1,
+      "interact_kind_correct": 3
+    },
+    "anything_else": {
+      "n": 48,
+      "json_valid": 48,
+      "schema_valid": 41,
+      "tool_correct": 37,
+      "interact_n": 48,
+      "interact_choices_valid": 48,
+      "schema_invalid": 7,
+      "interact_kind_correct": 13,
+      "tool_wrong": 11
+    },
+    "mode_select": {
+      "n": 47,
+      "json_valid": 47,
+      "schema_valid": 47,
+      "tool_wrong": 47,
+      "interact_n": 47,
+      "interact_choices_valid": 47
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 368,
+      "json_valid": 368,
+      "schema_valid": 316,
+      "tool_wrong": 237,
+      "schema_invalid": 52,
+      "tool_correct": 131,
+      "motion_n": 37,
+      "motion_obj_correct": 15,
+      "strict_exact": 16
+    },
+    "rotation": {
+      "n": 146,
+      "json_valid": 146,
+      "schema_valid": 146,
+      "tool_wrong": 127,
+      "tool_correct": 19,
+      "motion_n": 11,
+      "motion_obj_correct": 9,
+      "strict_exact": 10
+    },
+    "gripper": {
+      "n": 24,
+      "json_valid": 24,
+      "schema_valid": 22,
+      "tool_wrong": 21,
+      "motion_n": 4,
+      "motion_obj_correct": 1,
+      "schema_invalid": 2,
+      "tool_correct": 3
+    }
+  },
+  "by_num_candidates": {
+    "cands_2": {
+      "n": 175,
+      "tool_wrong": 119,
+      "tool_correct": 56
+    },
+    "cands_3": {
+      "n": 86,
+      "tool_wrong": 69,
+      "tool_correct": 17
+    },
+    "cands_6+": {
+      "n": 72,
+      "tool_wrong": 57,
+      "tool_correct": 15
+    },
+    "cands_1": {
+      "n": 37,
+      "tool_correct": 13,
+      "tool_wrong": 24
+    },
+    "cands_4": {
+      "n": 127,
+      "tool_wrong": 85,
+      "tool_correct": 42
+    },
+    "cands_5": {
+      "n": 40,
+      "tool_wrong": 31,
+      "tool_correct": 9
+    },
+    "cands_0": {
+      "n": 1,
+      "tool_correct": 1
+    }
+  },
+  "mistakes_path": "/home/ali/github/PRIME/grasp-copilot/evaluation/results/paper_benchmark/mistakes/qwen3b_zs__oracle_valid_ycb.jsonl",
+  "mistakes_n": 200,
+  "_model_safe": "qwen3b_zs",
+  "_eval_set": "oracle_valid_ycb",
+  "_env": "ycb",
+  "_flavor": "oracle",
+  "_group": "zero_shot",
+  "_display": "Qwen2.5-3B-Instruct (ZS)"
+}

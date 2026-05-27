@@ -13,19 +13,21 @@
 #
 # Wraps the existing scenario-noise sweep with the reranker plus a
 # dialogs.jsonl log that captures every emitted INTERACT for the offline
-# IG analysis. Each submission runs the full (160 × 6 × 1 × N_SEEDS)
-# matrix for ONE model × rerank_mode pair; submit several jobs to fill
+# IG analysis. Each submission runs the full (141 x 6 x 1 x N_SEEDS)
+# matrix for ONE model x rerank_mode pair; submit several jobs to fill
 # the headline ablation table in plans/package4_ig_reranker.md §7.
 #
 # Examples (from grasp-copilot repo root):
 #
 #   # Headline:
-#   MODEL_KEY=oracle_woz_lora MODEL_PATH=models/qwen2_5_3b_oracle_woz_lora \
+#   MODEL_KEY=oracle_woz_v2 \
+#   MODEL_PATH=models/v2/qwen2_5_3b_oracle_woz_v2 \
 #       RERANK_MODE=info_gain \
 #       sbatch unity_config/job_reranker_ablation.sbatch
 #
 #   # Baseline (no reranker, but still logs dialogs for offline replay):
-#   MODEL_KEY=oracle_woz_lora MODEL_PATH=models/qwen2_5_3b_oracle_woz_lora \
+#   MODEL_KEY=oracle_woz_v2 \
+#   MODEL_PATH=models/v2/qwen2_5_3b_oracle_woz_v2 \
 #       RERANK_MODE=none \
 #       sbatch unity_config/job_reranker_ablation.sbatch
 #

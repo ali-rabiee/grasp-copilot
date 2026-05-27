@@ -1,0 +1,68 @@
+{
+  "model": {
+    "name": "Qwen2.5-3B-Instruct (ZS)",
+    "kind": "llm",
+    "model_path": "Qwen/Qwen2.5-3B-Instruct"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 37.57344079017639,
+    "examples_per_sec": 1.5968726509520803
+  },
+  "n": 60,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 1.0,
+  "json_errors": 0,
+  "schema_errors": 0,
+  "tool_accuracy": 0.0,
+  "motion_obj_accuracy": 0.0,
+  "motion_tool_accuracy": 0.0,
+  "interact_kind_accuracy": 0.0,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.0,
+  "motion_n": 0,
+  "interact_n": 60,
+  "tool_confusion": {
+    "INTERACT": {
+      "GRAB": 32,
+      "APPROACH": 13,
+      "ALIGN_YAW": 15
+    }
+  },
+  "by_context": {
+    "no_context": {
+      "n": 60,
+      "json_valid": 60,
+      "schema_valid": 60,
+      "tool_wrong": 60,
+      "interact_n": 60,
+      "interact_choices_valid": 60
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 60,
+      "json_valid": 60,
+      "schema_valid": 60,
+      "tool_wrong": 60
+    }
+  },
+  "by_num_candidates": {
+    "cands_2": {
+      "n": 30,
+      "tool_wrong": 30
+    },
+    "cands_1": {
+      "n": 30,
+      "tool_wrong": 30
+    }
+  },
+  "mistakes_path": "/home/ali/github/PRIME/grasp-copilot/evaluation/results/paper_benchmark/mistakes/qwen3b_zs__ambiguous_stacking.jsonl",
+  "mistakes_n": 60,
+  "_model_safe": "qwen3b_zs",
+  "_eval_set": "ambiguous_stacking",
+  "_env": "stacking",
+  "_flavor": "ambiguous",
+  "_group": "zero_shot",
+  "_display": "Qwen2.5-3B-Instruct (ZS)"
+}

@@ -13,8 +13,9 @@
 # Three separate per-env LoRAs together form Model #5; the headline (Model #3)
 # is the unified model.
 #
-# Expects rebalanced oracle data at data/ycb/01/llm_contract_5000_rebalanced.jsonl
-# from `grasp-collect --env reach_to_grasp_ycb --episodes 5000 --seed 0 --rebalance`.
+# Uses the prepared oracle reach-to-grasp split:
+#   data/oracle/reach_to_grasp/llm_contract_train.jsonl
+#   data/oracle/reach_to_grasp/llm_contract_valid.jsonl
 #
 # Default submit (from grasp-copilot repo root):
 #   sbatch unity_config/job_oracle_ycb.sbatch
@@ -24,8 +25,8 @@ set -euo pipefail
 CONDA_ENV="${CONDA_ENV:-copilot}"
 # Fresh LoRA on base Qwen, per-env oracle data (plan §3.5).
 MODEL_NAME="${MODEL_NAME:-Qwen/Qwen2.5-3B-Instruct}"
-TRAIN_PATH="${TRAIN_PATH:-data/ycb/01/llm_contract_5000_rebalanced.jsonl}"
-VALID_PATH="${VALID_PATH:-}"
+TRAIN_PATH="${TRAIN_PATH:-data/oracle/reach_to_grasp/llm_contract_train.jsonl}"
+VALID_PATH="${VALID_PATH:-data/oracle/reach_to_grasp/llm_contract_valid.jsonl}"
 OUTPUT_DIR="${OUTPUT_DIR:-models/qwen2_5_3b_oracle_lora_ycb}"
 
 LORA_R="${LORA_R:-16}"
@@ -72,7 +73,7 @@ fi
 
 if [ ! -f "$TRAIN_PATH" ]; then
     echo "Training file not found: $TRAIN_PATH"
-    echo "Generate per-env oracle data first; see plans/training_woz_envs.md §3.0."
+    echo "Expected the new data layout under data/oracle/{all,pouring,reach_to_grasp,stacking}/."
     exit 2
 fi
 if [ "${DISABLE_EVAL:-1}" != "1" ] && [ "${DISABLE_EVAL:-1}" != "true" ]; then
@@ -93,6 +94,7 @@ echo "[job] node=${SLURM_NODELIST:-unknown} job_id=$JOB_ID"
 echo "[job] repo=$REPO"
 echo "[job] model_name=$MODEL_NAME"
 echo "[job] train_path=$TRAIN_PATH"
+echo "[job] valid_path=$VALID_PATH"
 echo "[job] disable_eval=$DISABLE_EVAL"
 echo "[job] output_dir=$OUTPUT_DIR"
 

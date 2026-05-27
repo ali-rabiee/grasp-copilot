@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 dependencies = [
   "numpy>=1.23",
   "transformers>=4.40",
+  "huggingface_hub>=0.22",
   # Some environments (esp. minimal/conda) may not include these optional deps,
   # but tokenizers are required for most modern LLMs and protobuf is needed by
   # parts of transformers' tokenizer fallback machinery.
@@ -47,5 +48,4 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-
 

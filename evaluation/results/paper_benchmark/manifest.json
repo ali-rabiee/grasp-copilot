@@ -1,18 +1,11 @@
 {
   "models": [
     {
-      "safe_name": "woz_lora",
-      "display": "Qwen2.5-3B-WoZ-LoRA",
+      "safe_name": "qwen3b_zs",
+      "display": "Qwen2.5-3B-Instruct (ZS)",
       "kind": "llm",
-      "model_path": "models/qwen2_5_3b_woz_lora",
-      "group": "trained"
-    },
-    {
-      "safe_name": "oracle_woz_lora",
-      "display": "Qwen2.5-3B-Oracle→WoZ-LoRA",
-      "kind": "llm",
-      "model_path": "models/qwen2_5_3b_oracle_woz_lora",
-      "group": "trained"
+      "model_path": "Qwen/Qwen2.5-3B-Instruct",
+      "group": "zero_shot"
     }
   ],
   "eval_sets": [
@@ -66,5 +59,5 @@
       "display": "Ambiguous Pour"
     }
   ],
-  "n_cells": 14
+  "n_cells": 7
 }

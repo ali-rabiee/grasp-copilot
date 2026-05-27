@@ -1,0 +1,181 @@
+{
+  "model": {
+    "name": "Qwen2.5-3B-Instruct (ZS)",
+    "kind": "llm",
+    "model_path": "Qwen/Qwen2.5-3B-Instruct"
+  },
+  "timing": {
+    "load_s": 0.0,
+    "eval_s": 123.9616346359253,
+    "examples_per_sec": 1.210051807081677
+  },
+  "n": 150,
+  "json_valid_rate": 1.0,
+  "schema_valid_rate": 0.8733333333333333,
+  "json_errors": 0,
+  "schema_errors": 19,
+  "tool_accuracy": 0.5066666666666667,
+  "motion_obj_accuracy": 0.6363636363636364,
+  "motion_tool_accuracy": 0.9545454545454546,
+  "interact_kind_accuracy": 0.102803738317757,
+  "interact_choices_valid_rate": 1.0,
+  "strict_exact_rate": 0.25333333333333335,
+  "motion_n": 22,
+  "interact_n": 107,
+  "tool_confusion": {
+    "INTERACT": {
+      "STACK": 15,
+      "APPROACH": 30,
+      "POUR": 10,
+      "INVALID_SCHEMA": 15,
+      "INTERACT": 34,
+      "GRAB": 18
+    },
+    "POUR": {
+      "INVALID_SCHEMA": 4,
+      "POUR": 5
+    },
+    "STACK": {
+      "STACK": 6
+    },
+    "APPROACH": {
+      "APPROACH": 16,
+      "GRAB": 1
+    },
+    "GRAB": {
+      "GRAB": 10
+    },
+    "ALIGN_YAW": {
+      "ALIGN_YAW": 5
+    }
+  },
+  "by_context": {
+    "candidate_choice": {
+      "n": 36,
+      "json_valid": 36,
+      "schema_valid": 22,
+      "tool_wrong": 21,
+      "interact_n": 36,
+      "interact_choices_valid": 36,
+      "schema_invalid": 14,
+      "tool_correct": 15,
+      "interact_kind_correct": 10,
+      "strict_exact": 6
+    },
+    "confirm": {
+      "n": 24,
+      "json_valid": 24,
+      "schema_valid": 24,
+      "tool_wrong": 7,
+      "interact_n": 7,
+      "interact_choices_valid": 7,
+      "tool_correct": 17,
+      "motion_n": 17,
+      "motion_tool_correct": 16,
+      "motion_obj_correct": 9,
+      "strict_exact": 9
+    },
+    "confirm_amount": {
+      "n": 9,
+      "json_valid": 9,
+      "schema_invalid": 5,
+      "tool_correct": 5,
+      "schema_valid": 4,
+      "tool_wrong": 4,
+      "interact_n": 4,
+      "interact_choices_valid": 4,
+      "strict_exact": 1
+    },
+    "no_context": {
+      "n": 30,
+      "json_valid": 30,
+      "schema_valid": 30,
+      "tool_wrong": 30,
+      "interact_n": 30,
+      "interact_choices_valid": 30
+    },
+    "confirm_stack": {
+      "n": 12,
+      "json_valid": 12,
+      "schema_valid": 12,
+      "tool_wrong": 3,
+      "interact_n": 6,
+      "interact_choices_valid": 6,
+      "tool_correct": 9,
+      "strict_exact": 6
+    },
+    "pitcher_acquisition": {
+      "n": 19,
+      "json_valid": 19,
+      "schema_valid": 19,
+      "tool_correct": 11,
+      "strict_exact": 10,
+      "tool_wrong": 8,
+      "interact_n": 9,
+      "interact_choices_valid": 9
+    },
+    "anything_else": {
+      "n": 15,
+      "json_valid": 15,
+      "schema_valid": 15,
+      "tool_correct": 14,
+      "interact_n": 15,
+      "interact_choices_valid": 15,
+      "interact_kind_correct": 1,
+      "strict_exact": 1,
+      "tool_wrong": 1
+    },
+    "help": {
+      "n": 5,
+      "json_valid": 5,
+      "schema_valid": 5,
+      "tool_correct": 5,
+      "motion_n": 5,
+      "motion_obj_correct": 5,
+      "motion_tool_correct": 5,
+      "strict_exact": 5
+    }
+  },
+  "by_mode": {
+    "translation": {
+      "n": 150,
+      "json_valid": 150,
+      "schema_valid": 131,
+      "tool_wrong": 74,
+      "schema_invalid": 19,
+      "tool_correct": 76,
+      "strict_exact": 38,
+      "motion_n": 22,
+      "motion_obj_correct": 14
+    }
+  },
+  "by_num_candidates": {
+    "cands_1": {
+      "n": 103,
+      "tool_wrong": 40,
+      "tool_correct": 63
+    },
+    "cands_2": {
+      "n": 22,
+      "tool_wrong": 16,
+      "tool_correct": 6
+    },
+    "cands_0": {
+      "n": 4,
+      "tool_wrong": 4
+    },
+    "cands_3": {
+      "n": 21,
+      "tool_wrong": 14,
+      "tool_correct": 7
+    }
+  },
+  "mistakes_path": "/home/ali/github/PRIME/grasp-copilot/evaluation/results/paper_benchmark/mistakes/qwen3b_zs__woz_valid.jsonl",
+  "mistakes_n": 74,
+  "_model_safe": "qwen3b_zs",
+  "_eval_set": "woz_valid",
+  "_env": "mixed",
+  "_flavor": "woz",
+  "_group": "zero_shot",
+  "_display": "Qwen2.5-3B-Instruct (ZS)"
+}

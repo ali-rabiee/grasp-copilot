@@ -15,4 +15,6 @@ build/
 dist/
 PRIME_LOGS/
 data/
+plans/
+results_v2/
 *.egg

@@ -1,8 +1,8 @@
 """
 Paper benchmark runner: evaluate every model on every eval set.
 
-Loads each model exactly once and sweeps it across the seven eval sets defined
-below (oracle valid × 3 envs, WoZ valid, ambiguous × 3 envs). Per-(model,
+Loads each model exactly once and sweeps it across the valid eval sets defined
+below (oracle valid × 3 envs, WoZ valid). Per-(model,
 eval_set) results are cached as JSON; re-runs skip cells that already exist
 unless --rerun is passed.
 
@@ -64,13 +64,10 @@ class EvalSet:
 
 
 EVAL_SETS: List[EvalSet] = [
-    EvalSet("oracle_valid_ycb",      "data/oracle_valid_ycb/llm_contract_200.jsonl",      "ycb",      "oracle",    "Oracle YCB (valid)"),
-    EvalSet("oracle_valid_stacking", "data/oracle_valid_stacking/llm_contract_200.jsonl", "stacking", "oracle",    "Oracle Stack (valid)"),
-    EvalSet("oracle_valid_pouring",  "data/oracle_valid_pouring/llm_contract_200.jsonl",  "pouring",  "oracle",    "Oracle Pour (valid)"),
-    EvalSet("woz_valid",             "data/woz_phase2/llm_contract_valid.jsonl",          "mixed",    "woz",       "WoZ (valid, 3-env)"),
-    EvalSet("ambiguous_ycb",         "data/_contracts_ambiguous/ambiguous_reach_to_grasp_ycb.jsonl", "ycb",      "ambiguous", "Ambiguous YCB"),
-    EvalSet("ambiguous_stacking",    "data/_contracts_ambiguous/ambiguous_cube_stacking.jsonl",      "stacking", "ambiguous", "Ambiguous Stack"),
-    EvalSet("ambiguous_pouring",     "data/_contracts_ambiguous/ambiguous_pouring.jsonl",            "pouring",  "ambiguous", "Ambiguous Pour"),
+    EvalSet("oracle_valid_ycb",      "data/oracle/reach_to_grasp/llm_contract_valid.jsonl", "ycb",      "oracle", "Oracle YCB (valid)"),
+    EvalSet("oracle_valid_stacking", "data/oracle/stacking/llm_contract_valid.jsonl",       "stacking", "oracle", "Oracle Stack (valid)"),
+    EvalSet("oracle_valid_pouring",  "data/oracle/pouring/llm_contract_valid.jsonl",        "pouring",  "oracle", "Oracle Pour (valid)"),
+    EvalSet("woz_valid",             "data/woz/all/llm_contract_valid.jsonl",               "mixed",    "woz",    "WoZ (valid, 3-env)"),
 ]
 
 
@@ -87,6 +84,13 @@ TRAINED_MODELS: List[ModelEntry] = [
     ModelEntry("oracle_lora",       "Qwen2.5-3B-Oracle-LoRA",            "llm", "models/qwen2_5_3b_oracle_lora",            "trained"),
     ModelEntry("woz_lora",          "Qwen2.5-3B-WoZ-LoRA",               "llm", "models/qwen2_5_3b_woz_lora",               "trained"),
     ModelEntry("oracle_woz_lora",   "Qwen2.5-3B-Oracle→WoZ-LoRA",   "llm", "models/qwen2_5_3b_oracle_woz_lora",        "trained"),
+    ModelEntry("oracle_woz_replay", "Qwen2.5-3B-Oracle→WoZ-LoRA+Replay", "llm", "models/qwen2_5_3b_oracle_woz_lora_replay", "trained"),
+    ModelEntry("oracle_woz_replay_v2", "Qwen2.5-3B-Oracle→WoZ-LoRA+Replay-v2", "llm", "models/qwen2_5_3b_oracle_woz_lora_replay_v2", "trained"),
+    ModelEntry("oracle_woz_v2", "Qwen2.5-3B-Oracle+WoZ-v2", "llm", "models/v2/qwen2_5_3b_oracle_woz_v2", "trained"),
+    ModelEntry("oracle_woz_v2_ycb", "Qwen2.5-3B-Oracle+WoZ-v2 (YCB)", "llm", "models/v2/qwen2_5_3b_oracle_woz_v2_ycb", "ablation"),
+    ModelEntry("oracle_woz_v2_stacking", "Qwen2.5-3B-Oracle+WoZ-v2 (Stack only)", "llm", "models/v2/qwen2_5_3b_oracle_woz_v2_stacking", "ablation"),
+    ModelEntry("oracle_woz_v2_pouring", "Qwen2.5-3B-Oracle+WoZ-v2 (Pour only)", "llm", "models/v2/qwen2_5_3b_oracle_woz_v2_pouring", "ablation"),
+    ModelEntry("oracle_woz_v2_r32", "Qwen2.5-3B-Oracle+WoZ-v2-r32", "llm", "models/v2/qwen2_5_3b_oracle_woz_v2_r32", "ablation"),
     ModelEntry("oracle_woz_r32",    "Qwen2.5-3B-Oracle→WoZ-LoRA-r32","llm", "models/qwen2_5_3b_oracle_woz_lora_r32",   "ablation"),
     ModelEntry("oracle_ycb",        "Qwen2.5-3B-Oracle-LoRA (YCB only)",  "llm", "models/qwen2_5_3b_oracle_lora_ycb",        "ablation"),
     ModelEntry("oracle_stacking",   "Qwen2.5-3B-Oracle-LoRA (Stack only)","llm", "models/qwen2_5_3b_oracle_lora_stacking",  "ablation"),
