@@ -1,8 +1,0 @@
-model,amount_choice_acc,anything_else_acc,candidate_choice_acc,confirm_acc,confirm_amount_acc,confirm_pour_acc,confirm_stack_acc,help_acc,intent_gate_candidates_acc,intent_gate_pour_acc,intent_gate_stack_acc,mode_select_acc,no_context_acc,pitcher_acquisition_acc,amount_choice_n,anything_else_n,candidate_choice_n,confirm_n,confirm_amount_n,confirm_pour_n,confirm_stack_n,help_n,intent_gate_candidates_n,intent_gate_pour_n,intent_gate_stack_n,mode_select_n,no_context_n,pitcher_acquisition_n
-Qwen2.5-3B-Instruct (ZS),0.0000,0.7708,0.2222,0.5294,0.0000,0.0000,0.0000,0.0000,0.5541,0.0000,0.0000,0.0000,0.0591,0.0000,0,48,81,85,0,0,0,0,74,0,0,47,203,0
-Qwen2.5-3B-Instruct (ZS),0.0000,0.8587,0.3000,0.5714,0.0000,0.0000,0.5930,0.0000,0.0000,0.0000,0.2941,0.0000,0.0000,0.0000,0,92,140,112,0,0,199,0,0,0,102,92,200,0
-Qwen2.5-3B-Instruct (ZS),0.0381,0.9369,0.4309,0.4430,0.5309,0.4511,0.0000,0.0000,0.0000,0.5882,0.0000,0.1296,0.0000,0.4787,105,111,123,228,81,133,0,0,0,34,0,108,200,188
-Qwen2.5-3B-Instruct (ZS),0.0000,0.9333,0.4167,0.7083,0.5556,0.0000,0.7500,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.5789,0,15,36,24,9,0,12,5,0,0,0,0,30,19
-Qwen2.5-3B-Instruct (ZS),0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0,0,0,0,0,0,0,0,0,0,0,0,75,0
-Qwen2.5-3B-Instruct (ZS),0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0,0,0,0,0,0,0,0,0,0,0,0,60,0
-Qwen2.5-3B-Instruct (ZS),0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0,0,0,0,0,0,0,0,0,0,0,0,75,0
